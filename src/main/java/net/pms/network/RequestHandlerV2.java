@@ -34,6 +34,7 @@ import net.pms.external.StartStopListenerDelegate;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -337,12 +338,11 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 			group.add(ctx.getChannel());
 		}
 	}
-	/* Uncomment to see channel events in the trace logs
+	/* Uncomment to see channel events in the trace logs */
 	@Override
 	public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
 	// Log all channel events.
 	logger.trace("Channel upstream event: " + e);
 	super.handleUpstream(ctx, e);
 	}
-	 */
 }
