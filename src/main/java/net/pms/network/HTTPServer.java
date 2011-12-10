@@ -117,8 +117,13 @@ public class HTTPServer implements Runnable {
 			// The OrderedMemoryAwareThreadPoolExecutor makes that all requests
 			// are handled sequentially in the correct order. Without it hiccups
 			// and double requests may occur. (See issue 1156)
+			//
+			// Setting corePoolSize to 1 because the PMS classes involved in
+			// streaming are not thread safe. Multiple threads handling the
+			// same request unintentionally cause ArrayOutOfBoundsExceptions
+			// and NullPointerExceptions.
 			executionHandler = new ExecutionHandler(
-					new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576));
+					new OrderedMemoryAwareThreadPoolExecutor(1, 1048576, 1048576));
 
 			ServerBootstrap bootstrap = new ServerBootstrap(factory);
 			HttpServerPipelineFactory pipeline = new HttpServerPipelineFactory(group, executionHandler);
