@@ -31,6 +31,8 @@ import java.util.Locale;
 import java.util.Set;
 
 import net.pms.io.SystemUtils;
+import net.pms.network.IpFilter;
+import net.pms.network.MacFilter;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -95,6 +97,7 @@ public class PmsConfiguration {
 	private static final String KEY_ITUNES_ENABLED = "itunes";
 	private static final String KEY_LANGUAGE = "language";
 	private static final String KEY_LOGGING_LEVEL = "level";
+	private static final String KEY_MAC_FILTER = "mac_filter";
 	private static final String KEY_MAX_AUDIO_BUFFER = "maxaudiobuffer";
 	private static final String KEY_MAX_BITRATE = "maximumbitrate";
 	private static final String KEY_MAX_MEMORY_BUFFER_SIZE = "maxvideobuffer";
@@ -200,6 +203,7 @@ public class PmsConfiguration {
 	private final ProgramPathDisabler programPaths;
 
 	private final IpFilter filter = new IpFilter();
+	private final MacFilter macFilter = new MacFilter();
 
 	/**
 	 * The set of the keys defining when the HTTP server has to restarted due to a configuration change
@@ -209,6 +213,7 @@ public class PmsConfiguration {
 			KEY_ALTERNATE_THUMB_FOLDER,
 			KEY_NETWORK_INTERFACE,
 			KEY_IP_FILTER,
+			KEY_MAC_FILTER,
 			KEY_SORT_METHOD,
 			KEY_HIDE_EMPTY_FOLDERS,
 			KEY_HIDE_TRANSCODE_FOLDER,
@@ -1674,6 +1679,39 @@ public class PmsConfiguration {
 
 	public void setIpFilter(String value) {
 		configuration.setProperty(KEY_IP_FILTER, value);
+	}
+
+	/**
+	 * Returns the MAC address filter string. The string consists of comma
+	 * separated MAC addresses of hosts that are allowed access to PMS, e.g.
+	 * <code>00:0C:6E:D2:11:E6,20:FC:6E:CC:FF:E6</code>
+
+	 * @return The filter string.
+	 */
+	public String getMacFilter() {
+		return getString(KEY_MAC_FILTER, "");
+	}
+
+	/**
+	 * Returns a {@link MacFilter} object initialized with the MAC filters as
+	 * defined in the configuration.
+	 *
+	 * @return The filter object.
+	 */
+	public synchronized MacFilter getMacFiltering() {
+	    macFilter.setRawFilter(getMacFilter());
+	    return macFilter;
+	}
+
+	/**
+	 * Sets the MAC address filter string. The string should consist of comma
+	 * separated MAC addresses of hosts that are allowed access to PMS, e.g.
+	 * <code>00:0C:6E:D2:11:E6,20:FC:6E:CC:FF:E6</code>
+	 *
+	 * @param value The comma separated string.
+	 */
+	public void setMacFilter(String value) {
+		configuration.setProperty(KEY_MAC_FILTER, value);
 	}
 
 	public void setPreventsSleep(boolean value) {

@@ -1,4 +1,4 @@
-package net.pms.configuration;
+package net.pms.network;
 
 /*
  * PS3 Media Server, for streaming any medias to your PS3.

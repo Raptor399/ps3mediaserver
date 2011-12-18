@@ -232,8 +232,10 @@ public class UPNPHelper {
 							if (s.startsWith("M-SEARCH")) {
 								String remoteAddr = address.getHostAddress();
 								int remotePort = packet_r.getPort();
+								boolean ipAllowed = PMS.getConfiguration().getIpFiltering().allowed(address);
+								boolean macAllowed = PMS.getConfiguration().getMacFiltering().allowed(address);
 
-								if (PMS.getConfiguration().getIpFiltering().allowed(address)) {
+								if (ipAllowed && macAllowed) {
 									logger.trace("Receiving a M-SEARCH from [" + remoteAddr + ":" + remotePort + "]");
 
 									if (StringUtils.indexOf(s, "urn:schemas-upnp-org:service:ContentDirectory:1") > 0) {

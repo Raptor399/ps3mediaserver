@@ -175,7 +175,10 @@ public class HTTPServer implements Runnable {
 				String ip = inetAddress.getHostAddress();
 				// basic ipfilter: solntcev at gmail dot com
 				boolean ignore = false;
-				if (!PMS.getConfiguration().getIpFiltering().allowed(inetAddress)) {
+				boolean ipAllowed = PMS.getConfiguration().getIpFiltering().allowed(inetAddress);
+				boolean macAllowed = PMS.getConfiguration().getMacFiltering().allowed(inetAddress);
+
+				if (!(ipAllowed && macAllowed)) {
 					ignore = true;
 					socket.close();
 					logger.trace("Ignoring request from: " + ip);

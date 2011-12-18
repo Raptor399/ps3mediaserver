@@ -269,6 +269,9 @@ public class RequestHandler implements Runnable {
 	 * @return True when not allowed, false otherwise.
 	 */
 	private boolean filterIp(InetAddress inetAddress) {
-		return !PMS.getConfiguration().getIpFiltering().allowed(inetAddress);
+		boolean ipAllowed = PMS.getConfiguration().getIpFiltering().allowed(inetAddress);
+		boolean macAllowed = PMS.getConfiguration().getMacFiltering().allowed(inetAddress);
+
+		return !(ipAllowed && macAllowed);
 	}
 }

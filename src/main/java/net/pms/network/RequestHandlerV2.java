@@ -261,7 +261,10 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 	 * @return True when not allowed, false otherwise.
 	 */
 	private boolean filterIp(InetAddress inetAddress) {
-		return !PMS.getConfiguration().getIpFiltering().allowed(inetAddress);
+		boolean ipAllowed = PMS.getConfiguration().getIpFiltering().allowed(inetAddress);
+		boolean macAllowed = PMS.getConfiguration().getMacFiltering().allowed(inetAddress);
+
+		return !(ipAllowed && macAllowed);
 	}
 
 	private void writeResponse(MessageEvent e, RequestV2 request, InetAddress ia) {
