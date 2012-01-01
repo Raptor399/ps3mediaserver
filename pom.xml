@@ -62,6 +62,10 @@
 		<url>https://github.com/ps3mediaserver/ps3mediaserver</url>
 	</scm>
 
+	<distributionManagement>
+		<downloadUrl>http://www.ps3mediaserver.org/</downloadUrl>
+	</distributionManagement>
+  	
 	<issueManagement>
 		<system>Google Code</system>
 		<url>http://code.google.com/p/ps3mediaserver/issues/list</url>
