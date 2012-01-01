@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<!--
 		PMS consists of two major parts: PMS itself and the third party software needed to
@@ -30,7 +31,7 @@
 	<artifactId>pms</artifactId>
 	<name>PS3 Media Server</name>
 	<packaging>jar</packaging>
-	<version>1.50.2-SNAPSHOT</version>
+	<version>1.50.1-SNAPSHOT</version>
 	<url>http://www.ps3mediaserver.org/</url>
 	<inceptionYear>2008</inceptionYear>
 	
@@ -869,9 +870,9 @@
 										<mkdir dir="${project.binaries}/win32/service" />
 
 										<!-- Download all necessary Windows binaries. Keep the same structure because NSIS expects it that way. -->
-										<get src="${project.binaries-base}/MediaInfo.dll" dest="${project.binaries}/MediaInfo.dll" usetimestamp="true" />
+										<get src="${project.binaries-base}/MediaInfo.dll" dest="${project.binaries}/MediaInfo.dll"  usetimestamp="true" />
 										<get src="${project.binaries-base}/MediaInfo64.dll" dest="${project.binaries}/MediaInfo64.dll" usetimestamp="true" />
-										<get src="${project.binaries-base}/win32/Convert_License.txt" dest="${project.binaries}/win32/Convert_License.txt" usetimestamp="true" />
+										<get src="${project.binaries-base}/win32/Convert_License.txt" dest="${project.binaries}/win32/Convert_License.txt"  usetimestamp="true" />
 										<get src="${project.binaries-base}/win32/LICENSE.txt" dest="${project.binaries}/win32/LICENSE.txt" usetimestamp="true" />
 										<get src="${project.binaries-base}/win32/builds.txt" dest="${project.binaries}/win32/builds.txt" usetimestamp="true" />
 										<get src="${project.binaries-base}/win32/convert.exe" dest="${project.binaries}/win32/convert.exe" usetimestamp="true" />
@@ -879,7 +880,7 @@
 										<get src="${project.binaries-base}/win32/ffmpeg.exe" dest="${project.binaries}/win32/ffmpeg.exe" usetimestamp="true" />
 										<get src="${project.binaries-base}/win32/flac.exe" dest="${project.binaries}/win32/flac.exe" usetimestamp="true" />
 										<get src="${project.binaries-base}/win32/mencoder.exe" dest="${project.binaries}/win32/mencoder.exe" usetimestamp="true" />
-										<get src="${project.binaries-base}/win32/mplayer.exe" dest="${project.binaries}/win32/mplayer.exe" usetimestamp="true" />
+										<get src="${project.binaries-base}/win32/mplayer.exe" dest="${project.binaries}/win32/mplayer.exe"  usetimestamp="true" />
 										<get src="${project.binaries-base}/win32/pthreadGC2.dll" dest="${project.binaries}/win32/pthreadGC2.dll" usetimestamp="true" />
 										<get src="${project.binaries-base}/win32/tsMuxeR.exe" dest="${project.binaries}/win32/tsMuxeR.exe" usetimestamp="true" />
 										<get src="${project.binaries-base}/win32/vcomp100.dll" dest="${project.binaries}/win32/vcomp100.dll" usetimestamp="true" />
@@ -957,7 +958,8 @@
 								<configuration>
 									<tasks>
 										<!-- Rename the pms-x.x.x-jar-with-dependencies.jar to pms.jar -->
-										<move file="${project.basedir}/target/${project.artifactId}-${project.version}-jar-with-dependencies.jar" tofile="${project.basedir}/target/pms.jar" overwrite="true" />
+										<move file="${project.basedir}/target/${project.artifactId}-${project.version}-jar-with-dependencies.jar"
+											tofile="${project.basedir}/target/pms.jar" overwrite="true" />
 
 										<!-- MediaInfo library needs to be in the standard library path to be found -->
 										<copy file="${project.binaries}/MediaInfo.dll" todir="${project.basedir}" />
@@ -1061,7 +1063,8 @@
 								</goals>
 								<configuration>
 									<tasks>
-										<move file="${project.basedir}/target/${project.artifactId}-${project.version}-jar-with-dependencies.jar" tofile="${project.basedir}/target/pms.jar" overwrite="true" />
+										<move file="${project.basedir}/target/${project.artifactId}-${project.version}-jar-with-dependencies.jar"
+											tofile="${project.basedir}/target/pms.jar" overwrite="true" />
 									</tasks>
 								</configuration>
 							</execution>
@@ -1148,7 +1151,8 @@
 										<!-- Make all downloaded binaries executable -->
 										<chmod dir="${project.binaries}/osx" perm="a+x" includes="*" />
 
-										<copy file="${project.external-resources}/osx/pms.icns" todir="${project.binaries}" overwrite="true" />
+										<copy file="${project.external-resources}/osx/pms.icns"
+											todir="${project.binaries}" overwrite="true" />
 									</tasks>
 								</configuration>
 							</execution>
