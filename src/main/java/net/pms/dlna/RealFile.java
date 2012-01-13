@@ -21,8 +21,10 @@ package net.pms.dlna;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import net.pms.PMS;
@@ -73,6 +75,7 @@ public class RealFile extends MapFile {
 					logger.info("The file " + file.getAbsolutePath() + " is encrypted. It will be hidden");
 				} else {
 					logger.info("The file " + file.getAbsolutePath() + " was badly parsed. It will be hidden");
+					valid=true;
 				}
 			}
 			if (getParent().getDefaultRenderer().isMediaParserV2ThumbnailGeneration()) {
@@ -276,5 +279,22 @@ public class RealFile extends MapFile {
 			return null;
 		}
 		return super.getThumbnailURL();
+	}
+
+	public OutputStream upload(String name) {
+		File f=getFile();
+		if(!f.isDirectory())
+			return null;
+		File newFile=new File(f.getAbsolutePath()+File.separator+name);
+		logger.trace("upload called "+name+" file "+f.getAbsolutePath()+" new "+newFile.getAbsolutePath()+
+				" exist "+newFile.exists());
+		if(newFile.exists())
+			return null;
+		try {
+			return new FileOutputStream(newFile);
+		} catch (FileNotFoundException e) {
+			logger.trace("error "+e);
+			return null;
+		}
 	}
 }

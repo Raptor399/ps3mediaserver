@@ -19,6 +19,7 @@
 package net.pms.configuration;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -26,10 +27,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import net.pms.PMS;
 import net.pms.io.SystemUtils;
 
 import org.apache.commons.configuration.Configuration;
@@ -37,6 +40,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.event.ConfigurationListener;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -170,6 +174,7 @@ public class PmsConfiguration {
 	private static final String KEY_VIDEOTRANSCODE_START_DELAY = "key_videotranscode_start_delay";
 	private static final String KEY_VIRTUAL_FOLDERS = "vfolders";
 	private static final String KEY_UPNP_PORT = "upnp_port";
+	private static final String UNLIMITED_BITRATE = "0";
 	private static final String KEY_UUID = "uuid";
 	private static final String KEY_MENCODER_FORCED_SUB_LANG = "forced_sub_lang";
 	private static final String KEY_MENCODER_FORCED_SUB_TAGS = "forced_sub_tags";
@@ -349,14 +354,122 @@ public class PmsConfiguration {
 		configuration.setFileName(PROFILE_PATH);
 
 		File pmsConfFile = new File(PROFILE_PATH);
-
+		File mFile=new File(PROFILE_PATH+".new");
 		if (pmsConfFile.exists() && pmsConfFile.isFile()) {
 			configuration.load(PROFILE_PATH);
+			mergeConf(PROFILE_DIRECTORY);
 		}
+		else if(mFile.exists()) {
+			/*FileUtils.copyFile(mFile, pmsConfFile);
+			configuration.load(PROFILE_PATH);*/
+			mergeConf(PROFILE_DIRECTORY);
+		}
+		else {	
+			String profileDir = null;
+			
+			if (Platform.isWindows()) {
+				String appData = System.getenv("APPDATA");
+				if (appData != null)
+					profileDir = String.format("%s\\%s", appData, Build.getProfileDirectoryName());
+			} else if (Platform.isMac()) {
+				profileDir = String.format(
+					"%s/%s/%s",
+					System.getProperty("user.home"),
+					"/Library/Application Support",
+					Build.getProfileDirectoryName()
+				);
+			} else {
+				String xdgConfigHome = System.getenv("XDG_CONFIG_HOME");
 
+				if (xdgConfigHome == null) {
+					profileDir = String.format("%s/.config/%s", System.getProperty("user.home"), Build.getProfileDirectoryName());
+				} else {
+					profileDir = String.format("%s/%s", xdgConfigHome, Build.getProfileDirectoryName());
+				}
+			}
+		}
 		tempFolder = new TempFolder(getString(KEY_TEMP_FOLDER_PATH, null));
 		programPaths = createProgramPathsChain(configuration);
 		Locale.setDefault(new Locale(getLanguage()));
+	}
+
+	private void mergeConf(String path) throws IOException, ConfigurationException {
+		File mFile=new File(path+File.separator+DEFAULT_PROFILE_FILENAME+".new");
+		File cDummy=new File(path+File.separator+"PMS.cred.new");
+		if(!mFile.exists()) // no file to merge give up early
+			return;
+		String dir="",dir1="";
+		if (Platform.isWindows()) {
+			String appData = System.getenv("APPDATA");
+			if (appData != null) {
+				dir = String.format("%s\\%s", appData, Build.getProfileDirectoryName());
+				dir1=String.format("%s\\%s", appData, Build.getProfileDirectoryName());
+			}
+			File[] f=new File[3];
+			File cf=null;
+			File wf=null;
+			int i=0;
+			if(!StringUtils.isEmpty(dir1)) { // 1st check if we got a %APPDTA/PMS-SHB file
+				File f1 = new File(dir1+File.separator+DEFAULT_PROFILE_FILENAME);
+				File c1 =new File(dir1+File.separator+"PMS.cred");
+				File w=new File(dir1+File.separator+"WEB.conf");
+				if(f1.exists()) 
+					f[i++]=f1;
+				if(c1.exists())
+					cf=c1;
+				if(w.exists())
+					wf=w;
+			}
+			if(!StringUtils.isEmpty(dir)) { // 1st check if we got a %APPDTA/PMS-SHB file
+				File f1 = new File(dir+File.separator+DEFAULT_PROFILE_FILENAME);
+				File c1 =new File(dir+File.separator+"PMS.cred");
+				File w=new File(dir+File.separator+"WEB.conf");
+				if(f1.exists()) 
+					f[i++]=f1;
+				if(c1.exists()&&cf==null) // only if we have no PMS-SHB/PMS.cred
+					cf=c1;	
+				if(w.exists()&&wf==null)
+					wf=w;
+			}
+			if(wf!=null) // copy old web.conf
+				FileUtils.copyFile(wf, new File(path+File.separator+"WEB.conf"));
+			f[i++]=mFile; // do this last so we don't hide old stuff
+			for(int j=0;j<i;j++) {
+				doMerge(f[j].getAbsolutePath());
+			}		
+			// Merge cred files
+			File cFile=new File(path+File.separator+"PMS.cred");
+			if(!cFile.exists()) { // nope, the cred file needs some merging
+				if(cf==null) { // no old one, see if we got a dummy one
+					if(cDummy.exists())  // yeah a dummy needs to copied
+						cf=cDummy; 
+				}
+				if(cf!=null)   { // we got some file copy it
+					FileUtils.copyFile(cf, cFile);
+					configuration.setProperty("cred.path", cFile.getAbsolutePath());
+				}
+			}
+		}
+		cDummy.delete();
+		mFile.delete();
+		configuration.save();
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void doMerge(String file)  {
+		PropertiesConfiguration tmp=new PropertiesConfiguration();
+		try {
+			tmp.setListDelimiter((char)0);
+			tmp.load(new File(file));
+			Iterator i=tmp.getKeys();
+			while(i.hasNext()) {
+				String key=(String) i.next();
+				if(configuration.containsKey(key))
+					continue;
+				configuration.setProperty(key, tmp.getProperty(key));
+			}
+		} catch (Exception e) {
+		}
 	}
 
 	/**
@@ -1193,7 +1306,7 @@ public class PmsConfiguration {
 	}
 
 	public String getMaximumBitrate() {
-		return getString(KEY_MAX_BITRATE, "110");
+		return getString(KEY_MAX_BITRATE, UNLIMITED_BITRATE);
 	}
 
 	public void setMaximumBitrate(String value) {
@@ -1426,6 +1539,10 @@ public class PmsConfiguration {
 
 	public void setEnginesAsList(ArrayList<String> enginesAsList) {
 		configuration.setProperty(KEY_ENGINES, listToString(enginesAsList));
+	}
+
+	public List<String> getEnginesAsList() {
+		return getEnginesAsList(PMS.get().getRegistry());
 	}
 
 	public List<String> getEnginesAsList(SystemUtils registry) {
@@ -1833,7 +1950,8 @@ public class PmsConfiguration {
 				HOSTNAME = "unknown host";
 			}
 		}
-
+		if(Build.getShortName()!=null)
+			return getString(KEY_PROFILE_NAME, HOSTNAME+"/"+Build.getShortName());
 		return getString(KEY_PROFILE_NAME, HOSTNAME);
 	}
 
@@ -1867,5 +1985,62 @@ public class PmsConfiguration {
 
 	public void removeConfigurationListener(ConfigurationListener l) {
 		configuration.removeConfigurationListener(l);
+	}
+
+	/////////////////////////////////////////////////////////////////
+
+	private static final String KEY_NO_FOLDERS="no_shared";
+	private static final String KEY_FOLDER_LIMIT="folder_limit";
+
+	public String getFolders(String tag) {
+		if(tag==null)
+			return getFolders();
+		String x=(tag.toLowerCase()+".folders").replaceAll(" ", "_");
+		String res=getString(x, "");
+		if(res==null||res.length()==0)
+			return getFolders();
+		return res;
+	}
+
+	public String getVirtualFolders(String tag) {
+		if(tag==null)
+			return getVirtualFolders();
+		String x=(tag.toLowerCase()+".vfolders").replaceAll(" ", "_");
+		String res=getString(x, "");
+		if(res==null||res.length()==0)
+			return getVirtualFolders();
+		return res;
+	}
+
+	public boolean getNoFolders(String tag) {
+		if(tag==null)
+			return getBoolean(KEY_NO_FOLDERS,false);
+		String x=(tag.toLowerCase()+".no_shared").replaceAll(" ", "_");
+		return getBoolean(x,false);
+	}
+
+	public String[] getPlugins(String tag) {
+		if(tag==null)
+			return null;
+		String x=(tag.toLowerCase()+".plugins").replaceAll(" ", "_");
+		String str=getString(x,"");
+		if(str==null||str.length()==0)
+			return null;
+		return str.split(",");
+	}
+
+	public boolean getFolderLimit() {
+		return getBoolean(KEY_FOLDER_LIMIT,true);
+	}
+
+	private static final String KEY_REMOTE_CLIENT="remote_client";
+	private static final String KEY_REMOTE_PORT="remote_port";
+
+	public boolean getRemoteClient() {
+		return getBoolean(KEY_REMOTE_CLIENT,false);
+	}
+
+	public int getRemotePort() {
+		return getInt(KEY_REMOTE_PORT,0);
 	}
 }

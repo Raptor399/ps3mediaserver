@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,8 @@ import net.pms.external.AdditionalFoldersAtRoot;
 import net.pms.external.ExternalFactory;
 import net.pms.external.ExternalListener;
 import net.pms.gui.IFrame;
+import net.pms.remote.RemoteFolder;
+import net.pms.remote.RemoteServer;
 import net.pms.xmlwise.Plist;
 import net.pms.xmlwise.XmlParseException;
 
@@ -62,9 +65,17 @@ public class RootFolder extends DLNAResource {
 	private static final Logger logger = LoggerFactory.getLogger(RootFolder.class);
 	private final PmsConfiguration configuration = PMS.getConfiguration();
 	private boolean running;
+	private FolderLimit lim;
+	private String tag;
 
 	public RootFolder() {
+		this(null);
+	}
+
+	public RootFolder(String tag) {
+		id = "0";
 		setIndexId(0);
+		this.tag=tag;
 	}
 
 	@Override
@@ -103,11 +114,13 @@ public class RootFolder extends DLNAResource {
 			return;
 		}
 
+		if(!configuration.getNoFolders(tag)) {
 		for (DLNAResource r : getConfiguredFolders()) {
 			addChild(r);
 		}
 		for (DLNAResource r : getVirtualFolders()) {
 			addChild(r);
+		}
 		}
 		File webConf = new File(configuration.getProfileDirectory(), "WEB.conf");
 		if (webConf.exists()) {
@@ -146,7 +159,27 @@ public class RootFolder extends DLNAResource {
 				addChild(videoSettingsRes);
 			}
 		}
+
+		if(configuration.getFolderLimit()) {
+			lim=new FolderLimit();
+			addChild(lim);
+		}
+		
+		ArrayList<RemoteServer> srv;
+		try {
+			srv = RemoteServer.parse();
+			for(int i=0;i<srv.size();i++) {
+				RemoteServer s=srv.get(i);
+				addChild(new RemoteFolder(s,"0",s.getDispName(),null));
+			}
+		} catch (Exception e) {
+		}
 		setDiscovered(true);
+	}
+
+	public void setFolderLim(DLNAResource r) {
+		if(lim!=null)
+			lim.setStart(r);
 	}
 
 	public void scan() {
@@ -203,19 +236,24 @@ public class RootFolder extends DLNAResource {
 
 	private List<RealFile> getConfiguredFolders() {
 		List<RealFile> res = new ArrayList<RealFile>();
-		File[] files = PMS.get().getFoldersConf();
+		File files[];
+		try {
+			files = PMS.get().getFoldersConf(tag, true);
 		if (files == null || files.length == 0) {
 			files = File.listRoots();
 		}
 		for (File f : files) {
 			res.add(new RealFile(f));
 		}
+		} catch (Exception e) {
+			logger.error("Failed to load configured folders", e);
+		}
 		return res;
 	}
 
 	private List<DLNAResource> getVirtualFolders() {
 		List<DLNAResource> res = new ArrayList<DLNAResource>();
-		List<MapFileConfiguration> mapFileConfs = MapFileConfiguration.parse(configuration.getVirtualFolders());
+		List<MapFileConfiguration> mapFileConfs = MapFileConfiguration.parse(configuration.getVirtualFolders(tag));
 		if (mapFileConfs != null)
 			for (MapFileConfiguration f : mapFileConfs) {
 				res.add(new MapFile(f));
@@ -772,6 +810,10 @@ public class RootFolder extends DLNAResource {
 	private List<DLNAResource> getAdditionalFoldersAtRoot() {
 		List<DLNAResource> res = new ArrayList<DLNAResource>();
 		for (ExternalListener listener : ExternalFactory.getExternalListeners()) {
+			String[] validPlugins=configuration.getPlugins(tag);
+			if(validPlugins!=null)
+				if(Arrays.binarySearch(validPlugins, listener.name())<0)
+					continue;
 			if (listener instanceof AdditionalFolderAtRoot) {
 				AdditionalFolderAtRoot afar = (AdditionalFolderAtRoot) listener;
 				try {
@@ -781,6 +823,8 @@ public class RootFolder extends DLNAResource {
 				}
 			} else if (listener instanceof AdditionalFoldersAtRoot) {
 				java.util.Iterator<DLNAResource> folders = ((AdditionalFoldersAtRoot) listener).getChildren();
+				if(folders==null)
+					continue;
 				while (folders.hasNext()) {
 					DLNAResource resource = folders.next();
 					try {

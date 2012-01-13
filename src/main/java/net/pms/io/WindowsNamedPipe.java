@@ -98,7 +98,7 @@ public class WindowsNamedPipe extends Thread implements ProcessWrapper {
 	private boolean b2;
 	private FileOutputStream debug;
 	public static boolean loop = true;
-	private BufferedOutputFile directBuffer;
+	private BufferedOutputFileImpl directBuffer;
 
 	public WindowsNamedPipe(String n, boolean forcereconnect, boolean in, OutputParams params) {
 		this.name = n;
@@ -256,7 +256,7 @@ public class WindowsNamedPipe extends Thread implements ProcessWrapper {
 		return readable;
 	}
 
-	public BufferedOutputFile getDirectBuffer() {
+	public BufferedOutputFileImpl getDirectBuffer() {
 		return directBuffer;
 	}
 

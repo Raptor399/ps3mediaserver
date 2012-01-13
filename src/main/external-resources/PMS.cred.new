@@ -1,0 +1,5 @@
+# Insert credetials here
+# Format should be
+# plugin.tag=username,password
+# Example:
+# channel.IceFilms=myName,myPwd

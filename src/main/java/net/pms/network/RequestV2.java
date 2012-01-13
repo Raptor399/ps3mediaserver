@@ -29,11 +29,15 @@ import java.util.TimeZone;
 
 import net.pms.PMS;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAMediaSubtitle;
 import net.pms.dlna.DLNAResource;
+import net.pms.encoders.Player;
 import net.pms.dlna.Range;
 import net.pms.external.StartStopListenerDelegate;
+import net.pms.formats.Format;
+import net.pms.PMS;
 
 import org.apache.commons.lang.StringUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -245,6 +249,7 @@ public class RequestV2 extends HTTPResource {
 		StringBuilder response = new StringBuilder();
 		DLNAResource dlna = null;
 		boolean xbox = mediaRenderer.isXBOX();
+		RendererConfiguration owner=null;
 
 		if ((method.equals("GET") || method.equals("HEAD")) && argument.startsWith("console/")) {
 			// Request to output a page to the HTLM console.
@@ -261,6 +266,23 @@ public class RequestV2 extends HTTPResource {
 
 			// Retrieve the DLNAresource itself.
 			List<DLNAResource> files = PMS.get().getRootFolder(mediaRenderer).getDLNAResources(id, false, 0, 0, mediaRenderer);
+
+			if(files==null||files.size()==0) { // nothing found
+				String tmp=(String)PMS.getConfiguration().getCustomProperty("remote_control");
+				if(tmp!=null&&!tmp.equalsIgnoreCase("false")) {
+					List<RendererConfiguration> renders=PMS.get().getRenders();
+					for(int i=0;i<renders.size();i++) {
+						RendererConfiguration r=renders.get(i);
+						if(r.equals(mediaRenderer))
+							continue;
+						files = PMS.get().getRootFolder(r).getDLNAResources(id, false, 0, 0, mediaRenderer);
+						if(files!=null&&files.size()!=0) {
+							owner=r;
+							break;
+						}
+					}
+				}
+			}
 
 			if (transferMode != null) {
 				output.setHeader("TransferMode.DLNA.ORG", transferMode);
@@ -296,6 +318,9 @@ public class RequestV2 extends HTTPResource {
 					}
 				} else {
 					// This is a request for a regular file.
+
+					if(owner!=null) 
+						dlna.updateRender(mediaRenderer);
 
 					// If range has not been initialized yet and the DLNAResource has its
 					// own start and end defined, initialize range with those values before
@@ -538,7 +563,7 @@ public class RequestV2 extends HTTPResource {
 			} else if (soapaction.contains("ContentDirectory:1#Browse") || soapaction.contains("ContentDirectory:1#Search")) {
 				objectID = getEnclosingValue(content, "<ObjectID>", "</ObjectID>");
 				String containerID = null;
-				if ((objectID == null || objectID.length() == 0) && xbox) {
+				if ((objectID == null || objectID.length() == 0) /*&& xbox*/) {
 					containerID = getEnclosingValue(content, "<ContainerID>", "</ContainerID>");
 					if (!containerID.contains("$")) {
 						objectID = "0";
@@ -599,14 +624,31 @@ public class RequestV2 extends HTTPResource {
 						}
 					}
 				}
+				else if (soapaction.contains("ContentDirectory:1#Search")) 
+					searchCriteria=getEnclosingValue(content,"<SearchCriteria>","</SearchCriteria>");
 
-				List<DLNAResource> files = PMS.get().getRootFolder(mediaRenderer).getDLNAResources(objectID, browseFlag != null && browseFlag.equals("BrowseDirectChildren"), startingIndex, requestCount, mediaRenderer);
+				List<DLNAResource> files = PMS.get().getRootFolder(mediaRenderer).getDLNAResources(objectID, browseFlag!=null&&browseFlag.equals("BrowseDirectChildren"), startingIndex, requestCount, mediaRenderer,
+						searchCriteria);
 				if (searchCriteria != null && files != null) {
-					for (int i = files.size() - 1; i >= 0; i--) {
-						if (!files.get(i).getName().equals(searchCriteria)) {
-							files.remove(i);
+					searchCriteria=searchCriteria.toLowerCase();
+					for(int i=files.size()-1;i>=0;i--) {
+						DLNAResource res=files.get(i);
+						if(res.isSearched())
+							continue;
+						boolean keep=res.getName().toLowerCase().indexOf(searchCriteria)!=-1;
+						final DLNAMediaInfo media = res.getMedia();
+						if(media!=null) {
+							for(int j=0;j<media.audioCodes.size();j++) {
+								DLNAMediaAudio audio=media.audioCodes.get(j);
+								keep|=audio.album.toLowerCase().indexOf(searchCriteria)!=-1;
+								keep|=audio.artist.toLowerCase().indexOf(searchCriteria)!=-1;
+								keep|=audio.songname.toLowerCase().indexOf(searchCriteria)!=-1;
+							}
 						}
+						if(!keep) // dump it
+							files.remove(i);
 					}
+					if(xbox)
 					if (files.size() > 0) {
 						files = files.get(0).getChildren();
 					}

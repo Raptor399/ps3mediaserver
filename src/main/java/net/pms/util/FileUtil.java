@@ -91,6 +91,8 @@ public class FileUtil {
 
 	private synchronized static boolean browseFolderForSubtitles(File subFolder, File file, DLNAMediaInfo media, boolean usecache) {
 		boolean found = false;
+		if(subFolder==null)
+			return false;
 		if (!usecache) {
 			cache = null;
 		}

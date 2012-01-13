@@ -19,7 +19,7 @@ public class Build {
 	private static final String UPDATE_SERVER_URL = REPO + "/master/src/main/external-resources/update/update_3.properties";
 
 	// if false, manual and automatic update checks are unconditionally disabled
-	private static final boolean IS_UPDATABLE = true;
+	private static final boolean IS_UPDATABLE = false;
 
 	/**
 	 * the name of the subdirectory under which PMS config files are stored for this build.
@@ -48,7 +48,9 @@ public class Build {
 	 * 
 	 * @return The profile directory name
 	 */
-	private static final String PROFILE_DIRECTORY_NAME = "PMS";
+	private static final String PROFILE_DIRECTORY_NAME = "PMS-SHB";
+	private static final String BUILD_NAME="SHB34";
+	private static final String FULL_NAME="SharkHunter Build";
 
 	/**
 	 * Determines whether or not this PMS build can be updated to a more
@@ -75,5 +77,13 @@ public class Build {
 	 */
 	public static String getProfileDirectoryName() {
 		return PROFILE_DIRECTORY_NAME; 
+	}
+
+	public static String getShortName() {
+		return BUILD_NAME;
+	}
+
+	public static String getName() {
+		return FULL_NAME;
 	}
 }

@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Observable;
@@ -54,6 +55,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import net.pms.Messages;
 import net.pms.PMS;
+import net.pms.configuration.Build;
 import net.pms.configuration.PmsConfiguration;
 import net.pms.gui.IFrame;
 import net.pms.io.WindowsNamedPipe;
@@ -380,6 +382,7 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {
 		}
+		new File("pms.pid").delete();
 		System.exit(0);
 	}
 

@@ -22,6 +22,7 @@ VIProductVersion "${PROJECT_VERSION_SHORT}.0"
 !define JARPATH "${PROJECT_BUILD_DIR}\pms.jar"
 !define CLASS "net.pms.PMS"
 !define PRODUCT_NAME "PMS"
+!define REG_KEY_SOFTWARE "SOFTWARE\${PROJECT_NAME}"
  
 ; Definitions for Java 7.0
 !define JRE_VERSION "7.0"
@@ -47,10 +48,18 @@ ShowInstDetails nevershow
 Section ""
   Call GetJRE
   Pop $R0
- 
+
+  ReadRegStr $R3 HKCU "${REG_KEY_SOFTWARE}" "HeapMem"
+
+  ${If} $R3 == ""  ; no value found
+	StrCpy $R3 "768"
+  ${EndIf}
+
+  StrCpy $R4 "M"
+  StrCpy $R3 "-Xmx$R3$R4"
   ; change for your purpose (-jar etc.)
   ${GetParameters} $1
-  StrCpy $0 '"$R0" -classpath update.jar;pms.jar -Xmx768M -Djava.net.preferIPv4Stack=true -Dfile.encoding=UTF-8 ${CLASS} $1'
+  StrCpy $0 '"$R0" -classpath update.jar;pms.jar $R3 -Djava.net.preferIPv4Stack=true -Dfile.encoding=UTF-8 ${CLASS} $1'
  
   SetOutPath $EXEDIR
   Exec $0

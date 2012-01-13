@@ -18,17 +18,25 @@
  */
 package net.pms.network;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import net.pms.PMS;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.dlna.DLNAResource;
 import net.pms.external.StartStopListenerDelegate;
 
 import org.slf4j.Logger;
@@ -59,6 +67,7 @@ public class RequestHandler implements Runnable {
 
 		try {
 			int receivedContentLength = -1;
+			DataInputStream in=new DataInputStream(socket.getInputStream());
 			String headerLine = br.readLine();
 			String userAgentString = null;
 			StringBuilder unknownHeaders = new StringBuilder();
@@ -216,6 +225,42 @@ public class RequestHandler implements Runnable {
 				}
 			}
 
+			if(request!=null)
+				request.setReMap(socket);
+
+			if(request!=null) {
+				String method=request.getMethod();
+				String arg=request.getArgument();
+				if(arg!=null&&method!=null) {
+					if(method.equals("POST")&&arg.startsWith("0$")) {
+						String id = arg.substring(arg.indexOf("0$"), arg.lastIndexOf("/"));
+						id = id.replace("%24", "$"); // popcorn hour ?
+						String name=arg.substring(arg.lastIndexOf("/")+1);
+						DLNAResource res=PMS.get().getRootFolder(request.getMediaRenderer()).search(id,1,request.getMediaRenderer());
+						if(res!=null) {
+							OutputStream out=res.upload(name);
+						if(out!=null) {
+								request.answer(output, startStopListenerDelegate);
+								DataInputStream in1=new DataInputStream(socket.getInputStream());
+								byte[] buf=new byte[4096];
+								int len;
+								while((len=in1.read(buf))!=-1) {
+									out.write(buf, 0, len);
+								}
+								out.flush();
+								out.close();
+							}
+							else { // some error occured here
+								output.write("HTTP/1.1 500 Interal Server Error\r\n".getBytes("UTF-8"));
+								output.flush();
+							}
+						}
+						output.close();
+						return;
+					}
+				}
+			}
+
 			if (receivedContentLength > 0) {
 				char buf[] = new char[receivedContentLength];
 				br.read(buf);
@@ -250,7 +295,7 @@ public class RequestHandler implements Runnable {
 			try {
 				PMS.get().getRegistry().reenableGoToSleep();
 				output.close();
-				br.close();
+				//br.close();
 				socket.close();
 			} catch (IOException e) {
 				logger.error("Error closing connection: ", e);

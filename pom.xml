@@ -29,9 +29,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.pms</groupId>
 	<artifactId>pms</artifactId>
-	<name>PS3 Media Server</name>
+	<name>PS3 Media Server-SHB</name>
 	<packaging>jar</packaging>
-	<version>1.50.1-SNAPSHOT</version>
+	<version>1.50.1_SHB34-SNAPSHOT</version>
 	<url>http://www.ps3mediaserver.org/</url>
 	<inceptionYear>2008</inceptionYear>
 	

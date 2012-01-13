@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 public class OutputBufferConsumer extends OutputConsumer {
 	private static final Logger logger = LoggerFactory.getLogger(OutputBufferConsumer.class);
-	private BufferedOutputFile outputBuffer;
+	private BufferedOutputFileImpl outputBuffer;
 	
 	/**
 	 * Size of a buffer in bytes. The buffer is used to copy data from an
@@ -70,7 +70,7 @@ public class OutputBufferConsumer extends OutputConsumer {
 		}
 	}
 
-	public BufferedOutputFile getBuffer() {
+	public BufferedOutputFileImpl getBuffer() {
 		return outputBuffer;
 	}
 

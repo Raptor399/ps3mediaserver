@@ -1,0 +1,43 @@
+[jumpy] initializing jumpy 0.1.3
+[jumpy] home=C:\Program Files (x86)\PS3MediaServer-SHB\plugins\jumpy\
+[jumpy] python=extras\Python27\python
+[jumpy] pypath=C:\Program Files (x86)\PS3MediaServer-SHB\plugins\jumpy\lib
+[jumpy] Found 2 scripts.
+
+[jumpy] adding root folder.
+
+[jumpy] loading helloworld.py.
+
+Running [extras\Python27\python, C:\Program Files (x86)\PS3MediaServer-SHB\plugins\jumpy\helloworld.py]
+PYTHONPATH=C:\Program Files (x86)\PS3MediaServer-SHB\plugins\jumpy\lib
+JGATEWAY=192.168.100.2:25333
+
+[jumpy] Adding folder: Hello.
+hello
+
+[jumpy] loading xbmc.py.
+
+Running [extras\Python27\python, C:\Program Files (x86)\PS3MediaServer-SHB\plugins\jumpy\xbmc.py]
+PYTHONPATH=C:\Program Files (x86)\PS3MediaServer-SHB\plugins\jumpy\lib
+JGATEWAY=192.168.100.2:25333
+
+[jumpy] Adding folder: [xbmc]   Al Jazeera.
+[jumpy] Adding folder: [xbmc]   ESPN.
+[jumpy] Adding folder: [xbmc]   Free Cable.
+[jumpy] Adding folder: [xbmc]   Hulu.
+[jumpy] Adding folder: [xbmc]   NRK.
+[jumpy] Adding folder: [xbmc]   VideoMonkey.
+[jumpy] Adding folder: [xbmc]   XBMC Flicks - Netflix for XBMC.
+[jumpy] Adding folder: [xbmc]   YouTube.
+jumpy-xbmc version 0.2.4
+
+found xbmc addons dir at 'C:\Users\Hasse\AppData\Roaming\XBMC\addons'.
+
+found Al Jazeera addon.
+found ESPN addon.
+found Free Cable addon.
+found Hulu addon.
+found NRK addon.
+found VideoMonkey addon.
+found XBMC Flicks - Netflix for XBMC addon.
+found YouTube addon.

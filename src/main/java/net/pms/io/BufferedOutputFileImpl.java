@@ -190,13 +190,14 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 		this.timeend = params.timeend;
 		this.shiftScr = params.shift_scr;
 
-		if (maxMemorySize > INITIAL_BUFFER_SIZE) {
+		/*if (maxMemorySize > INITIAL_BUFFER_SIZE) {
 			// Try to limit memory usage a bit.
 			// Start with a modest allocation initially, grow to max when needed later.
 			buffer = growBuffer(null, INITIAL_BUFFER_SIZE);
 		} else {
 			buffer = growBuffer(null, maxMemorySize);
-		}
+		}*/
+		buffer = growBuffer(null, maxMemorySize);
 
 		if (buffer.length == 0) {
 			// Cannot transcode without a buffer

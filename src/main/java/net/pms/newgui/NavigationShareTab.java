@@ -174,7 +174,7 @@ public class NavigationShareTab {
 		cmp.setFont(cmp.getFont().deriveFont(Font.BOLD));
 
 		df = new DefaultListModel();
-		File[] folders = PMS.get().getFoldersConf(false);
+		File[] folders = PMS.get().getFoldersConf(null,false);
 		if (folders != null && folders.length > 0) {
 			for (File file : folders) {
 				df.addElement(file.getAbsolutePath());

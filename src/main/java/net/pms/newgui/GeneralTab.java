@@ -351,6 +351,8 @@ public class GeneralTab {
 		CellConstraints cc = new CellConstraints();
 		int i = 1;
 		for (final ExternalListener listener : ExternalFactory.getExternalListeners()) {
+			if(listener.config()==null)
+				continue;
 			if (i > 30) {
 				logger.warn("Plugin limit of 30 has been reached");
 				break;

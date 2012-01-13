@@ -113,7 +113,7 @@ public class MediaLibraryFolder extends VirtualFolder {
 		return true;
 	}
 
-	@Override
+	//@Override
 	public void doRefreshChildren() {
 		ArrayList<File> list = null;
 		ArrayList<String> strings = null;

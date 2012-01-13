@@ -1126,6 +1126,8 @@ public class MEncoderVideo extends Player {
 
 		boolean avisynth = avisynth();
 
+		logger.trace("sid is "+params.sid+" filename "+fileName);
+
 		setAudioAndSubs(fileName, media, params, configuration);
 
 		String subString = null;
@@ -1347,6 +1349,7 @@ public class MEncoderVideo extends Player {
 
 		// Use ASS & Fontconfig flags (and therefore ASS font styles) for all subtitled files except vobsub, embedded, dvd and mp4 container with srt
 		// Note: The MP4 container with SRT rule is a workaround for MEncoder r30369. If there is ever a later version of MEncoder that supports external srt subs we should use that. As of r32848 that isn't the case
+		logger.trace("sid2 "+params.sid+" media "+media);
 		if (
 			params.sid != null &&
 			params.sid.getType() != DLNAMediaSubtitle.EMBEDDED &&

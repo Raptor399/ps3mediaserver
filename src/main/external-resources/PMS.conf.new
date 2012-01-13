@@ -1,0 +1,37 @@
+thumbnails = true
+mencoder_ass = false
+folders = 
+hostname = 
+use_mplayer_for_video_thumbs = false
+dvd_isos_thumbnails = true
+engines = pmsencoder,mencoder,avsmencoder,tsmuxer,mplayeraudio,ffmpegaudio,tsmuxeraudio,vlcvideo,mencoderwebvideo,mplayervideodump,mplayerwebaudio,vlcaudio,ffmpegdvrmsremux
+codec_spec_script = container == flv :: -mc 0.1 -noass
+mencoder_mux_compatible = true
+mencoder_mt = true
+mencoder_forcefps = true
+tsmuxer_mux_all_audiotracks = true
+tsmuxer_forcefps = true
+maxvideobuffer = 600
+mencoder_disablesubs = false
+mencoder_encode = keyint=25:vqmax=1:vqmin=1
+mencoder_audiosublangs = und,und
+usecache = true
+prevents_sleep_mode = true
+language = en
+gs_plugin.private_dbg = true
+audio_thumbnails_method = 1
+alternate_thumb_folder = 
+remote_control = true
+audiochannels = 2
+channels.debug = true
+mencoder_fontconfig = true
+mencoder_ass_defaultstyle = true
+mencoder_subcp = ISO-8859-10
+hide_transcode_folder = false
+mencoder_noass_scale = 2
+mencoder_noass_subpos = 10
+mencoder_nooutofsync = false
+channels.movieinfo = true
+dbgpack = extras\\channels\\channel.log,pmsencoder.log,plugins\\jumpy\\jumpy.log
+python.path = extras\\Python27\\python
+

@@ -19,7 +19,7 @@
   <appender name="debug.log" class="ch.qos.logback.core.FileAppender">
     <!-- only log event DEBUG and higher to the debug.log. -->
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-      <level>DEBUG</level>
+      <level>ALL</level>
     </filter>
     <file>${debugLogPath}${file.separator}debug.log</file>
     <append>false</append>  <!-- Start new debug.log on each application start -->

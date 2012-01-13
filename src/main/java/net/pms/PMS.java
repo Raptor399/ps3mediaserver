@@ -21,13 +21,17 @@ package net.pms;
 
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,6 +99,7 @@ import net.pms.network.UPNPHelper;
 import net.pms.newgui.GeneralTab;
 import net.pms.newgui.LooksFrame;
 import net.pms.newgui.ProfileChooser;
+import net.pms.remote.RemoteClient;
 import net.pms.update.AutoUpdater;
 import net.pms.util.ProcessUtil;
 import net.pms.util.PropertiesUtil;
@@ -334,6 +339,8 @@ public class PMS {
 		return database;
 	}
 
+	private RemoteClient remClient;
+
 	/**Initialisation procedure for PMS.
 	 * @return true if the server has been initialized correctly. false if the server could
 	 * not be set to listen on the UPnP port.
@@ -418,6 +425,8 @@ public class PMS {
 		String profilePath = configuration.getProfilePath();
 		logger.info("Profile path: " + profilePath);
 
+		logger.info("Memory: "+Runtime.getRuntime().maxMemory());
+
 		File profileFile = new File(profilePath);
 
 		if (profileFile.exists()) {
@@ -432,6 +441,12 @@ public class PMS {
 
 		logger.info("Profile name: " + configuration.getProfileName());
 		logger.info("");
+
+		remClient = null;
+		if(configuration.getRemoteClient()) {
+			remClient=new RemoteClient(configuration.getRemotePort());
+			remClient.start();
+		}
 
 		RendererConfiguration.loadRendererConfigurations();
 
@@ -725,8 +740,8 @@ public class PMS {
 	// so log it by default so we can fix it.
 	// BUT it's also called when the GUI is initialized (to populate the list of shared folders),
 	// and we don't want this message to appear *before* the PMS banner, so allow that call to suppress logging	
-	public File[] getFoldersConf(boolean log) {
-		String folders = getConfiguration().getFolders();
+	public File[] getFoldersConf(String tag,boolean log) {
+		String folders = getConfiguration().getFolders(tag);
 		if (folders == null || folders.length() == 0) {
 			return null;
 		}
@@ -758,7 +773,7 @@ public class PMS {
 	}
 
 	public File[] getFoldersConf() {
-		return getFoldersConf(true);
+		return getFoldersConf(null,true);
 	}
 
 	/**Restarts the server. The trigger is either a button on the main PMS window or via
@@ -1024,6 +1039,7 @@ public class PMS {
 			// as the logging starts immediately and some filters need the PmsConfiguration.
 			LoggingConfigFileLoader.load();
 
+			killOld();
 			// create the PMS instance returned by get()
 			createInstance(); 
 		} catch (Throwable t) {
@@ -1068,6 +1084,75 @@ public class PMS {
 	 */
 	public static PmsConfiguration getConfiguration() {
 		return configuration;
+	}
+
+	public ArrayList<RendererConfiguration> getRenders() {
+		return foundRenderers;
+	}
+	
+	private static void killOld() {
+		try {
+			killProc();
+		} catch (IOException e) {
+			debug("error killing old proc "+e);
+		}
+		try {
+			dumpPid();
+		} catch (IOException e) {
+			debug("error dumping pid "+e);
+		}
+	}
+	
+	private static void killProc() throws IOException {
+		ProcessBuilder pb=null;
+		BufferedReader in = new BufferedReader(new FileReader("pms.pid"));
+		String pid=in.readLine();
+		in.close();
+		if(Platform.isWindows()) {
+			pb=new ProcessBuilder("taskkill","/F","/PID",pid,"/T");
+		}
+		else if(Platform.isFreeBSD()||Platform.isLinux()||Platform.isOpenBSD()||Platform.isSolaris())
+			pb=new ProcessBuilder("kill","-9",pid);
+		if(pb==null) 
+			return;
+		try {			
+			Process p=pb.start();
+			p.waitFor();
+		} catch (Exception e) {
+			logger.debug("error kill pid "+e);
+		}
+	}
+	
+	public static long getPID() {
+	    String processName =
+	      java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
+	    return Long.parseLong(processName.split("@")[0]);
+	  }
+	
+	private static void dumpPid() throws IOException {
+		FileOutputStream out=new FileOutputStream("pms.pid");
+		String data=String.valueOf(getPID())+"\r\n";
+		out.write(data.getBytes());
+		out.flush();
+		out.close();
+	}
+	
+	public String remap(Socket s,String msg) {
+		if((remClient==null)||(s==null))
+			return msg;
+		return remClient.reMap(s, msg);
+	}
+	
+	public RootFolder remRoot(Socket s) {
+		if((remClient==null)||(s==null))
+			return null;
+		return remClient.getRoot(s);
+	}
+
+	public void setBitrate(RendererConfiguration r,Socket s) {
+		if((remClient==null)||(s==null)||(r==null))
+			return;
+		remClient.setBitRate(r,s);
 	}
 
 	/**

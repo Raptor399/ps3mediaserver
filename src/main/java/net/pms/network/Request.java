@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -30,9 +31,11 @@ import java.util.TimeZone;
 
 import net.pms.PMS;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAMediaSubtitle;
 import net.pms.dlna.DLNAResource;
+import net.pms.dlna.RootFolder;
 import net.pms.dlna.Range;
 import net.pms.external.StartStopListenerDelegate;
 
@@ -175,6 +178,7 @@ public class Request extends HTTPResource {
 		StringBuilder response = new StringBuilder();
 		DLNAResource dlna = null;
 		boolean xbox = mediaRenderer.isXBOX();
+		RendererConfiguration owner=null;
 
 		if ((method.equals("GET") || method.equals("HEAD")) && argument.startsWith("console/")) {
 			output(output, "Content-Type: text/html");
@@ -182,7 +186,24 @@ public class Request extends HTTPResource {
 		} else if ((method.equals("GET") || method.equals("HEAD")) && argument.startsWith("get/")) {
 			String id = argument.substring(argument.indexOf("get/") + 4, argument.lastIndexOf("/"));
 			id = id.replace("%24", "$"); // popcorn hour ?
-			List<DLNAResource> files = PMS.get().getRootFolder(mediaRenderer).getDLNAResources(id, false, 0, 0, mediaRenderer);
+			List<DLNAResource> files = getRootFolder(mediaRenderer).getDLNAResources(id, false, 0, 0, mediaRenderer);
+
+			if(files==null||files.size()==0) { // nothing found
+				String tmp=(String)PMS.getConfiguration().getCustomProperty("remote_control");
+				if(tmp!=null&&!tmp.equalsIgnoreCase("false")) {
+					List<RendererConfiguration> renders=PMS.get().getRenders();
+					for(int i=0;i<renders.size();i++) {
+						RendererConfiguration r=renders.get(i);
+						if(r.equals(mediaRenderer))
+							continue;
+						files = getRootFolder(r).getDLNAResources(id, false, 0, 0, mediaRenderer);
+						if(files!=null&&files.size()!=0) { 
+							owner=r;
+							break;
+						}
+					}
+				}
+			}
 			if (transferMode != null) {
 				output(output, "TransferMode.DLNA.ORG: " + transferMode);
 			}
@@ -214,6 +235,9 @@ public class Request extends HTTPResource {
 					}
 				} else {
 					// This is a request for a regular file.
+					if(owner!=null)
+						dlna.updateRender(mediaRenderer);
+					PMS.get().setBitrate(mediaRenderer,remap);
 					String name = dlna.getDisplayName(mediaRenderer);
 					inputStream = dlna.getInputStream(Range.create(lowRange, highRange, timeseek, timeRangeEnd), mediaRenderer);
 					if (inputStream == null) {
@@ -310,6 +334,8 @@ public class Request extends HTTPResource {
 						if (dlna.getPlayer() == null || xbox) {
 							output(output, "Accept-Ranges: bytes");
 						}
+						if(owner!=null)
+							dlna.updateRender(owner);
 
 						output(output, "Connection: keep-alive");
 					}
@@ -341,6 +367,7 @@ public class Request extends HTTPResource {
 				s = s.replace("uuid:1234567890TOTO", PMS.get().usn());//.substring(0, PMS.get().usn().length()-2));
 				s = s.replace("<host>", PMS.get().getServer().getHost());
 				s = s.replace("<port>", "" + PMS.get().getServer().getPort());
+				s = PMS.get().remap(remap,s);
 				if (xbox) {
 					logger.debug("DLNA changes for Xbox360");
 					s = s.replace("PS3 Media Server", "PS3 Media Server [" + profileName + "] : Windows Media Connect");
@@ -422,7 +449,7 @@ public class Request extends HTTPResource {
 				//logger.trace(content);
 				objectID = getEnclosingValue(content, "<ObjectID>", "</ObjectID>");
 				String containerID = null;
-				if ((objectID == null || objectID.length() == 0) && xbox) {
+				if ((objectID == null || objectID.length() == 0) /*&& xbox*/) {
 					containerID = getEnclosingValue(content, "<ContainerID>", "</ContainerID>");
 					if (!containerID.contains("$")) {
 						objectID = "0";
@@ -480,14 +507,31 @@ public class Request extends HTTPResource {
 						}
 					}
 				}
+				else if (soapaction.contains("ContentDirectory:1#Search")) 
+					searchCriteria=getEnclosingValue(content,"<SearchCriteria>","</SearchCriteria>");
 
-				List<DLNAResource> files = PMS.get().getRootFolder(mediaRenderer).getDLNAResources(objectID, browseFlag != null && browseFlag.equals("BrowseDirectChildren"), startingIndex, requestCount, mediaRenderer);
+				List<DLNAResource> files = getRootFolder(mediaRenderer).getDLNAResources(objectID, browseFlag!=null&&browseFlag.equals("BrowseDirectChildren"), startingIndex, requestCount, mediaRenderer,
+						searchCriteria);
 				if (searchCriteria != null && files != null) {
-					for (int i = files.size() - 1; i >= 0; i--) {
-						if (!files.get(i).getName().equals(searchCriteria)) {
-							files.remove(i);
+				searchCriteria=searchCriteria.toLowerCase();
+				for(int i=files.size()-1;i>=0;i--) {
+					DLNAResource res=files.get(i);
+					if(res.isSearched())
+						continue;
+					boolean keep=res.getName().toLowerCase().indexOf(searchCriteria)!=-1;
+					final DLNAMediaInfo media = res.getMedia();
+					if(media!=null) {
+						for(int j=0;j<media.audioCodes.size();j++) {
+							DLNAMediaAudio audio=media.audioCodes.get(j);
+							keep|=audio.album.toLowerCase().indexOf(searchCriteria)!=-1;
+							keep|=audio.artist.toLowerCase().indexOf(searchCriteria)!=-1;
+							keep|=audio.songname.toLowerCase().indexOf(searchCriteria)!=-1;
 						}
 					}
+					if(!keep) // dump it
+						files.remove(i);
+					}
+					if(xbox)
 					if (files.size() > 0) {
 						files = files.get(0).getChildren();
 					}
@@ -556,14 +600,16 @@ public class Request extends HTTPResource {
 				response.append(CRLF);
 				response.append(HTTPXMLHelper.SOAP_ENCODING_FOOTER);
 				response.append(CRLF);
-				//logger.trace(response.toString());
+				logger.trace(response.toString());
 			}
 		}
 
 		output(output, "Server: " + PMS.get().getServerName());
 
 		if (response.length() > 0) {
-			byte responseData[] = response.toString().getBytes("UTF-8");
+			String data=PMS.get().remap(remap, response.toString());
+			//byte responseData[] = response.toString().getBytes("UTF-8");
+			byte responseData[] = data.getBytes("UTF-8");
 			output(output, "Content-Length: " + responseData.length);
 			output(output, "");
 			if (!method.equals("HEAD")) {
@@ -610,6 +656,7 @@ public class Request extends HTTPResource {
 	}
 
 	private void output(OutputStream output, String line) throws IOException {
+		line=PMS.get().remap(remap,line);
 		output.write((line + CRLF).getBytes("UTF-8"));
 		logger.trace("Wrote on socket: " + line);
 	}
@@ -645,5 +692,18 @@ public class Request extends HTTPResource {
 			result = content.substring(leftTagPos + leftTag.length(), rightTagPos);
 		}
 		return result;
+	}
+
+	private Socket remap;
+
+	public void setReMap(Socket s) {
+		remap=s;
+	}
+
+	private RootFolder getRootFolder(RendererConfiguration r) {
+		RootFolder root=PMS.get().remRoot(remap);
+		if(root==null) // no user found, fallback
+			return PMS.get().getRootFolder(r);
+		return root;
 	}
 }

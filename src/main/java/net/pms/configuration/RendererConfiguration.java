@@ -9,6 +9,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import net.pms.Messages;
+import net.pms.dlna.DLNAResource;
 import net.pms.dlna.MediaInfoParser;
 import net.pms.dlna.RootFolder;
 import net.pms.formats.Format;
@@ -91,10 +92,15 @@ public class RendererConfiguration {
 
 	public RootFolder getRootFolder() {
 		if (rootFolder == null) {
-			rootFolder = new RootFolder();
+			rootFolder = new RootFolder(getRendererName());
 			rootFolder.discoverChildren();
 		}
 		return rootFolder;
+	}
+
+	public void addFolderLimit(DLNAResource res) {
+	   if(rootFolder!=null)    
+	       rootFolder.setFolderLim(res);
 	}
 
 	/**
@@ -140,7 +146,7 @@ public class RendererConfiguration {
 			// all other requests from the same IP address will be recognized based on
 			// that association. Headers will be ignored and unfortunately they happen
 			// to be the only way to get here.
-			logger.info("Another renderer like " + r.getRendererName() + " was found!");
+//			logger.info("Another renderer like " + r.getRendererName() + " was found!");
 		}
 		return r;
 	}
@@ -814,5 +820,9 @@ public class RendererConfiguration {
 	 */
 	public boolean isChunkedTransfer() {
 		return getBoolean(CHUNKED_TRANSFER, false);
+	}
+
+	public void setMaxVideoBitrate(String rate) {
+		configuration.addProperty(MAX_VIDEO_BITRATE, "("+rate+")");
 	}
 }

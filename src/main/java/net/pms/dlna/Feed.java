@@ -215,7 +215,7 @@ public class Feed extends DLNAResource {
 	    return (System.currentTimeMillis() - getLastmodified() > 3600000);
 	}
 
-	@Override
+	//@Override
 	public void doRefreshChildren() {
 		try {
 			getChildren().clear();

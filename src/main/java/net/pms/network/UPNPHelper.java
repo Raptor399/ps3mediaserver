@@ -317,4 +317,8 @@ public class UPNPHelper {
 	private static InetAddress getUPNPAddress() throws IOException {
 		return InetAddress.getByAddress(UPNP_HOST, new byte[]{(byte) 239, (byte) 255, (byte) 255, (byte) 250});
 	}
+
+	public static String ssdpMsg(String nt,String msg) {
+		return buildMsg(nt,msg);
+	}
 }
