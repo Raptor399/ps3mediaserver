@@ -25,6 +25,7 @@ import static net.pms.util.StringUtil.encodeXML;
 import static net.pms.util.StringUtil.endTag;
 import static net.pms.util.StringUtil.openTag;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -70,6 +71,14 @@ import net.pms.util.MpegUtil;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.teleal.cling.support.model.DIDLObject;
+import org.teleal.cling.support.model.PersonWithRole;
+import org.teleal.cling.support.model.container.Container;
+import org.teleal.cling.support.model.item.ImageItem;
+import org.teleal.cling.support.model.item.Item;
+import org.teleal.cling.support.model.item.MusicTrack;
+import org.teleal.cling.support.model.item.PlaylistItem;
+import org.teleal.cling.support.model.item.VideoItem;
 
 /**
  * Represents any item that can be browsed via the UPNP ContentDirectory service.
@@ -2107,5 +2116,355 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	protected void setLastRefreshTime(long lastRefreshTime) {
 		this.lastRefreshTime = lastRefreshTime;
 	}
+
+	/**
+	 * Returns the item detail information for this resource as per the UPnP spec.
+	 *
+	 * FIXME: Refactor this method to all subclasses to get rid of the type switch
+	 * and the corresponding result casts.
+	 * 
+	 * @param renderer
+	 *            Media Renderer for which to represent this information. Useful
+	 *            for some hacks.
+	 * @return The {@link org.teleal.cling.support.model.item.Item Item}.
+	 */
+	public final DIDLObject getDidlObject(RendererConfiguration renderer) {
+		DIDLObject result;
+		StringBuilder sb = new StringBuilder();
+
+		if (isFolder()) {
+			result = new Container();
+		} else {
+			// Determine the item type first
+			switch (getType()) {
+				case Format.AUDIO:
+					result = new MusicTrack();
+					// Missing: AudioBook and AudioBroadcast
+					break;
+
+				case Format.IMAGE:
+					result = new ImageItem();
+					// Missing: Photo
+					break;
+
+				case Format.VIDEO:
+					result = new VideoItem();
+					// Missing: Movie, MusicVideoClip and VideoBroadcast
+					break;
+
+				case Format.PLAYLIST:
+					result = new PlaylistItem();
+					break;
+
+				default:
+					result = new Item();
+					break;
+			}
+		}
+
+		result.setId(getResourceId());
+
+		if (isFolder()) {
+			if (!isDiscovered() && childrenNumber() == 0) {
+				//  When a folder has not been scanned for resources, it will automatically have zero children.
+				//  Some renderers like XBMC will assume a folder is empty when encountering childCount="0" and
+				//  will not display the folder. By returning childCount="1" these renderers will still display
+				//  the folder. When it is opened, its children will be discovered and childrenNumber() will be
+				//  set to the right value.
+				((Container) result).setChildCount(1);
+			} else {
+				((Container) result).setChildCount(childrenNumber());
+			}
+		}
+
+		result.setParentID(getParentId());
+		result.setRestricted(true);
+
+		final DLNAMediaAudio firstAudioTrack = getMedia() != null ? getMedia().getFirstAudioTrack() : null;
+		String title;
+
+		if (firstAudioTrack != null && StringUtils.isNotBlank(firstAudioTrack.getSongname())) {
+			String playerName = "";
+
+			if (getPlayer() != null && !PMS.getConfiguration().isHideEngineNames()) {
+				playerName = " [" + getPlayer().name() + "]";
+			}
+
+			title = firstAudioTrack.getSongname() + playerName;
+		} else {
+			if (isFolder() || getPlayer() == null) {
+				title = getDisplayName();
+			} else {
+				title = renderer.getUseSameExtension(getDisplayName(renderer));
+			}
+		}
+
+		result.setTitle(title);
+
+		if (firstAudioTrack != null) {
+			if (StringUtils.isNotBlank(firstAudioTrack.getAlbum())) {
+				((MusicTrack) result).setAlbum(firstAudioTrack.getAlbum());
+			}
+
+			if (StringUtils.isNotBlank(firstAudioTrack.getArtist())) {
+				PersonWithRole artist = new PersonWithRole(firstAudioTrack.getArtist());
+				((MusicTrack) result).setArtists(new PersonWithRole[] { artist });
+				((MusicTrack) result).setCreator(firstAudioTrack.getArtist());
+			}
+
+			if (StringUtils.isNotBlank(firstAudioTrack.getGenre())) {
+				((MusicTrack) result).setGenres(new String[] { firstAudioTrack.getGenre() });
+			}
+
+			if (firstAudioTrack.getTrack() > 0) {
+				((MusicTrack) result).setOriginalTrackNumber(firstAudioTrack.getTrack());
+			}
+		}
+
+		if (!isFolder()) {
+			int indexCount = 1;
+
+			if (renderer.isDLNALocalizationRequired()) {
+				indexCount = getDLNALocalesCount();
+			}
+
+			for (int c = 0; c < indexCount; c++) {
+				openTag(sb, "res");
+				// DLNA.ORG_OP : 1er 10 = exemple: TimeSeekRange.dlna.org :npt=187.000-
+				//                   01 = Range par octets
+				//                   00 = pas de range, meme pas de pause possible
+				flags = "DLNA.ORG_OP=01";
+				if (getPlayer() != null) {
+					if (getPlayer().isTimeSeekable() && renderer.isSeekByTime()) {
+						if (renderer.isPS3()) // ps3 doesn't like OP=11
+						{
+							flags = "DLNA.ORG_OP=10";
+						} else {
+							flags = "DLNA.ORG_OP=11";
+						}
+					}
+				} else {
+					if (renderer.isSeekByTime() && !renderer.isPS3()) {
+						flags = "DLNA.ORG_OP=11";
+					}
+				}
+				addAttribute(sb, "xmlns:dlna", "urn:schemas-dlna-org:metadata-1-0/");
+
+				String mime = getRendererMimeType(mimeType(), renderer);
+				if (mime == null) {
+					mime = "video/mpeg";
+				}
+				if (renderer.isPS3()) { // XXX TO REMOVE, OR AT LEAST MAKE THIS GENERIC // whole extensions/mime-types mess to rethink anyway
+					if (mime.equals("video/x-divx")) {
+						dlnaspec = "DLNA.ORG_PN=AVI";
+					} else if (mime.equals("video/x-ms-wmv") && getMedia() != null && getMedia().getHeight() > 700) {
+						dlnaspec = "DLNA.ORG_PN=WMVHIGH_PRO";
+					}
+				} else {
+					if (mime.equals("video/mpeg")) {
+						if (getPlayer() != null) {
+							// do we have some mpegts to offer ?
+							boolean mpegTsMux = TSMuxerVideo.ID.equals(getPlayer().id()) || VideoLanVideoStreaming.ID.equals(getPlayer().id());
+							if (!mpegTsMux) { // maybe, like the ps3, mencoder can launch tsmuxer if this a compatible H264 video
+								mpegTsMux = MEncoderVideo.ID.equals(getPlayer().id()) && ((getMediaSubtitle() == null && getMedia() != null && getMedia().getDvdtrack() == 0 && getMedia().isMuxable(renderer)
+									&& PMS.getConfiguration().isMencoderMuxWhenCompatible() && renderer.isMuxH264MpegTS())
+									|| renderer.isTranscodeToMPEGTSAC3());
+							}
+							if (mpegTsMux) {
+								dlnaspec = getMedia().isH264() && !VideoLanVideoStreaming.ID.equals(getPlayer().id()) && getMedia().isMuxable(renderer) ? "DLNA.ORG_PN=AVC_TS_HD_24_AC3_ISO" : "DLNA.ORG_PN=" + getMPEG_TS_SD_EU_ISOLocalizedValue(c);
+							} else {
+								dlnaspec = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(c);
+							}
+						} else if (getMedia() != null) {
+							if (getMedia().isMpegTS()) {
+								dlnaspec = getMedia().isH264() ? "DLNA.ORG_PN=AVC_TS_HD_50_AC3" : "DLNA.ORG_PN=" + getMPEG_TS_SD_EULocalizedValue(c);
+							} else {
+								dlnaspec = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(c);
+							}
+						} else {
+							dlnaspec = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(c);
+						}
+					} else if (mime.equals("video/vnd.dlna.mpeg-tts")) {
+						// patters - on Sony BDP m2ts clips aren't listed without this
+						dlnaspec = "DLNA.ORG_PN=" + getMPEG_TS_SD_EULocalizedValue(c);
+					} else if (mime.equals("image/jpeg")) {
+						dlnaspec = "DLNA.ORG_PN=JPEG_LRG";
+					} else if (mime.equals("audio/mpeg")) {
+						dlnaspec = "DLNA.ORG_PN=MP3";
+					} else if (mime.substring(0, 9).equals("audio/L16") || mime.equals("audio/wav")) {
+						dlnaspec = "DLNA.ORG_PN=LPCM";
+					}
+				}
+
+				if (dlnaspec != null) {
+					dlnaspec = "DLNA.ORG_PN=" + renderer.getDLNAPN(dlnaspec.substring(12));
+				}
+
+				if (!renderer.isDLNAOrgPNUsed()) {
+					dlnaspec = null;
+				}
+
+				addAttribute(sb, "protocolInfo", "http-get:*:" + mime + ":" + (dlnaspec != null ? (dlnaspec + ";") : "") + flags);
+
+
+				if (getExt() != null && getExt().isVideo() && getMedia() != null && getMedia().isMediaparsed()) {
+					if (getPlayer() == null && getMedia() != null) {
+						addAttribute(sb, "size", getMedia().getSize());
+					} else {
+						long transcoded_size = renderer.getTranscodedSize();
+						if (transcoded_size != 0) {
+							addAttribute(sb, "size", transcoded_size);
+						}
+					}
+					if (getMedia().getDuration() != null) {
+						if (getSplitRange().isEndLimitAvailable()) {
+							addAttribute(sb, "duration", DLNAMediaInfo.getDurationString(getSplitRange().getDuration()));
+						} else {
+							addAttribute(sb, "duration", getMedia().getDurationString());
+						}
+					}
+					if (getMedia().getResolution() != null) {
+						addAttribute(sb, "resolution", getMedia().getResolution());
+					}
+					addAttribute(sb, "bitrate", getMedia().getRealVideoBitrate());
+					if (firstAudioTrack != null) {
+						if (firstAudioTrack.getNrAudioChannels() > 0) {
+							addAttribute(sb, "nrAudioChannels", firstAudioTrack.getNrAudioChannels());
+						}
+						if (firstAudioTrack.getSampleFrequency() != null) {
+							addAttribute(sb, "sampleFrequency", firstAudioTrack.getSampleFrequency());
+						}
+					}
+				} else if (getExt() != null && getExt().isImage()) {
+					if (getMedia() != null && getMedia().isMediaparsed()) {
+						addAttribute(sb, "size", getMedia().getSize());
+						if (getMedia().getResolution() != null) {
+							addAttribute(sb, "resolution", getMedia().getResolution());
+						}
+					} else {
+						addAttribute(sb, "size", length());
+					}
+				} else if (getExt() != null && getExt().isAudio()) {
+					if (getMedia() != null && getMedia().isMediaparsed()) {
+						addAttribute(sb, "bitrate", getMedia().getBitrate());
+						if (getMedia().getDuration() != null) {
+							addAttribute(sb, "duration", DLNAMediaInfo.getDurationString(getMedia().getDuration()));
+						}
+						if (firstAudioTrack != null && firstAudioTrack.getSampleFrequency() != null) {
+							addAttribute(sb, "sampleFrequency", firstAudioTrack.getSampleFrequency());
+						}
+						if (firstAudioTrack != null) {
+							addAttribute(sb, "nrAudioChannels", firstAudioTrack.getNrAudioChannels());
+						}
+
+						if (getPlayer() == null) {
+							addAttribute(sb, "size", getMedia().getSize());
+						} else {
+							// calcul taille wav
+							if (firstAudioTrack != null) {
+								int defaultFrequency = renderer.isTranscodeAudioTo441() ? 44100 : 48000;
+								if (!PMS.getConfiguration().isAudioResample()) {
+									try {
+										// FIXME: Which exception could be thrown here?
+										defaultFrequency = firstAudioTrack.getSampleRate();
+									} catch (Exception e) {
+										LOGGER.debug("Caught exception", e);
+									}
+								}
+								int na = firstAudioTrack.getNrAudioChannels();
+								if (na > 2) // no 5.1 dump in mplayer
+								{
+									na = 2;
+								}
+								int finalsize = (int) (getMedia().getDurationInSeconds() * defaultFrequency * 2 * na);
+								LOGGER.debug("Calculated size: " + finalsize);
+								addAttribute(sb, "size", finalsize);
+							}
+						}
+					} else {
+						addAttribute(sb, "size", length());
+					}
+				} else {
+					addAttribute(sb, "size", DLNAMediaInfo.TRANS_SIZE);
+					addAttribute(sb, "duration", "09:59:59");
+					addAttribute(sb, "bitrate", "1000000");
+				}
+				endTag(sb);
+				sb.append(getFileURL());
+				closeTag(sb, "res");
+			}
+		}
+
+		String thumbURL = getThumbnailURL();
+		if (!isFolder() && (getExt() == null || (getExt() != null && thumbURL != null))) {
+			openTag(sb, "upnp:albumArtURI");
+			addAttribute(sb, "xmlns:dlna", "urn:schemas-dlna-org:metadata-1-0/");
+
+			if (getThumbnailContentType().equals(PNG_TYPEMIME) && !renderer.isForceJPGThumbnails()) {
+				addAttribute(sb, "dlna:profileID", "PNG_TN");
+			} else {
+				addAttribute(sb, "dlna:profileID", "JPEG_TN");
+			}
+			endTag(sb);
+			sb.append(thumbURL);
+			closeTag(sb, "upnp:albumArtURI");
+		}
+
+		if ((isFolder() || renderer.isForceJPGThumbnails()) && thumbURL != null) {
+			openTag(sb, "res");
+
+			if (getThumbnailContentType().equals(PNG_TYPEMIME) && !renderer.isForceJPGThumbnails()) {
+				addAttribute(sb, "protocolInfo", "http-get:*:image/png:DLNA.ORG_PN=PNG_TN");
+			} else {
+				addAttribute(sb, "protocolInfo", "http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN");
+			}
+			endTag(sb);
+			sb.append(thumbURL);
+			closeTag(sb, "res");
+		}
+
+		if (getLastmodified() > 0) {
+			addXMLTagAndAttribute(sb, "dc:date", SDF_DATE.format(new Date(getLastmodified())));
+		}
+
+		String uclass = null;
+		if (first != null && getMedia() != null && !getMedia().isSecondaryFormatValid()) {
+			uclass = "dummy";
+		} else {
+			if (isFolder()) {
+				uclass = "object.container.storageFolder";
+				boolean xbox = renderer.isXBOX();
+				if (xbox && getFakeParentId() != null && getFakeParentId().equals("7")) {
+					uclass = "object.container.album.musicAlbum";
+				} else if (xbox && getFakeParentId() != null && getFakeParentId().equals("6")) {
+					uclass = "object.container.person.musicArtist";
+				} else if (xbox && getFakeParentId() != null && getFakeParentId().equals("5")) {
+					uclass = "object.container.genre.musicGenre";
+				} else if (xbox && getFakeParentId() != null && getFakeParentId().equals("F")) {
+					uclass = "object.container.playlistContainer";
+				}
+			} else if (getExt() != null && getExt().isVideo()) {
+				uclass = "object.item.videoItem";
+			} else if (getExt() != null && getExt().isImage()) {
+				uclass = "object.item.imageItem.photo";
+			} else if (getExt() != null && getExt().isAudio()) {
+				uclass = "object.item.audioItem.musicTrack";
+			} else {
+				uclass = "object.item.videoItem";
+			}
+		}
+		if (uclass != null) {
+			addXMLTagAndAttribute(sb, "upnp:class", uclass);
+		}
+
+		if (isFolder()) {
+			closeTag(sb, "container");
+		} else {
+			closeTag(sb, "item");
+		}
+		//return sb.toString();
+		return result;
+	}
+	
 }
 

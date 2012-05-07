@@ -71,6 +71,7 @@ import net.pms.newgui.GeneralTab;
 import net.pms.newgui.LooksFrame;
 import net.pms.newgui.ProfileChooser;
 import net.pms.update.AutoUpdater;
+import net.pms.upnp.UpnpServer;
 import net.pms.util.ProcessUtil;
 import net.pms.util.PropertiesUtil;
 import net.pms.util.SystemErrWrapper;
@@ -517,8 +518,8 @@ public class PMS {
 					for (ExternalListener l : ExternalFactory.getExternalListeners()) {
 						l.shutdown();
 					}
-					UPNPHelper.shutDownListener();
-					UPNPHelper.sendByeBye();
+					// XXX: UPNPHelper.shutDownListener();
+					// XXX: UPNPHelper.sendByeBye();
 					logger.debug("Forcing shutdown of all active processes");
 					for (Process p : currentProcesses) {
 						try {
@@ -530,18 +531,17 @@ public class PMS {
 					}
 					get().getServer().stop();
 					Thread.sleep(500);
-				} catch (IOException e) {
-					logger.debug("Caught exception", e);
 				} catch (InterruptedException e) {
 					logger.debug("Caught exception", e);
 				}
 			}
 		});
 
-		UPNPHelper.sendAlive();
+		UpnpServer.startServer();
+		// XXX: UPNPHelper.sendAlive();
 		logger.trace("Waiting 250 milliseconds...");
 		Thread.sleep(250);
-		UPNPHelper.listen();
+		// XXX: UPNPHelper.listen();
 
 		return true;
 	}
@@ -647,7 +647,7 @@ public class PMS {
 			public void run() {
 				try {
 					logger.trace("Waiting 1 second...");
-					UPNPHelper.sendByeBye();
+					// XXX: UPNPHelper.sendByeBye();
 					server.stop();
 					server = null;
 					RendererConfiguration.resetAllRenderers();
@@ -658,7 +658,7 @@ public class PMS {
 					}
 					server = new HTTPServer(configuration.getServerPort());
 					server.start();
-					UPNPHelper.sendAlive();
+					// XXX: UPNPHelper.sendAlive();
 					frame.setReloadable(false);
 				} catch (IOException e) {
 					logger.error("error during restart :" +e.getMessage(), e);

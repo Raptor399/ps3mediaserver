@@ -152,6 +152,15 @@
 			</snapshots>
 		</repository>
 
+		<!-- Cling Core -->
+		<repository>
+			<id>teleal-repo</id>
+			<url>http://teleal.org/m2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
 	</repositories>
 
 	<dependencies>
@@ -296,6 +305,18 @@
 			<groupId>net.java.dev.jna</groupId>
 			<artifactId>jna</artifactId>
 			<version>${jna-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.teleal.cling</groupId>
+			<artifactId>cling-core</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.teleal.cling</groupId>
+			<artifactId>cling-support</artifactId>
+			<version>1.0.5</version>
 		</dependency>
 
 		<!-- XXX: not Mavenized: http://www.jgoodies.com/downloads/libraries.html -->
