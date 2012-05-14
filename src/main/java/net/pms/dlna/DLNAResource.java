@@ -31,6 +31,8 @@ import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -73,6 +75,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teleal.cling.support.model.DIDLObject;
 import org.teleal.cling.support.model.PersonWithRole;
+import org.teleal.cling.support.model.Protocol;
+import org.teleal.cling.support.model.ProtocolInfo;
+import org.teleal.cling.support.model.Res;
 import org.teleal.cling.support.model.container.Container;
 import org.teleal.cling.support.model.item.ImageItem;
 import org.teleal.cling.support.model.item.Item;
@@ -2250,18 +2255,22 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				}
 				addAttribute(sb, "xmlns:dlna", "urn:schemas-dlna-org:metadata-1-0/");
 
-				String mime = getRendererMimeType(mimeType(), renderer);
-				if (mime == null) {
-					mime = "video/mpeg";
+				// Determine the renderer specific mime type
+				String mimeType = getRendererMimeType(mimeType(), renderer);
+
+				if (mimeType == null) {
+					// Type couldn't be determined; assume video/mpeg
+					mimeType = "video/mpeg";
 				}
+
 				if (renderer.isPS3()) { // XXX TO REMOVE, OR AT LEAST MAKE THIS GENERIC // whole extensions/mime-types mess to rethink anyway
-					if (mime.equals("video/x-divx")) {
+					if (mimeType.equals("video/x-divx")) {
 						dlnaspec = "DLNA.ORG_PN=AVI";
-					} else if (mime.equals("video/x-ms-wmv") && getMedia() != null && getMedia().getHeight() > 700) {
+					} else if (mimeType.equals("video/x-ms-wmv") && getMedia() != null && getMedia().getHeight() > 700) {
 						dlnaspec = "DLNA.ORG_PN=WMVHIGH_PRO";
 					}
 				} else {
-					if (mime.equals("video/mpeg")) {
+					if (mimeType.equals("video/mpeg")) {
 						if (getPlayer() != null) {
 							// do we have some mpegts to offer ?
 							boolean mpegTsMux = TSMuxerVideo.ID.equals(getPlayer().id()) || VideoLanVideoStreaming.ID.equals(getPlayer().id());
@@ -2284,14 +2293,14 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 						} else {
 							dlnaspec = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(c);
 						}
-					} else if (mime.equals("video/vnd.dlna.mpeg-tts")) {
+					} else if (mimeType.equals("video/vnd.dlna.mpeg-tts")) {
 						// patters - on Sony BDP m2ts clips aren't listed without this
 						dlnaspec = "DLNA.ORG_PN=" + getMPEG_TS_SD_EULocalizedValue(c);
-					} else if (mime.equals("image/jpeg")) {
+					} else if (mimeType.equals("image/jpeg")) {
 						dlnaspec = "DLNA.ORG_PN=JPEG_LRG";
-					} else if (mime.equals("audio/mpeg")) {
+					} else if (mimeType.equals("audio/mpeg")) {
 						dlnaspec = "DLNA.ORG_PN=MP3";
-					} else if (mime.substring(0, 9).equals("audio/L16") || mime.equals("audio/wav")) {
+					} else if (mimeType.substring(0, 9).equals("audio/L16") || mimeType.equals("audio/wav")) {
 						dlnaspec = "DLNA.ORG_PN=LPCM";
 					}
 				}
@@ -2304,65 +2313,88 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					dlnaspec = null;
 				}
 
-				addAttribute(sb, "protocolInfo", "http-get:*:" + mime + ":" + (dlnaspec != null ? (dlnaspec + ";") : "") + flags);
+				// Construct protocol info
+				ProtocolInfo protocolInfo = new ProtocolInfo(Protocol.HTTP_GET, ProtocolInfo.WILDCARD,
+						mimeType, (dlnaspec != null ? (dlnaspec + ";") : "") + flags);
+
+				Res res = new Res();
+				res.setProtocolInfo(protocolInfo);
 
 
 				if (getExt() != null && getExt().isVideo() && getMedia() != null && getMedia().isMediaparsed()) {
 					if (getPlayer() == null && getMedia() != null) {
-						addAttribute(sb, "size", getMedia().getSize());
+						res.setSize(getMedia().getSize());
 					} else {
 						long transcoded_size = renderer.getTranscodedSize();
+
 						if (transcoded_size != 0) {
-							addAttribute(sb, "size", transcoded_size);
+							res.setSize(transcoded_size);
 						}
 					}
+
 					if (getMedia().getDuration() != null) {
 						if (getSplitRange().isEndLimitAvailable()) {
-							addAttribute(sb, "duration", DLNAMediaInfo.getDurationString(getSplitRange().getDuration()));
+							res.setDuration(DLNAMediaInfo.getDurationString(getSplitRange().getDuration()));
 						} else {
-							addAttribute(sb, "duration", getMedia().getDurationString());
+							res.setDuration(getMedia().getDurationString());
 						}
 					}
+
 					if (getMedia().getResolution() != null) {
-						addAttribute(sb, "resolution", getMedia().getResolution());
+						res.setResolution(getMedia().getResolution());
 					}
-					addAttribute(sb, "bitrate", getMedia().getRealVideoBitrate());
+
+					res.setBitrate((long) getMedia().getRealVideoBitrate());
+
 					if (firstAudioTrack != null) {
 						if (firstAudioTrack.getNrAudioChannels() > 0) {
-							addAttribute(sb, "nrAudioChannels", firstAudioTrack.getNrAudioChannels());
+							res.setNrAudioChannels((long) firstAudioTrack.getNrAudioChannels());
 						}
 						if (firstAudioTrack.getSampleFrequency() != null) {
-							addAttribute(sb, "sampleFrequency", firstAudioTrack.getSampleFrequency());
+							try {
+								res.setSampleFrequency(Long.parseLong(firstAudioTrack.getSampleFrequency()));
+							} catch (NumberFormatException e) {
+								LOGGER.debug("Cannot parse audio track sample frequency " + firstAudioTrack.getSampleFrequency());
+							}
 						}
 					}
 				} else if (getExt() != null && getExt().isImage()) {
 					if (getMedia() != null && getMedia().isMediaparsed()) {
-						addAttribute(sb, "size", getMedia().getSize());
+						res.setSize(getMedia().getSize());
+
 						if (getMedia().getResolution() != null) {
-							addAttribute(sb, "resolution", getMedia().getResolution());
+							res.setResolution(getMedia().getResolution());
 						}
 					} else {
-						addAttribute(sb, "size", length());
+						res.setSize(length());
 					}
 				} else if (getExt() != null && getExt().isAudio()) {
 					if (getMedia() != null && getMedia().isMediaparsed()) {
-						addAttribute(sb, "bitrate", getMedia().getBitrate());
+						res.setBitrate((long) getMedia().getBitrate());
+
 						if (getMedia().getDuration() != null) {
-							addAttribute(sb, "duration", DLNAMediaInfo.getDurationString(getMedia().getDuration()));
+							res.setDuration(DLNAMediaInfo.getDurationString(getMedia().getDuration()));
 						}
+
 						if (firstAudioTrack != null && firstAudioTrack.getSampleFrequency() != null) {
-							addAttribute(sb, "sampleFrequency", firstAudioTrack.getSampleFrequency());
+							try {
+								res.setSampleFrequency(Long.parseLong(firstAudioTrack.getSampleFrequency()));
+							} catch (NumberFormatException e) {
+								LOGGER.debug("Cannot parse audio track sample frequency " + firstAudioTrack.getSampleFrequency());
+							}
 						}
+
 						if (firstAudioTrack != null) {
-							addAttribute(sb, "nrAudioChannels", firstAudioTrack.getNrAudioChannels());
+							res.setNrAudioChannels((long) firstAudioTrack.getNrAudioChannels());
 						}
 
 						if (getPlayer() == null) {
-							addAttribute(sb, "size", getMedia().getSize());
+							res.setSize(getMedia().getSize());
 						} else {
 							// calcul taille wav
 							if (firstAudioTrack != null) {
 								int defaultFrequency = renderer.isTranscodeAudioTo441() ? 44100 : 48000;
+
 								if (!PMS.getConfiguration().isAudioResample()) {
 									try {
 										// FIXME: Which exception could be thrown here?
@@ -2371,31 +2403,39 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 										LOGGER.debug("Caught exception", e);
 									}
 								}
+
 								int na = firstAudioTrack.getNrAudioChannels();
-								if (na > 2) // no 5.1 dump in mplayer
-								{
+
+								if (na > 2) { 
+									// no 5.1 dump in mplayer
 									na = 2;
 								}
-								int finalsize = (int) (getMedia().getDurationInSeconds() * defaultFrequency * 2 * na);
+
+								long finalsize = (long) (getMedia().getDurationInSeconds() * defaultFrequency * 2 * na);
 								LOGGER.debug("Calculated size: " + finalsize);
-								addAttribute(sb, "size", finalsize);
+								res.setSize(finalsize);
 							}
 						}
 					} else {
-						addAttribute(sb, "size", length());
+						res.setSize(length());
 					}
 				} else {
-					addAttribute(sb, "size", DLNAMediaInfo.TRANS_SIZE);
-					addAttribute(sb, "duration", "09:59:59");
-					addAttribute(sb, "bitrate", "1000000");
+					// Video without media info; set some defaults
+					res.setSize(DLNAMediaInfo.TRANS_SIZE);
+					res.setDuration("09:59:59");
+					res.setBitrate(1000000L);
 				}
-				endTag(sb);
-				sb.append(getFileURL());
-				closeTag(sb, "res");
+
+				try {
+					res.setImportUri(new URI(getFileURL()));
+				} catch (URISyntaxException e) {
+					LOGGER.debug("Error in URI syntax for \"" + getFileURL() + "\"");
+				}
 			}
 		}
 
 		String thumbURL = getThumbnailURL();
+
 		if (!isFolder() && (getExt() == null || (getExt() != null && thumbURL != null))) {
 			openTag(sb, "upnp:albumArtURI");
 			addAttribute(sb, "xmlns:dlna", "urn:schemas-dlna-org:metadata-1-0/");
