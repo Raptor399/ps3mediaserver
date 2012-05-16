@@ -73,7 +73,9 @@ import net.pms.util.MpegUtil;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.teleal.cling.support.model.DIDLAttribute;
 import org.teleal.cling.support.model.DIDLObject;
+import org.teleal.cling.support.model.DIDLObject.Property;
 import org.teleal.cling.support.model.PersonWithRole;
 import org.teleal.cling.support.model.Protocol;
 import org.teleal.cling.support.model.ProtocolInfo;
@@ -2234,7 +2236,6 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			}
 
 			for (int c = 0; c < indexCount; c++) {
-				openTag(sb, "res");
 				// DLNA.ORG_OP : 1er 10 = exemple: TimeSeekRange.dlna.org :npt=187.000-
 				//                   01 = Range par octets
 				//                   00 = pas de range, meme pas de pause possible
@@ -2253,7 +2254,6 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 						flags = "DLNA.ORG_OP=11";
 					}
 				}
-				addAttribute(sb, "xmlns:dlna", "urn:schemas-dlna-org:metadata-1-0/");
 
 				// Determine the renderer specific mime type
 				String mimeType = getRendererMimeType(mimeType(), renderer);
@@ -2317,6 +2317,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				ProtocolInfo protocolInfo = new ProtocolInfo(Protocol.HTTP_GET, ProtocolInfo.WILDCARD,
 						mimeType, (dlnaspec != null ? (dlnaspec + ";") : "") + flags);
 
+				// Construct resource info
 				Res res = new Res();
 				res.setProtocolInfo(protocolInfo);
 
@@ -2437,17 +2438,24 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 		String thumbURL = getThumbnailURL();
 
 		if (!isFolder() && (getExt() == null || (getExt() != null && thumbURL != null))) {
-			openTag(sb, "upnp:albumArtURI");
-			addAttribute(sb, "xmlns:dlna", "urn:schemas-dlna-org:metadata-1-0/");
+			List<Property<DIDLAttribute>> attributes = new ArrayList<Property<DIDLAttribute>>();
+			String typeName = "JPEG_TN";
 
 			if (getThumbnailContentType().equals(PNG_TYPEMIME) && !renderer.isForceJPGThumbnails()) {
-				addAttribute(sb, "dlna:profileID", "PNG_TN");
-			} else {
-				addAttribute(sb, "dlna:profileID", "JPEG_TN");
+				typeName = "PNG_TN";
 			}
-			endTag(sb);
-			sb.append(thumbURL);
-			closeTag(sb, "upnp:albumArtURI");
+
+			DIDLAttribute profileAttribute = new DIDLAttribute("urn:schemas-dlna-org:metadata-1-0/", "dlna:profileID", typeName);
+			Property.DLNA.PROFILE_ID profileId = new Property.DLNA.PROFILE_ID(profileAttribute);
+			attributes.add(profileId);
+
+			try {
+				URI thumbUri = new URI(thumbURL);
+				Property albumArt = new Property.UPNP.ALBUM_ART_URI(thumbUri);
+				result.addProperty(albumArt);
+			} catch (URISyntaxException e) {
+				LOGGER.debug("Error in URI syntax for \"" + thumbURL + "\"");
+			}
 		}
 
 		if ((isFolder() || renderer.isForceJPGThumbnails()) && thumbURL != null) {
