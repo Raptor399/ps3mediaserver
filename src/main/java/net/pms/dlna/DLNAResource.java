@@ -2430,15 +2430,16 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				try {
 					res.setImportUri(new URI(getFileURL()));
 				} catch (URISyntaxException e) {
-					LOGGER.debug("Error in URI syntax for \"" + getFileURL() + "\"");
+					LOGGER.debug("Error in URI syntax for file \"" + getFileURL() + "\"");
 				}
+
+				result.addResource(res);
 			}
 		}
 
 		String thumbURL = getThumbnailURL();
 
 		if (!isFolder() && (getExt() == null || (getExt() != null && thumbURL != null))) {
-			List<Property<DIDLAttribute>> attributes = new ArrayList<Property<DIDLAttribute>>();
 			String typeName = "JPEG_TN";
 
 			if (getThumbnailContentType().equals(PNG_TYPEMIME) && !renderer.isForceJPGThumbnails()) {
@@ -2446,29 +2447,33 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			}
 
 			DIDLAttribute profileAttribute = new DIDLAttribute("urn:schemas-dlna-org:metadata-1-0/", "dlna:profileID", typeName);
-			Property.DLNA.PROFILE_ID profileId = new Property.DLNA.PROFILE_ID(profileAttribute);
-			attributes.add(profileId);
+			Property<DIDLAttribute> attribute = new Property.DLNA.PROFILE_ID(profileAttribute);
 
 			try {
 				URI thumbUri = new URI(thumbURL);
-				Property albumArt = new Property.UPNP.ALBUM_ART_URI(thumbUri);
+				Property<?> albumArt = new Property.UPNP.ALBUM_ART_URI(thumbUri);
+				albumArt.addAttribute(attribute);
 				result.addProperty(albumArt);
 			} catch (URISyntaxException e) {
-				LOGGER.debug("Error in URI syntax for \"" + thumbURL + "\"");
+				LOGGER.debug("Error in URI syntax for album art \"" + thumbURL + "\"");
 			}
 		}
 
 		if ((isFolder() || renderer.isForceJPGThumbnails()) && thumbURL != null) {
-			openTag(sb, "res");
-
+			String contentFormat = "image/jpeg";
+			String additionalInfo = "DLNA.ORG_PN=JPEG_TN";
+			
 			if (getThumbnailContentType().equals(PNG_TYPEMIME) && !renderer.isForceJPGThumbnails()) {
-				addAttribute(sb, "protocolInfo", "http-get:*:image/png:DLNA.ORG_PN=PNG_TN");
-			} else {
-				addAttribute(sb, "protocolInfo", "http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN");
+				contentFormat = "image/png";
+				additionalInfo = "DLNA.ORG_PN=PNG_TN";
 			}
-			endTag(sb);
-			sb.append(thumbURL);
-			closeTag(sb, "res");
+
+			ProtocolInfo protocolInfo = new ProtocolInfo(Protocol.HTTP_GET, ProtocolInfo.WILDCARD,
+					contentFormat, additionalInfo);
+			Res res = new Res();
+			res.setProtocolInfo(protocolInfo);
+			res.setValue(thumbURL);
+			result.addResource(res);
 		}
 
 		if (getLastmodified() > 0) {
