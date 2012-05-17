@@ -42,6 +42,7 @@ import org.teleal.cling.model.meta.ModelDetails;
 import org.teleal.cling.model.types.DeviceType;
 import org.teleal.cling.model.types.UDADeviceType;
 import org.teleal.cling.model.types.UDN;
+import org.teleal.cling.support.connectionmanager.ConnectionManagerService;
 
 /**
  * As a server, PMS does two big things: (1) it defines and provides UPnP
@@ -97,6 +98,8 @@ public class UpnpServer implements Runnable {
 
     /**
      * Returns the device that determines which UPnP services PMS will offer.
+     * In order to be a proper UPnP MediaServer:1, PMS needs to at least offer
+     * a ContentDirectory:1 and ConnectionManager:1 service.
      *
      * @return The {@link LocalDevice}
      * @throws ValidationException
@@ -117,15 +120,15 @@ public class UpnpServer implements Runnable {
 
         Icon icon = new Icon(ICON_MIMETYPE, 32, 32, 8, getClass().getResource(ICON_RESOURCE));
 
-        LocalService<ContentDirectory> contentDirectoryService = new AnnotationLocalServiceBinder().read(ContentDirectory.class);
-        contentDirectoryService.setManager(new DefaultServiceManager(contentDirectoryService, ContentDirectory.class));
+        // Bind the ContentDirectory:1 service
+        LocalService<ContentDirectory> cdService = new AnnotationLocalServiceBinder().read(ContentDirectory.class);
+        cdService.setManager(new DefaultServiceManager(cdService, ContentDirectory.class));
 
-        LocalService<ConnectionManager> connectionManagerService = new AnnotationLocalServiceBinder().read(ConnectionManager.class);
-        connectionManagerService.setManager(new DefaultServiceManager(connectionManagerService, ConnectionManager.class));
+        // Bind the ConnectionManager:1 service
+        LocalService<ConnectionManagerService> cmService = new AnnotationLocalServiceBinder().read(ConnectionManagerService.class);
+        cmService.setManager(new DefaultServiceManager<ConnectionManagerService>(cmService, ConnectionManagerService.class));
 
-        return new LocalDevice(identity, type, details, icon, new LocalService[] {
-        		contentDirectoryService/*, TODO: Having problems combining the two
-        		connectionManagerService*/});
+        return new LocalDevice(identity, type, details, icon, new LocalService[] { cdService, cmService });
     }
 
 }
