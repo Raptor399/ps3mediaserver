@@ -2240,6 +2240,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				//                   01 = Range par octets
 				//                   00 = pas de range, meme pas de pause possible
 				flags = "DLNA.ORG_OP=01";
+
 				if (getPlayer() != null) {
 					if (getPlayer().isTimeSeekable() && renderer.isSeekByTime()) {
 						if (renderer.isPS3()) // ps3 doesn't like OP=11
@@ -2451,7 +2452,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 			try {
 				URI thumbUri = new URI(thumbURL);
-				Property<?> albumArt = new Property.UPNP.ALBUM_ART_URI(thumbUri);
+				Property<URI> albumArt = new Property.UPNP.ALBUM_ART_URI(thumbUri);
 				albumArt.addAttribute(attribute);
 				result.addProperty(albumArt);
 			} catch (URISyntaxException e) {
@@ -2477,10 +2478,12 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 		}
 
 		if (getLastmodified() > 0) {
-			addXMLTagAndAttribute(sb, "dc:date", SDF_DATE.format(new Date(getLastmodified())));
+			Property<String> lastmodified = new Property.DC.DATE(SDF_DATE.format(new Date(getLastmodified())));
+			result.addProperty(lastmodified);
 		}
 
 		String uclass = null;
+
 		if (first != null && getMedia() != null && !getMedia().isSecondaryFormatValid()) {
 			uclass = "dummy";
 		} else {
@@ -2507,15 +2510,9 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			}
 		}
 		if (uclass != null) {
-			addXMLTagAndAttribute(sb, "upnp:class", uclass);
+			result.setClazz(new DIDLObject.Class(uclass));
 		}
 
-		if (isFolder()) {
-			closeTag(sb, "container");
-		} else {
-			closeTag(sb, "item");
-		}
-		//return sb.toString();
 		return result;
 	}
 	

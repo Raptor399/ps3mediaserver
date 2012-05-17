@@ -100,12 +100,11 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 		boolean xbox = false;
 
 		DIDLContent didl = new DIDLContent();
-
-		
+		boolean directChildren = BrowseFlag.DIRECT_CHILDREN.equals(browseFlag);
 		List<DLNAResource> resources;
+
 		try {
-			resources = PMS.get().getRootFolder(renderer)
-						.getDLNAResources(objectID, browseFlag != null && browseFlag.equals("BrowseDirectChildren"),
+			resources = PMS.get().getRootFolder(renderer).getDLNAResources(objectID, directChildren,
 								// FIXME: should be long according to UPnP spec!
 								(int) firstResult, (int) firstResult, renderer);
 
@@ -151,6 +150,7 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 		try {
 			// Careful: DIDLParser() is not thread safe.
 			xml = new DIDLParser().generate(didl);
+			LOGGER.info(xml);
 		} catch (Exception e) {
 			LOGGER.error("An exception occurred", e);
 		}
