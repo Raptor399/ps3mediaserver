@@ -50,6 +50,8 @@ import org.teleal.cling.support.connectionmanager.ConnectionManagerService;
  * This class fires up the server in charge of handling UPnP traffic.
  */
 public class UpnpServer implements Runnable {
+	// This has to be "MediaServer" to be recognized as one.
+	private static final String DEVICE_TYPE_MEDIA_SERVER = "MediaServer";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(UpnpServer.class);
 
@@ -113,7 +115,7 @@ public class UpnpServer implements Runnable {
 
     	// Set the details
         DeviceIdentity identity = new DeviceIdentity(UDN.uniqueSystemIdentifier(name));
-        DeviceType type = new UDADeviceType("MediaServer", 1);
+        DeviceType type = new UDADeviceType(DEVICE_TYPE_MEDIA_SERVER, 1);
         ModelDetails modelDetails = new ModelDetails(name, description, version);
 		ManufacturerDetails manufacturerDetails = new ManufacturerDetails(name);
 		DeviceDetails details = new DeviceDetails(name, manufacturerDetails, modelDetails);
