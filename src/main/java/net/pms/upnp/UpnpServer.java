@@ -39,6 +39,7 @@ import org.teleal.cling.model.meta.LocalDevice;
 import org.teleal.cling.model.meta.LocalService;
 import org.teleal.cling.model.meta.ManufacturerDetails;
 import org.teleal.cling.model.meta.ModelDetails;
+import org.teleal.cling.model.types.DLNADoc;
 import org.teleal.cling.model.types.DeviceType;
 import org.teleal.cling.model.types.UDADeviceType;
 import org.teleal.cling.model.types.UDN;
@@ -55,7 +56,8 @@ public class UpnpServer implements Runnable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(UpnpServer.class);
 
-	private static final String ICON_RESOURCE = "/resources/images/icon-32.png";
+	private static final String ICON_RESOURCE_LARGE = "/resources/images/icon-256.png";
+	private static final String ICON_RESOURCE_SMALL = "/resources/images/icon-32.png";
 	private static final String ICON_MIMETYPE = "image/png";
 
 	// TODO: Figure out a way to use one port only, to keep PMS configuration as before.
@@ -109,18 +111,31 @@ public class UpnpServer implements Runnable {
      * @throws IOException
      */
     LocalDevice createDevice() throws ValidationException, LocalServiceBindingException, IOException {
-    	String name = PropertiesUtil.getProjectProperties().get("project.name");
-    	String description  = "";
+    	String friendlyName = PropertiesUtil.getProjectProperties().get("project.name");
+    	String description  = "UPnP/AV 1.0 Compliant Media Server";
     	String version = PropertiesUtil.getProjectProperties().get("project.version");
+    	String modelName = "PMS";
+    	String modelUrl = "http://www.ps3mediaserver.org/";
+    	String manufacturerName = friendlyName;
+    	String manufacturerUrl = "http://www.ps3mediaserver.org/";
 
     	// Set the details
-        DeviceIdentity identity = new DeviceIdentity(UDN.uniqueSystemIdentifier(name));
+        DeviceIdentity identity = new DeviceIdentity(UDN.uniqueSystemIdentifier(friendlyName));
         DeviceType type = new UDADeviceType(DEVICE_TYPE_MEDIA_SERVER, 1);
-        ModelDetails modelDetails = new ModelDetails(name, description, version);
-		ManufacturerDetails manufacturerDetails = new ManufacturerDetails(name);
-		DeviceDetails details = new DeviceDetails(name, manufacturerDetails, modelDetails);
+        ModelDetails modelDetails = new ModelDetails(modelName, description, version, modelUrl);
+		ManufacturerDetails manufacturerDetails = new ManufacturerDetails(manufacturerName, manufacturerUrl);
 
-        Icon icon = new Icon(ICON_MIMETYPE, 32, 32, 8, getClass().getResource(ICON_RESOURCE));
+		// Not sure what this does?
+		DLNADoc doc1 = new DLNADoc("DMS", "1.50");
+		DLNADoc doc2 = new DLNADoc("M-DMS", "1.50");
+		DLNADoc[] dlnaDocs = new DLNADoc[] { doc1, doc2 };
+		
+		DeviceDetails details = new DeviceDetails(friendlyName, manufacturerDetails, modelDetails, dlnaDocs, null);
+
+		// Define the icons for devices to show
+        Icon iconLarge = new Icon(ICON_MIMETYPE, 256, 256, 8, getClass().getResource(ICON_RESOURCE_LARGE));
+        Icon iconSmall = new Icon(ICON_MIMETYPE, 32, 32, 8, getClass().getResource(ICON_RESOURCE_SMALL));
+        Icon[] icons = new Icon[] { iconLarge, iconSmall };
 
         // Bind the ContentDirectory:1 service
         LocalService<ContentDirectory> cdService = new AnnotationLocalServiceBinder().read(ContentDirectory.class);
@@ -130,7 +145,8 @@ public class UpnpServer implements Runnable {
         LocalService<ConnectionManagerService> cmService = new AnnotationLocalServiceBinder().read(ConnectionManagerService.class);
         cmService.setManager(new DefaultServiceManager<ConnectionManagerService>(cmService, ConnectionManagerService.class));
 
-        return new LocalDevice(identity, type, details, icon, new LocalService[] { cdService, cmService });
+        // Create the device
+        return new LocalDevice(identity, type, details, icons, new LocalService[] { cdService, cmService });
     }
 
 }
