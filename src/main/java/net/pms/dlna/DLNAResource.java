@@ -1113,79 +1113,14 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			}
 			for (int c = 0; c < indexCount; c++) {
 				openTag(sb, "res");
-				// DLNA.ORG_OP : 1er 10 = exemple: TimeSeekRange.dlna.org :npt=187.000-
-				//                   01 = Range par octets
-				//                   00 = pas de range, meme pas de pause possible
-				flags = "DLNA.ORG_OP=01";
-				if (getPlayer() != null) {
-					if (getPlayer().isTimeSeekable() && mediaRenderer.isSeekByTime()) {
-						if (mediaRenderer.isPS3()) // ps3 doesn't like OP=11
-						{
-							flags = "DLNA.ORG_OP=10";
-						} else {
-							flags = "DLNA.ORG_OP=11";
-						}
-					}
-				} else {
-					if (mediaRenderer.isSeekByTime() && !mediaRenderer.isPS3()) {
-						flags = "DLNA.ORG_OP=11";
-					}
-				}
+				getDlnaOrgOp(mediaRenderer);
 				addAttribute(sb, "xmlns:dlna", "urn:schemas-dlna-org:metadata-1-0/");
 
 				String mime = getRendererMimeType(mimeType(), mediaRenderer);
 				if (mime == null) {
 					mime = "video/mpeg";
 				}
-				if (mediaRenderer.isPS3()) { // XXX TO REMOVE, OR AT LEAST MAKE THIS GENERIC // whole extensions/mime-types mess to rethink anyway
-					if (mime.equals("video/x-divx")) {
-						dlnaspec = "DLNA.ORG_PN=AVI";
-					} else if (mime.equals("video/x-ms-wmv") && getMedia() != null && getMedia().getHeight() > 700) {
-						dlnaspec = "DLNA.ORG_PN=WMVHIGH_PRO";
-					}
-				} else {
-					if (mime.equals("video/mpeg")) {
-						if (getPlayer() != null) {
-							// do we have some mpegts to offer ?
-							boolean mpegTsMux = TSMuxerVideo.ID.equals(getPlayer().id()) || VideoLanVideoStreaming.ID.equals(getPlayer().id());
-							if (!mpegTsMux) { // maybe, like the ps3, mencoder can launch tsmuxer if this a compatible H264 video
-								mpegTsMux = MEncoderVideo.ID.equals(getPlayer().id()) && ((getMediaSubtitle() == null && getMedia() != null && getMedia().getDvdtrack() == 0 && getMedia().isMuxable(mediaRenderer)
-									&& PMS.getConfiguration().isMencoderMuxWhenCompatible() && mediaRenderer.isMuxH264MpegTS())
-									|| mediaRenderer.isTranscodeToMPEGTSAC3());
-							}
-							if (mpegTsMux) {
-								dlnaspec = getMedia().isH264() && !VideoLanVideoStreaming.ID.equals(getPlayer().id()) && getMedia().isMuxable(mediaRenderer) ? "DLNA.ORG_PN=AVC_TS_HD_24_AC3_ISO" : "DLNA.ORG_PN=" + getMPEG_TS_SD_EU_ISOLocalizedValue(c);
-							} else {
-								dlnaspec = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(c);
-							}
-						} else if (getMedia() != null) {
-							if (getMedia().isMpegTS()) {
-								dlnaspec = getMedia().isH264() ? "DLNA.ORG_PN=AVC_TS_HD_50_AC3" : "DLNA.ORG_PN=" + getMPEG_TS_SD_EULocalizedValue(c);
-							} else {
-								dlnaspec = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(c);
-							}
-						} else {
-							dlnaspec = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(c);
-						}
-					} else if (mime.equals("video/vnd.dlna.mpeg-tts")) {
-						// patters - on Sony BDP m2ts clips aren't listed without this
-						dlnaspec = "DLNA.ORG_PN=" + getMPEG_TS_SD_EULocalizedValue(c);
-					} else if (mime.equals("image/jpeg")) {
-						dlnaspec = "DLNA.ORG_PN=JPEG_LRG";
-					} else if (mime.equals("audio/mpeg")) {
-						dlnaspec = "DLNA.ORG_PN=MP3";
-					} else if (mime.substring(0, 9).equals("audio/L16") || mime.equals("audio/wav")) {
-						dlnaspec = "DLNA.ORG_PN=LPCM";
-					}
-				}
-
-				if (dlnaspec != null) {
-					dlnaspec = "DLNA.ORG_PN=" + mediaRenderer.getDLNAPN(dlnaspec.substring(12));
-				}
-
-				if (!mediaRenderer.isDLNAOrgPNUsed()) {
-					dlnaspec = null;
-				}
+				getDlnaOrgPn(mediaRenderer, mime, c);
 
 				addAttribute(sb, "protocolInfo", "http-get:*:" + mime + ":" + (dlnaspec != null ? (dlnaspec + ";") : "") + flags);
 
@@ -2235,84 +2170,18 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				indexCount = getDLNALocalesCount();
 			}
 
+			flags = getDlnaOrgOp(renderer);
+
+			// Determine the renderer specific mime type
+			String mimeType = getRendererMimeType(mimeType(), renderer);
+
+			if (mimeType == null) {
+				// Type couldn't be determined; assume video/mpeg
+				mimeType = "video/mpeg";
+			}
+
 			for (int c = 0; c < indexCount; c++) {
-				// DLNA.ORG_OP : 1er 10 = exemple: TimeSeekRange.dlna.org :npt=187.000-
-				//                   01 = Range par octets
-				//                   00 = pas de range, meme pas de pause possible
-				flags = "DLNA.ORG_OP=01";
-
-				if (getPlayer() != null) {
-					if (getPlayer().isTimeSeekable() && renderer.isSeekByTime()) {
-						if (renderer.isPS3()) // ps3 doesn't like OP=11
-						{
-							flags = "DLNA.ORG_OP=10";
-						} else {
-							flags = "DLNA.ORG_OP=11";
-						}
-					}
-				} else {
-					if (renderer.isSeekByTime() && !renderer.isPS3()) {
-						flags = "DLNA.ORG_OP=11";
-					}
-				}
-
-				// Determine the renderer specific mime type
-				String mimeType = getRendererMimeType(mimeType(), renderer);
-
-				if (mimeType == null) {
-					// Type couldn't be determined; assume video/mpeg
-					mimeType = "video/mpeg";
-				}
-
-				if (renderer.isPS3()) { // XXX TO REMOVE, OR AT LEAST MAKE THIS GENERIC // whole extensions/mime-types mess to rethink anyway
-					if (mimeType.equals("video/x-divx")) {
-						dlnaspec = "DLNA.ORG_PN=AVI";
-					} else if (mimeType.equals("video/x-ms-wmv") && getMedia() != null && getMedia().getHeight() > 700) {
-						dlnaspec = "DLNA.ORG_PN=WMVHIGH_PRO";
-					}
-				} else {
-					if (mimeType.equals("video/mpeg")) {
-						if (getPlayer() != null) {
-							// do we have some mpegts to offer ?
-							boolean mpegTsMux = TSMuxerVideo.ID.equals(getPlayer().id()) || VideoLanVideoStreaming.ID.equals(getPlayer().id());
-							if (!mpegTsMux) { // maybe, like the ps3, mencoder can launch tsmuxer if this a compatible H264 video
-								mpegTsMux = MEncoderVideo.ID.equals(getPlayer().id()) && ((getMediaSubtitle() == null && getMedia() != null && getMedia().getDvdtrack() == 0 && getMedia().isMuxable(renderer)
-									&& PMS.getConfiguration().isMencoderMuxWhenCompatible() && renderer.isMuxH264MpegTS())
-									|| renderer.isTranscodeToMPEGTSAC3());
-							}
-							if (mpegTsMux) {
-								dlnaspec = getMedia().isH264() && !VideoLanVideoStreaming.ID.equals(getPlayer().id()) && getMedia().isMuxable(renderer) ? "DLNA.ORG_PN=AVC_TS_HD_24_AC3_ISO" : "DLNA.ORG_PN=" + getMPEG_TS_SD_EU_ISOLocalizedValue(c);
-							} else {
-								dlnaspec = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(c);
-							}
-						} else if (getMedia() != null) {
-							if (getMedia().isMpegTS()) {
-								dlnaspec = getMedia().isH264() ? "DLNA.ORG_PN=AVC_TS_HD_50_AC3" : "DLNA.ORG_PN=" + getMPEG_TS_SD_EULocalizedValue(c);
-							} else {
-								dlnaspec = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(c);
-							}
-						} else {
-							dlnaspec = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(c);
-						}
-					} else if (mimeType.equals("video/vnd.dlna.mpeg-tts")) {
-						// patters - on Sony BDP m2ts clips aren't listed without this
-						dlnaspec = "DLNA.ORG_PN=" + getMPEG_TS_SD_EULocalizedValue(c);
-					} else if (mimeType.equals("image/jpeg")) {
-						dlnaspec = "DLNA.ORG_PN=JPEG_LRG";
-					} else if (mimeType.equals("audio/mpeg")) {
-						dlnaspec = "DLNA.ORG_PN=MP3";
-					} else if (mimeType.substring(0, 9).equals("audio/L16") || mimeType.equals("audio/wav")) {
-						dlnaspec = "DLNA.ORG_PN=LPCM";
-					}
-				}
-
-				if (dlnaspec != null) {
-					dlnaspec = "DLNA.ORG_PN=" + renderer.getDLNAPN(dlnaspec.substring(12));
-				}
-
-				if (!renderer.isDLNAOrgPNUsed()) {
-					dlnaspec = null;
-				}
+				dlnaspec = getDlnaOrgPn(renderer, mimeType, c);
 
 				// Construct protocol info
 				ProtocolInfo protocolInfo = new ProtocolInfo(Protocol.HTTP_GET, ProtocolInfo.WILDCARD,
@@ -2511,6 +2380,119 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 		}
 		if (uclass != null) {
 			result.setClazz(new DIDLObject.Class(uclass));
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns the correct DLNA.ORG_PN protocol information string for the given
+	 * render, mimetype and index.
+	 * 
+	 * @param renderer
+	 *            The renderer that will be used.
+	 * @param mimeType
+	 *            The mime type of the media that will be sent to the renderer
+	 * @param index
+	 *            The index to determine localized values.
+	 * @return The protocol information string.
+	 */
+	protected String getDlnaOrgPn(RendererConfiguration renderer, String mimeType, int index) {
+		String result = null;
+
+		if (renderer.isPS3()) {
+			// XXX TO REMOVE, OR AT LEAST MAKE THIS GENERIC 
+			// whole extensions/mime-types mess to rethink anyway
+			if (mimeType.equals("video/x-divx")) {
+				result = "DLNA.ORG_PN=AVI";
+			} else if (mimeType.equals("video/x-ms-wmv") && getMedia() != null && getMedia().getHeight() > 700) {
+				result = "DLNA.ORG_PN=WMVHIGH_PRO";
+			}
+		} else {
+			if (mimeType.equals("video/mpeg")) {
+				if (getPlayer() != null) {
+					// do we have some mpegts to offer ?
+					boolean mpegTsMux = TSMuxerVideo.ID.equals(getPlayer().id()) || VideoLanVideoStreaming.ID.equals(getPlayer().id());
+
+					if (!mpegTsMux) {
+						// maybe, like the ps3, mencoder can launch tsmuxer if this a compatible H264 video
+						mpegTsMux = MEncoderVideo.ID.equals(getPlayer().id()) && ((getMediaSubtitle() == null && getMedia() != null && getMedia().getDvdtrack() == 0 && getMedia().isMuxable(renderer)
+							&& PMS.getConfiguration().isMencoderMuxWhenCompatible() && renderer.isMuxH264MpegTS())
+							|| renderer.isTranscodeToMPEGTSAC3());
+					}
+
+					if (mpegTsMux) {
+						if (getMedia().isH264() && !VideoLanVideoStreaming.ID.equals(getPlayer().id()) && getMedia().isMuxable(renderer)) {
+							result = "DLNA.ORG_PN=AVC_TS_HD_24_AC3_ISO";
+						} else {
+							result = "DLNA.ORG_PN=" + getMPEG_TS_SD_EU_ISOLocalizedValue(index);
+						}
+					} else {
+						result = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(index);
+					}
+				} else if (getMedia() != null) {
+					if (getMedia().isMpegTS()) {
+						if (getMedia().isH264()) {
+							result = "DLNA.ORG_PN=AVC_TS_HD_50_AC3";
+						} else {
+							result = "DLNA.ORG_PN=" + getMPEG_TS_SD_EULocalizedValue(index);
+						}
+					} else {
+						result = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(index);
+					}
+				} else {
+					result = "DLNA.ORG_PN=" + getMPEG_PS_PALLocalizedValue(index);
+				}
+			} else if (mimeType.equals("video/vnd.dlna.mpeg-tts")) {
+				// patters - on Sony BDP m2ts clips aren't listed without this
+				result = "DLNA.ORG_PN=" + getMPEG_TS_SD_EULocalizedValue(index);
+			} else if (mimeType.equals("image/jpeg")) {
+				result = "DLNA.ORG_PN=JPEG_LRG";
+			} else if (mimeType.equals("audio/mpeg")) {
+				result = "DLNA.ORG_PN=MP3";
+			} else if (mimeType.substring(0, 9).equals("audio/L16") || mimeType.equals("audio/wav")) {
+				result = "DLNA.ORG_PN=LPCM";
+			}
+		}
+
+		if (result != null) {
+			// Allow the renderer to rewrite the type
+			result = "DLNA.ORG_PN=" + renderer.getDLNAPN(dlnaspec.substring(12));
+		}
+
+		if (!renderer.isDLNAOrgPNUsed()) {
+			result = null;
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns the correct DLNA.ORG_OP string for the given renderer.
+	 * 
+	 * @param renderer
+	 *            The renderer to return the string for.
+	 * @return The string.
+	 */
+	protected String getDlnaOrgOp(RendererConfiguration renderer) {
+		// DLNA.ORG_OP : first 10 = Example: TimeSeekRange.dlna.org :npt=187.000-
+		//                     01 = Range for bytes
+		//                     00 = No range, not possible to pause
+		String result = "DLNA.ORG_OP=01";
+
+		if (getPlayer() != null) {
+			if (getPlayer().isTimeSeekable() && renderer.isSeekByTime()) {
+				if (renderer.isPS3()) {
+					// PS3 doesn't like OP=11
+					result = "DLNA.ORG_OP=10";
+				} else {
+					result = "DLNA.ORG_OP=11";
+				}
+			}
+		} else {
+			if (renderer.isSeekByTime() && !renderer.isPS3()) {
+				result = "DLNA.ORG_OP=11";
+			}
 		}
 
 		return result;
