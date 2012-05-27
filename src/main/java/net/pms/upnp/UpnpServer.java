@@ -113,7 +113,7 @@ public class UpnpServer implements Runnable {
 
     	// Set the details
         DeviceIdentity identity = new DeviceIdentity(UDN.uniqueSystemIdentifier(name));
-        DeviceType type = new UDADeviceType("PMS", 1);
+        DeviceType type = new UDADeviceType("MediaServer", 1);
         ModelDetails modelDetails = new ModelDetails(name, description, version);
 		ManufacturerDetails manufacturerDetails = new ManufacturerDetails(name);
 		DeviceDetails details = new DeviceDetails(name, manufacturerDetails, modelDetails);
