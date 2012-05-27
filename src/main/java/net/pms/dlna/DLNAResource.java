@@ -2303,7 +2303,9 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					LOGGER.debug("Error in URI syntax for file \"" + getFileURL() + "\"");
 				}
 
-				result.addResource(res);
+				// FIXME: Adding this resource throws an exception.
+				// java.lang.RuntimeException: Missing resource URI valueorg.teleal.cling.support.model.Res@2d316b22
+				//result.addResource(res);
 			}
 		}
 
@@ -2323,7 +2325,23 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				URI thumbUri = new URI(thumbURL);
 				Property<URI> albumArt = new Property.UPNP.ALBUM_ART_URI(thumbUri);
 				albumArt.addAttribute(attribute);
-				result.addProperty(albumArt);
+
+				// FIXME: Adding this property causes an exception.
+				//	org.w3c.dom.DOMException: NAMESPACE_ERR: An attempt is made to create or change an object in a way which is incorrect with regard to namespaces.
+				//	at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.checkNamespaceWF(CoreDocumentImpl.java:2514) ~[na:1.6.0_31]
+				//	at com.sun.org.apache.xerces.internal.dom.AttrNSImpl.setName(AttrNSImpl.java:89) ~[na:1.6.0_31]
+				//	at com.sun.org.apache.xerces.internal.dom.AttrNSImpl.<init>(AttrNSImpl.java:74) ~[na:1.6.0_31]
+				//	at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.createAttributeNS(CoreDocumentImpl.java:2138) ~[na:1.6.0_31]
+				//	at com.sun.org.apache.xerces.internal.dom.ElementImpl.setAttributeNS(ElementImpl.java:656) ~[na:1.6.0_31]
+				//	at org.teleal.cling.support.model.DIDLObject$Property.setOnElement(DIDLObject.java:76) ~[cling-support-1.0.5.jar:na]
+				//	at org.teleal.cling.support.contentdirectory.DIDLParser.appendProperties(DIDLParser.java:582) ~[cling-support-1.0.5.jar:na]
+				//	at org.teleal.cling.support.contentdirectory.DIDLParser.generateItem(DIDLParser.java:482) ~[cling-support-1.0.5.jar:na]
+				//	at org.teleal.cling.support.contentdirectory.DIDLParser.generateRoot(DIDLParser.java:343) ~[cling-support-1.0.5.jar:na]
+				//	at org.teleal.cling.support.contentdirectory.DIDLParser.buildDOM(DIDLParser.java:323) ~[cling-support-1.0.5.jar:na]
+				//	at org.teleal.cling.support.contentdirectory.DIDLParser.generate(DIDLParser.java:287) ~[cling-support-1.0.5.jar:na]
+				//	at org.teleal.cling.support.contentdirectory.DIDLParser.generate(DIDLParser.java:269) ~[cling-support-1.0.5.jar:na]
+				//	at net.pms.upnp.ContentDirectory.browse(ContentDirectory.java:152) ~[classes/:na]
+				//result.addProperty(albumArt);
 			} catch (URISyntaxException e) {
 				LOGGER.debug("Error in URI syntax for album art \"" + thumbURL + "\"");
 			}
@@ -2378,6 +2396,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				uclass = "object.item.videoItem";
 			}
 		}
+
 		if (uclass != null) {
 			result.setClazz(new DIDLObject.Class(uclass));
 		}
@@ -2457,7 +2476,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 		if (result != null) {
 			// Allow the renderer to rewrite the type
-			result = "DLNA.ORG_PN=" + renderer.getDLNAPN(dlnaspec.substring(12));
+			result = "DLNA.ORG_PN=" + renderer.getDLNAPN(result.substring(12));
 		}
 
 		if (!renderer.isDLNAOrgPNUsed()) {

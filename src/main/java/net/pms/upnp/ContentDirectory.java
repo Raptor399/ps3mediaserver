@@ -134,7 +134,7 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 						if (didlObject instanceof Container) {
 							didl.addContainer((Container) didlObject);
 						} else {
-							didl.addItem((Item) resource.getDidlObject(renderer));
+							didl.addItem((Item) didlObject);
 						}
 						count++;
 						totalMatches++;
