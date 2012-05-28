@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.teleal.cling.binding.annotations.UpnpService;
 import org.teleal.cling.binding.annotations.UpnpServiceId;
 import org.teleal.cling.binding.annotations.UpnpServiceType;
+import org.teleal.cling.model.message.UpnpHeaders;
+import org.teleal.cling.protocol.sync.ReceivingAction;
 import org.teleal.cling.support.contentdirectory.AbstractContentDirectoryService;
 import org.teleal.cling.support.contentdirectory.ContentDirectoryException;
 import org.teleal.cling.support.contentdirectory.DIDLParser;
@@ -85,25 +87,34 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 	 * @param filter
 	 * @param firstResult
 	 * @param maxResults
-	 * @param orderby
+	 * @param orderBy
 	 * @returns The {@link BrowseResult}.
 	 * @throws ContentDirectoryException
 	 */
 	@Override
 	public BrowseResult browse(String objectID, BrowseFlag browseFlag, String filter,
-			long firstResult, long maxResults, SortCriterion[] orderby)
+			long firstResult, long maxResults, SortCriterion[] orderBy)
 			throws ContentDirectoryException {
 
-		RendererConfiguration renderer = getRendererConfiguration();
+		LOGGER.trace("Received UPnP Browse Request: ObjectID: \"{}\", BrowseFlag: \"{}\", Filter: \"{}\", FirstResult: {}, MaxResults: {}, OrderBy: {}",
+				new Object[] { objectID, browseFlag, filter, firstResult, maxResults, orderBy });
+
+		UpnpHeaders headers = ReceivingAction.getRequestMessage().getHeaders();
+		
+		RendererConfiguration renderer = getRendererConfiguration(headers);
 		long count = 0;
 		long totalMatches = 0; 
 		boolean xbox = false;
 
-		DIDLContent didl = new DIDLContent();
+		DIDLContent didlContent = new DIDLContent();
 		boolean directChildren = BrowseFlag.DIRECT_CHILDREN.equals(browseFlag);
 		List<DLNAResource> resources;
 
 		try {
+			// FIXME: It is wrong to first get a list of resources and then convert
+			// them to DIDLObjects since the relationship between container and its
+			// children is lost. Introduce a new method getDidlObject(...) that
+			// takes the browse arguments.
 			resources = PMS.get().getRootFolder(renderer).getDLNAResources(objectID, directChildren,
 								// FIXME: should be long according to UPnP spec!
 								(int) firstResult, (int) firstResult, renderer);
@@ -121,7 +132,7 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 //			}
 
 			if (resources != null) {
-				LOGGER.info("Files found: " + resources.size());
+				LOGGER.trace("Files found: " + resources.size());
 
 				for (DLNAResource resource : resources) {
 					if (xbox && objectID != null) {
@@ -132,9 +143,9 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 						DIDLObject didlObject = resource.getDidlObject(renderer);
 
 						if (didlObject instanceof Container) {
-							didl.addContainer((Container) didlObject);
+							didlContent.addContainer((Container) didlObject);
 						} else {
-							didl.addItem((Item) didlObject);
+							didlContent.addItem((Item) didlObject);
 						}
 						count++;
 						totalMatches++;
@@ -149,8 +160,8 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 		
 		try {
 			// Careful: DIDLParser() is not thread safe.
-			xml = new DIDLParser().generate(didl);
-			LOGGER.info(xml);
+			xml = new DIDLParser().generate(didlContent);
+			LOGGER.trace(xml);
 		} catch (Exception e) {
 			LOGGER.error("An exception occurred", e);
 		}
@@ -175,8 +186,9 @@ public class ContentDirectory extends AbstractContentDirectoryService {
      *
      * @return the renderer configuration.
      */
-	private RendererConfiguration getRendererConfiguration() {
+	private RendererConfiguration getRendererConfiguration(UpnpHeaders headers) {
 		// FIXME: How to obtain the correct renderer configuration?
+		LOGGER.trace("Determining configuration based on {}", headers);
 		return RendererConfiguration.getDefaultConf();
 	}
 }

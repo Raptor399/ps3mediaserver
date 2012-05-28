@@ -682,7 +682,10 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	/**
 	 * First thing it does it searches for an item matching the given objectID.
 	 * If children is false, then it returns the found object as the only object in the list.
-	 * TODO: (botijo) This function does a lot more than this!
+	 * <p>
+	 * TODO: This method should be refactored out of DLNAResource into a
+	 * renderer dependent resource manager of some sort.
+	 *
 	 * @param objectId ID to search for.
 	 * @param returnChildren State if you want all the children in the returned list.
 	 * @param start
