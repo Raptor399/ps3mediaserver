@@ -1116,14 +1116,14 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			}
 			for (int c = 0; c < indexCount; c++) {
 				openTag(sb, "res");
-				getDlnaOrgOp(mediaRenderer);
+				flags = getDlnaOrgOp(mediaRenderer);
 				addAttribute(sb, "xmlns:dlna", "urn:schemas-dlna-org:metadata-1-0/");
 
 				String mime = getRendererMimeType(mimeType(), mediaRenderer);
 				if (mime == null) {
 					mime = "video/mpeg";
 				}
-				getDlnaOrgPn(mediaRenderer, mime, c);
+				dlnaspec = getDlnaOrgPn(mediaRenderer, mime, c);
 
 				addAttribute(sb, "protocolInfo", "http-get:*:" + mime + ":" + (dlnaspec != null ? (dlnaspec + ";") : "") + flags);
 
