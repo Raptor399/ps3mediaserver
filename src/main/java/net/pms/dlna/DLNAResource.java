@@ -80,6 +80,7 @@ import org.teleal.cling.support.model.PersonWithRole;
 import org.teleal.cling.support.model.Protocol;
 import org.teleal.cling.support.model.ProtocolInfo;
 import org.teleal.cling.support.model.Res;
+import org.teleal.cling.support.model.WriteStatus;
 import org.teleal.cling.support.model.container.Container;
 import org.teleal.cling.support.model.item.ImageItem;
 import org.teleal.cling.support.model.item.Item;
@@ -963,6 +964,25 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	 */
 	protected String getFileURL() {
 		return getURL("");
+	}
+
+	/**
+	 * Returns an URI pointing to the item. If none is available, <code>null</code>
+	 * is returned.
+	 *
+	 * @return The URI.
+	 */
+	protected URI getItemURI() {
+		URI uri = null;
+		String url = getURL("");
+
+		try {
+			uri = new URI(url);
+		} catch (URISyntaxException e) {
+			LOGGER.debug("Invalid URL \"" + url + "\"");
+		}
+
+		return uri;
 	}
 
 	/**
@@ -2071,11 +2091,13 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	 * @param renderer
 	 *            Media Renderer for which to represent this information. Useful
 	 *            for some hacks.
+	 * @param includeChildren
+	 *            Set to true if the resource should include its immediate
+	 *            children as container items.
 	 * @return The {@link org.teleal.cling.support.model.item.Item Item}.
 	 */
-	public final DIDLObject getDidlObject(RendererConfiguration renderer) {
+	public final DIDLObject getDidlObject(RendererConfiguration renderer, boolean includeChildren) {
 		DIDLObject result;
-		StringBuilder sb = new StringBuilder();
 
 		if (isFolder()) {
 			result = new Container();
@@ -2119,6 +2141,18 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				((Container) result).setChildCount(1);
 			} else {
 				((Container) result).setChildCount(childrenNumber());
+				
+				if (includeChildren) {
+					for (DLNAResource child : getChildren()) {
+						DIDLObject object = child.getDidlObject(renderer, false);
+	
+						if (object instanceof Container) {
+							((Container) result).addContainer((Container) object);
+						} else {
+							((Container) result).addItem((Item) object);
+						}
+					}
+				}
 			}
 		}
 
@@ -2165,6 +2199,8 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				((MusicTrack) result).setOriginalTrackNumber(firstAudioTrack.getTrack());
 			}
 		}
+
+		String thumbURL = getThumbnailURL();
 
 		if (!isFolder()) {
 			int indexCount = 1;
@@ -2300,19 +2336,12 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					res.setBitrate(1000000L);
 				}
 
-				try {
-					res.setImportUri(new URI(getFileURL()));
-				} catch (URISyntaxException e) {
-					LOGGER.debug("Error in URI syntax for file \"" + getFileURL() + "\"");
-				}
+				res.setImportUri(getItemURI());
+				res.setValue(thumbURL);
 
-				// FIXME: Adding this resource throws an exception.
-				// java.lang.RuntimeException: Missing resource URI valueorg.teleal.cling.support.model.Res@2d316b22
-				//result.addResource(res);
+				result.addResource(res);
 			}
 		}
-
-		String thumbURL = getThumbnailURL();
 
 		if (!isFolder() && (getExt() == null || (getExt() != null && thumbURL != null))) {
 			String typeName = "JPEG_TN";
@@ -2321,30 +2350,14 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				typeName = "PNG_TN";
 			}
 
-			DIDLAttribute profileAttribute = new DIDLAttribute("urn:schemas-dlna-org:metadata-1-0/", "dlna:profileID", typeName);
+			DIDLAttribute profileAttribute = new DIDLAttribute(Property.DLNA.NAMESPACE.URI, "dlna", typeName);
 			Property<DIDLAttribute> attribute = new Property.DLNA.PROFILE_ID(profileAttribute);
 
 			try {
 				URI thumbUri = new URI(thumbURL);
 				Property<URI> albumArt = new Property.UPNP.ALBUM_ART_URI(thumbUri);
 				albumArt.addAttribute(attribute);
-
-				// FIXME: Adding this property causes an exception.
-				//	org.w3c.dom.DOMException: NAMESPACE_ERR: An attempt is made to create or change an object in a way which is incorrect with regard to namespaces.
-				//	at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.checkNamespaceWF(CoreDocumentImpl.java:2514) ~[na:1.6.0_31]
-				//	at com.sun.org.apache.xerces.internal.dom.AttrNSImpl.setName(AttrNSImpl.java:89) ~[na:1.6.0_31]
-				//	at com.sun.org.apache.xerces.internal.dom.AttrNSImpl.<init>(AttrNSImpl.java:74) ~[na:1.6.0_31]
-				//	at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.createAttributeNS(CoreDocumentImpl.java:2138) ~[na:1.6.0_31]
-				//	at com.sun.org.apache.xerces.internal.dom.ElementImpl.setAttributeNS(ElementImpl.java:656) ~[na:1.6.0_31]
-				//	at org.teleal.cling.support.model.DIDLObject$Property.setOnElement(DIDLObject.java:76) ~[cling-support-1.0.5.jar:na]
-				//	at org.teleal.cling.support.contentdirectory.DIDLParser.appendProperties(DIDLParser.java:582) ~[cling-support-1.0.5.jar:na]
-				//	at org.teleal.cling.support.contentdirectory.DIDLParser.generateItem(DIDLParser.java:482) ~[cling-support-1.0.5.jar:na]
-				//	at org.teleal.cling.support.contentdirectory.DIDLParser.generateRoot(DIDLParser.java:343) ~[cling-support-1.0.5.jar:na]
-				//	at org.teleal.cling.support.contentdirectory.DIDLParser.buildDOM(DIDLParser.java:323) ~[cling-support-1.0.5.jar:na]
-				//	at org.teleal.cling.support.contentdirectory.DIDLParser.generate(DIDLParser.java:287) ~[cling-support-1.0.5.jar:na]
-				//	at org.teleal.cling.support.contentdirectory.DIDLParser.generate(DIDLParser.java:269) ~[cling-support-1.0.5.jar:na]
-				//	at net.pms.upnp.ContentDirectory.browse(ContentDirectory.java:152) ~[classes/:na]
-				//result.addProperty(albumArt);
+				result.addProperty(albumArt);
 			} catch (URISyntaxException e) {
 				LOGGER.debug("Error in URI syntax for album art \"" + thumbURL + "\"");
 			}
@@ -2404,6 +2417,8 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			result.setClazz(new DIDLObject.Class(uclass));
 		}
 
+		result.setWriteStatus(WriteStatus.NOT_WRITABLE);
+		result.setCreator("System");
 		return result;
 	}
 

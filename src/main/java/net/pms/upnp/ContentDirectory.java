@@ -140,7 +140,7 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 					}
 
 					if (resource.isCompatible(renderer) && (resource.getPlayer() == null || resource.getPlayer().isPlayerCompatible(renderer))) {
-						DIDLObject didlObject = resource.getDidlObject(renderer);
+						DIDLObject didlObject = resource.getDidlObject(renderer, true);
 
 						if (didlObject instanceof Container) {
 							didlContent.addContainer((Container) didlObject);
@@ -159,8 +159,10 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 		String xml = "";
 		
 		try {
+			DIDLParser didlParser = new DIDLParser();
+
 			// Careful: DIDLParser() is not thread safe.
-			xml = new DIDLParser().generate(didlContent);
+			xml = didlParser.generate(didlContent);
 			LOGGER.trace(xml);
 		} catch (Exception e) {
 			LOGGER.error("An exception occurred", e);
