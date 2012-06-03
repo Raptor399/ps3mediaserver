@@ -467,10 +467,22 @@ public class CueFolder extends DLNAResource {
 					res.setBitrate(1000000L);
 				}
 
-				res.setImportUri(getItemURI());
-				res.setValue(thumbURL);
-
-				result.addResource(res);
+				URI itemUri = getItemURI();
+				
+				if (itemUri != null) {
+					res.setImportUri(itemUri);
+				} else {
+					LOGGER.debug("Cannot determine import URI for " + getName());
+				}
+				
+				String fileUrl = getFileURL();
+				
+				if (fileUrl != null) {
+					res.setValue(fileUrl);
+					result.addResource(res);
+				} else {
+					LOGGER.debug("Cannot determine file URL for " + getName() + ", skipping.");
+				}
 			}
 		}
 
@@ -506,7 +518,16 @@ public class CueFolder extends DLNAResource {
 			ProtocolInfo protocolInfo = new ProtocolInfo(Protocol.HTTP_GET, ProtocolInfo.WILDCARD,
 					contentFormat, additionalInfo);
 			Res res = new Res();
+			
 			res.setProtocolInfo(protocolInfo);
+			URI itemUri = getItemURI();
+			
+			if (itemUri != null) {
+				res.setImportUri(itemUri);
+			} else {
+				LOGGER.debug("Cannot determine import URI for " + getName());
+			}
+
 			res.setValue(thumbURL);
 			result.addResource(res);
 		}
