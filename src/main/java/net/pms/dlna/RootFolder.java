@@ -30,9 +30,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -47,6 +50,7 @@ import net.pms.external.AdditionalFolderAtRoot;
 import net.pms.external.AdditionalFoldersAtRoot;
 import net.pms.external.ExternalFactory;
 import net.pms.external.ExternalListener;
+import net.pms.formats.Format;
 import net.pms.gui.IFrame;
 import net.pms.xmlwise.Plist;
 import net.pms.xmlwise.XmlParseException;
@@ -55,11 +59,25 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.teleal.cling.support.model.DIDLAttribute;
+import org.teleal.cling.support.model.DIDLObject;
+import org.teleal.cling.support.model.DIDLObject.Property;
+import org.teleal.cling.support.model.PersonWithRole;
+import org.teleal.cling.support.model.Protocol;
+import org.teleal.cling.support.model.ProtocolInfo;
+import org.teleal.cling.support.model.Res;
+import org.teleal.cling.support.model.WriteStatus;
+import org.teleal.cling.support.model.container.Container;
+import org.teleal.cling.support.model.item.ImageItem;
+import org.teleal.cling.support.model.item.Item;
+import org.teleal.cling.support.model.item.MusicTrack;
+import org.teleal.cling.support.model.item.PlaylistItem;
+import org.teleal.cling.support.model.item.VideoItem;
 
 import com.sun.jna.Platform;
 
 public class RootFolder extends DLNAResource {
-	private static final Logger logger = LoggerFactory.getLogger(RootFolder.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RootFolder.class);
 	private final PmsConfiguration configuration = PMS.getConfiguration();
 	private boolean running;
 
@@ -197,7 +215,7 @@ public class RootFolder extends DLNAResource {
 						trace = Messages.getString("DLNAMediaDatabase.4") + " " + child.getName();
 					}
 					if (trace != null) {
-						logger.debug(trace);
+						LOGGER.debug(trace);
 						PMS.get().getFrame().setStatusLine(trace);
 					}
 					if (child.isDiscovered()) {
@@ -293,15 +311,15 @@ public class RootFolder extends DLNAResource {
 							}
 						} catch (ArrayIndexOutOfBoundsException e) {
 							// catch exception here and go with parsing
-							logger.info("Error at line " + br.getLineNumber() + " of WEB.conf: " + e.getMessage());
-							logger.debug(null, e);
+							LOGGER.info("Error at line " + br.getLineNumber() + " of WEB.conf: " + e.getMessage());
+							LOGGER.debug(null, e);
 						}
 					}
 				}
 				br.close();
 			} catch (IOException e) {
-				logger.info("Unexpected error in WEB.conf" + e.getMessage());
-				logger.debug(null, e);
+				LOGGER.info("Unexpected error in WEB.conf" + e.getMessage());
+				LOGGER.debug(null, e);
 			}
 		}
 	}
@@ -390,14 +408,14 @@ public class RootFolder extends DLNAResource {
 						res.addChild(rf);
 					}
 				} else {
-					logger.info("iPhoto folder not found");
+					LOGGER.info("iPhoto folder not found");
 				}
 			} catch (XmlParseException e) {
-				logger.error("Something went wrong with the iPhoto Library scan: ", e);
+				LOGGER.error("Something went wrong with the iPhoto Library scan: ", e);
 			} catch (URISyntaxException e) {
-				logger.error("Something went wrong with the iPhoto Library scan: ", e);
+				LOGGER.error("Something went wrong with the iPhoto Library scan: ", e);
 			} catch (IOException e) {
-				logger.error("Something went wrong with the iPhoto Library scan: ", e);
+				LOGGER.error("Something went wrong with the iPhoto Library scan: ", e);
 			}
 		}
 		return res;
@@ -436,7 +454,7 @@ public class RootFolder extends DLNAResource {
 				in.close();
 				
 			} catch (Exception e) {
-				logger.error("Something went wrong with the aperture library scan: ", e);
+				LOGGER.error("Something went wrong with the aperture library scan: ", e);
 			} finally {
 				// Avoid zombie processes, or open stream failures...
 				if (prc!=null) {
@@ -446,22 +464,22 @@ public class RootFolder extends DLNAResource {
 						prc.waitFor();
 					} catch (InterruptedException e) {
 						// Can this thread be interrupted? don't think so or, and even when.. what will happen?
-						logger.warn("Interrupted while waiting for stream for process" + e.getMessage());
+						LOGGER.warn("Interrupted while waiting for stream for process" + e.getMessage());
 					}
 					try {
 						prc.getErrorStream().close();
 					} catch (Exception e) {
-						logger.warn("Could not close stream for output process", e);
+						LOGGER.warn("Could not close stream for output process", e);
 					}
 					try {
 						prc.getInputStream().close();
 					} catch (Exception e) {
-						logger.warn("Could not close stream for output process", e);
+						LOGGER.warn("Could not close stream for output process", e);
 					}
 					try {
 						prc.getOutputStream().close();
 					} catch (Exception e) {
-						logger.warn("Could not close stream for output process", e);
+						LOGGER.warn("Could not close stream for output process", e);
 					}
 				}
 			}
@@ -497,7 +515,7 @@ public class RootFolder extends DLNAResource {
 				mediaName = "unknown library";
 			}
 
-			logger.info("Going to parse aperture library: " + mediaName);
+			LOGGER.info("Going to parse aperture library: " + mediaName);
 			res  = new VirtualFolder(mediaName, null);
 			listOfAlbums = (ArrayList<?>) iPhotoLib.get("List of Albums"); // the list of events (rolls)
 
@@ -510,7 +528,7 @@ public class RootFolder extends DLNAResource {
 				}
 			}
 		} else {
-			logger.info("No Aperture library found.");
+			LOGGER.info("No Aperture library found.");
 		}
 		return res;
 	}
@@ -608,7 +626,7 @@ public class RootFolder extends DLNAResource {
 				location = location + "\\iTunes\\iTunes Music Library.xml";
 				iTunesFile = location;
 			} else {
-				logger.info("Could not find the My Music folder");
+				LOGGER.info("Could not find the My Music folder");
 			}
 		}
 
@@ -672,10 +690,10 @@ public class RootFolder extends DLNAResource {
 						res.addChild(pf);
 					}
 				} else {
-					logger.info("Could not find the iTunes file");
+					LOGGER.info("Could not find the iTunes file");
 				}
 			} catch (Exception e) {
-				logger.error("Something went wrong with the iTunes Library scan: ", e);
+				LOGGER.error("Something went wrong with the iTunes Library scan: ", e);
 			}
 		}
 		return res;
@@ -781,7 +799,7 @@ public class RootFolder extends DLNAResource {
 					try {
 						configuration.save();
 					} catch (ConfigurationException e) {
-						logger.debug("Caught exception", e);
+						LOGGER.debug("Caught exception", e);
 					}
 					return true;
 				}
@@ -810,7 +828,7 @@ public class RootFolder extends DLNAResource {
 				try {
 					res.add(afar.getChild());
 				} catch (Throwable t) {
-					logger.error(String.format("Failed to append AdditionalFolderAtRoot with name=%s, class=%s", afar.name(), afar.getClass()), t);
+					LOGGER.error(String.format("Failed to append AdditionalFolderAtRoot with name=%s, class=%s", afar.name(), afar.getClass()), t);
 				}
 			} else if (listener instanceof AdditionalFoldersAtRoot) {
 				java.util.Iterator<DLNAResource> folders = ((AdditionalFoldersAtRoot) listener).getChildren();
@@ -819,7 +837,7 @@ public class RootFolder extends DLNAResource {
 					try {
 						res.add(resource);
 					} catch (Throwable t) {
-						logger.error(String.format("Failed to append AdditionalFolderAtRoots with class=%s for DLNAResource=%s", listener.getClass(), resource.getClass()), t);
+						LOGGER.error(String.format("Failed to append AdditionalFolderAtRoots with class=%s for DLNAResource=%s", listener.getClass(), resource.getClass()), t);
 					}
 				}
 			}
@@ -831,4 +849,351 @@ public class RootFolder extends DLNAResource {
 	public String toString() {
 		return "RootFolder[" + getChildren() + "]";
 	}
+
+	/**
+	 * Returns the item detail information for this resource as per the UPnP spec.
+	 * 
+	 * @param renderer
+	 *            Media Renderer for which to represent this information. Useful
+	 *            for some hacks.
+	 * @param includeChildren
+	 *            Set to true if the resource should include its immediate
+	 *            children as container items.
+	 * @return The {@link org.teleal.cling.support.model.item.Item Item}.
+	 */
+	public DIDLObject getDidlObject(RendererConfiguration renderer, boolean includeChildren) {
+		DIDLObject result;
+
+		if (isFolder()) {
+			result = new Container();
+		} else {
+			// Determine the item type first
+			switch (getType()) {
+				case Format.AUDIO:
+					result = new MusicTrack();
+					// Missing: AudioBook and AudioBroadcast
+					break;
+
+				case Format.IMAGE:
+					result = new ImageItem();
+					// Missing: Photo
+					break;
+
+				case Format.VIDEO:
+					result = new VideoItem();
+					// Missing: Movie, MusicVideoClip and VideoBroadcast
+					break;
+
+				case Format.PLAYLIST:
+					result = new PlaylistItem();
+					break;
+
+				default:
+					result = new Item();
+					break;
+			}
+		}
+
+		result.setId(getResourceId());
+
+		if (isFolder()) {
+			if (!isDiscovered() && childrenNumber() == 0) {
+				//  When a folder has not been scanned for resources, it will automatically have zero children.
+				//  Some renderers like XBMC will assume a folder is empty when encountering childCount="0" and
+				//  will not display the folder. By returning childCount="1" these renderers will still display
+				//  the folder. When it is opened, its children will be discovered and childrenNumber() will be
+				//  set to the right value.
+				((Container) result).setChildCount(1);
+			} else {
+				((Container) result).setChildCount(childrenNumber());
+				
+				if (includeChildren) {
+					for (DLNAResource child : getChildren()) {
+						DIDLObject object = child.getDidlObject(renderer, false);
+	
+						if (object instanceof Container) {
+							((Container) result).addContainer((Container) object);
+						} else {
+							((Container) result).addItem((Item) object);
+						}
+					}
+				}
+			}
+		}
+
+		result.setParentID(getParentId());
+		result.setRestricted(true);
+
+		final DLNAMediaAudio firstAudioTrack = getMedia() != null ? getMedia().getFirstAudioTrack() : null;
+		String title;
+
+		if (firstAudioTrack != null && StringUtils.isNotBlank(firstAudioTrack.getSongname())) {
+			String playerName = "";
+
+			if (getPlayer() != null && !PMS.getConfiguration().isHideEngineNames()) {
+				playerName = " [" + getPlayer().name() + "]";
+			}
+
+			title = firstAudioTrack.getSongname() + playerName;
+		} else {
+			if (isFolder() || getPlayer() == null) {
+				title = getDisplayName();
+			} else {
+				title = renderer.getUseSameExtension(getDisplayName(renderer));
+			}
+		}
+
+		result.setTitle(title);
+
+		if (firstAudioTrack != null) {
+			if (StringUtils.isNotBlank(firstAudioTrack.getAlbum())) {
+				((MusicTrack) result).setAlbum(firstAudioTrack.getAlbum());
+			}
+
+			if (StringUtils.isNotBlank(firstAudioTrack.getArtist())) {
+				PersonWithRole artist = new PersonWithRole(firstAudioTrack.getArtist());
+				((MusicTrack) result).setArtists(new PersonWithRole[] { artist });
+				((MusicTrack) result).setCreator(firstAudioTrack.getArtist());
+			}
+
+			if (StringUtils.isNotBlank(firstAudioTrack.getGenre())) {
+				((MusicTrack) result).setGenres(new String[] { firstAudioTrack.getGenre() });
+			}
+
+			if (firstAudioTrack.getTrack() > 0) {
+				((MusicTrack) result).setOriginalTrackNumber(firstAudioTrack.getTrack());
+			}
+		}
+
+		String thumbURL = getThumbnailURL();
+
+		if (!isFolder()) {
+			int indexCount = 1;
+			String flags = getDlnaOrgOp(renderer); 
+
+			// FIXME: Setting global variable to keep DLNAResource.getDlnaContentFeatures()
+			// happy. Remove this when the transition to Cling is complete.
+			setFlags(flags);
+
+			if (renderer.isDLNALocalizationRequired()) {
+				indexCount = getDLNALocalesCount();
+			}
+
+			// Determine the renderer specific mime type
+			String mimeType = getRendererMimeType(mimeType(), renderer);
+
+			if (mimeType == null) {
+				// Type couldn't be determined; assume video/mpeg
+				mimeType = "video/mpeg";
+			}
+
+			for (int c = 0; c < indexCount; c++) {
+				String dlnaspec = getDlnaOrgPn(renderer, mimeType, c);
+
+				// FIXME: We're in a for loop setting a global variable. Smells fishy!
+				// Doing it nevertheless to keep DLNAResource.getDlnaContentFeatures() happy.
+				// Remove this when the transition to Cling is complete.
+				setDlnaSpec(dlnaspec);
+
+				// Construct protocol info
+				ProtocolInfo protocolInfo = new ProtocolInfo(Protocol.HTTP_GET, ProtocolInfo.WILDCARD,
+						mimeType, (dlnaspec != null ? (dlnaspec + ";") : "") + flags);
+
+				// Construct resource info
+				Res res = new Res();
+				res.setProtocolInfo(protocolInfo);
+
+
+				if (getExt() != null && getExt().isVideo() && getMedia() != null && getMedia().isMediaparsed()) {
+					if (getPlayer() == null && getMedia() != null) {
+						res.setSize(getMedia().getSize());
+					} else {
+						long transcoded_size = renderer.getTranscodedSize();
+
+						if (transcoded_size != 0) {
+							res.setSize(transcoded_size);
+						}
+					}
+
+					if (getMedia().getDuration() != null) {
+						if (getSplitRange().isEndLimitAvailable()) {
+							res.setDuration(DLNAMediaInfo.getDurationString(getSplitRange().getDuration()));
+						} else {
+							res.setDuration(getMedia().getDurationString());
+						}
+					}
+
+					if (getMedia().getResolution() != null) {
+						res.setResolution(getMedia().getResolution());
+					}
+
+					res.setBitrate((long) getMedia().getRealVideoBitrate());
+
+					if (firstAudioTrack != null) {
+						if (firstAudioTrack.getNrAudioChannels() > 0) {
+							res.setNrAudioChannels((long) firstAudioTrack.getNrAudioChannels());
+						}
+						if (firstAudioTrack.getSampleFrequency() != null) {
+							try {
+								res.setSampleFrequency(Long.parseLong(firstAudioTrack.getSampleFrequency()));
+							} catch (NumberFormatException e) {
+								LOGGER.debug("Cannot parse audio track sample frequency " + firstAudioTrack.getSampleFrequency());
+							}
+						}
+					}
+				} else if (getExt() != null && getExt().isImage()) {
+					if (getMedia() != null && getMedia().isMediaparsed()) {
+						res.setSize(getMedia().getSize());
+
+						if (getMedia().getResolution() != null) {
+							res.setResolution(getMedia().getResolution());
+						}
+					} else {
+						res.setSize(length());
+					}
+				} else if (getExt() != null && getExt().isAudio()) {
+					if (getMedia() != null && getMedia().isMediaparsed()) {
+						res.setBitrate((long) getMedia().getBitrate());
+
+						if (getMedia().getDuration() != null) {
+							res.setDuration(DLNAMediaInfo.getDurationString(getMedia().getDuration()));
+						}
+
+						if (firstAudioTrack != null && firstAudioTrack.getSampleFrequency() != null) {
+							try {
+								res.setSampleFrequency(Long.parseLong(firstAudioTrack.getSampleFrequency()));
+							} catch (NumberFormatException e) {
+								LOGGER.debug("Cannot parse audio track sample frequency " + firstAudioTrack.getSampleFrequency());
+							}
+						}
+
+						if (firstAudioTrack != null) {
+							res.setNrAudioChannels((long) firstAudioTrack.getNrAudioChannels());
+						}
+
+						if (getPlayer() == null) {
+							res.setSize(getMedia().getSize());
+						} else {
+							// calcul taille wav
+							if (firstAudioTrack != null) {
+								int defaultFrequency = renderer.isTranscodeAudioTo441() ? 44100 : 48000;
+
+								if (!PMS.getConfiguration().isAudioResample()) {
+									try {
+										// FIXME: Which exception could be thrown here?
+										defaultFrequency = firstAudioTrack.getSampleRate();
+									} catch (Exception e) {
+										LOGGER.debug("Caught exception", e);
+									}
+								}
+
+								int na = firstAudioTrack.getNrAudioChannels();
+
+								if (na > 2) { 
+									// no 5.1 dump in mplayer
+									na = 2;
+								}
+
+								long finalsize = (long) (getMedia().getDurationInSeconds() * defaultFrequency * 2 * na);
+								LOGGER.debug("Calculated size: " + finalsize);
+								res.setSize(finalsize);
+							}
+						}
+					} else {
+						res.setSize(length());
+					}
+				} else {
+					// Video without media info; set some defaults
+					res.setSize(DLNAMediaInfo.TRANS_SIZE);
+					res.setDuration("09:59:59");
+					res.setBitrate(1000000L);
+				}
+
+				res.setImportUri(getItemURI());
+				res.setValue(thumbURL);
+
+				result.addResource(res);
+			}
+		}
+
+		if (!isFolder() && (getExt() == null || (getExt() != null && thumbURL != null))) {
+			String typeName = "JPEG_TN";
+
+			if (getThumbnailContentType().equals(PNG_TYPEMIME) && !renderer.isForceJPGThumbnails()) {
+				typeName = "PNG_TN";
+			}
+
+			DIDLAttribute profileAttribute = new DIDLAttribute(Property.DLNA.NAMESPACE.URI, "dlna", typeName);
+			Property<DIDLAttribute> attribute = new Property.DLNA.PROFILE_ID(profileAttribute);
+
+			try {
+				URI thumbUri = new URI(thumbURL);
+				Property<URI> albumArt = new Property.UPNP.ALBUM_ART_URI(thumbUri);
+				albumArt.addAttribute(attribute);
+				result.addProperty(albumArt);
+			} catch (URISyntaxException e) {
+				LOGGER.debug("Error in URI syntax for album art \"" + thumbURL + "\"");
+			}
+		}
+
+		if ((isFolder() || renderer.isForceJPGThumbnails()) && thumbURL != null) {
+			String contentFormat = "image/jpeg";
+			String additionalInfo = "DLNA.ORG_PN=JPEG_TN";
+			
+			if (getThumbnailContentType().equals(PNG_TYPEMIME) && !renderer.isForceJPGThumbnails()) {
+				contentFormat = "image/png";
+				additionalInfo = "DLNA.ORG_PN=PNG_TN";
+			}
+
+			ProtocolInfo protocolInfo = new ProtocolInfo(Protocol.HTTP_GET, ProtocolInfo.WILDCARD,
+					contentFormat, additionalInfo);
+			Res res = new Res();
+			res.setProtocolInfo(protocolInfo);
+			res.setValue(thumbURL);
+			result.addResource(res);
+		}
+
+		if (getLastmodified() > 0) {
+			SimpleDateFormat SDF_DATE = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+			Property<String> lastmodified = new Property.DC.DATE(SDF_DATE.format(new Date(getLastmodified())));
+			result.addProperty(lastmodified);
+		}
+
+		String uclass = null;
+
+		if (getFirst() != null && getMedia() != null && !getMedia().isSecondaryFormatValid()) {
+			uclass = "dummy";
+		} else {
+			if (isFolder()) {
+				uclass = "object.container.storageFolder";
+				boolean xbox = renderer.isXBOX();
+				if (xbox && getFakeParentId() != null && getFakeParentId().equals("7")) {
+					uclass = "object.container.album.musicAlbum";
+				} else if (xbox && getFakeParentId() != null && getFakeParentId().equals("6")) {
+					uclass = "object.container.person.musicArtist";
+				} else if (xbox && getFakeParentId() != null && getFakeParentId().equals("5")) {
+					uclass = "object.container.genre.musicGenre";
+				} else if (xbox && getFakeParentId() != null && getFakeParentId().equals("F")) {
+					uclass = "object.container.playlistContainer";
+				}
+			} else if (getExt() != null && getExt().isVideo()) {
+				uclass = "object.item.videoItem";
+			} else if (getExt() != null && getExt().isImage()) {
+				uclass = "object.item.imageItem.photo";
+			} else if (getExt() != null && getExt().isAudio()) {
+				uclass = "object.item.audioItem.musicTrack";
+			} else {
+				uclass = "object.item.videoItem";
+			}
+		}
+
+		if (uclass != null) {
+			result.setClazz(new DIDLObject.Class(uclass));
+		}
+
+		result.setWriteStatus(WriteStatus.NOT_WRITABLE);
+		result.setCreator("System");
+		return result;
+	}
+
 } 
