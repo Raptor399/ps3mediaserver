@@ -96,7 +96,7 @@ public class UpnpServer implements Runnable {
 			LOGGER.error("An exception occured.", e);
 
 			// TODO: exit() seems a bit rash here.
-			System.exit(1);
+			//System.exit(1);
         }
     }
 

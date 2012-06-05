@@ -19,6 +19,9 @@
 package net.pms.upnp;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.List;
 
 import net.pms.PMS;
@@ -53,6 +56,7 @@ import org.teleal.cling.support.model.item.Item;
 )
 public class ContentDirectory extends AbstractContentDirectoryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ContentDirectory.class);
+	private Socket socket;
 
 	/**
 	 * Returns the browse result as per the UPnP spec. Quoting the spec:
@@ -96,15 +100,27 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 			long firstResult, long maxResults, SortCriterion[] orderBy)
 			throws ContentDirectoryException {
 
+		// TODO: Add IP filtering based on InternetAddress
+//		InetSocketAddress remoteAddress = (InetSocketAddress) e.getChannel().getRemoteAddress();
+//		InetAddress ia = remoteAddress.getAddress();
+//
+//		// Apply the IP filter
+//		if (filterIp(ia)) {
+//			e.getChannel().close();
+//			logger.trace("Access denied for address " + ia + " based on IP filter");
+//			return;
+//		}
+
 		LOGGER.trace("Received UPnP Browse Request: ObjectID: \"{}\", BrowseFlag: \"{}\", Filter: \"{}\", FirstResult: {}, MaxResults: {}, OrderBy: {}",
 				new Object[] { objectID, browseFlag, filter, firstResult, maxResults, orderBy });
 
 		UpnpHeaders headers = ReceivingAction.getRequestMessage().getHeaders();
 		
-		RendererConfiguration renderer = getRendererConfiguration(headers);
+		RendererConfiguration renderer = RendererConfiguration.getRendererConfiguration(headers);
+		PMS.get().setRendererfound(renderer);
+
 		long count = 0;
-		long totalMatches = 0; 
-		boolean xbox = false;
+		long totalMatches = 0;
 
 		DIDLContent didlContent = new DIDLContent();
 		boolean directChildren = BrowseFlag.DIRECT_CHILDREN.equals(browseFlag);
@@ -117,7 +133,7 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 			// takes the browse arguments.
 			resources = PMS.get().getRootFolder(renderer).getDLNAResources(objectID, directChildren,
 								// FIXME: should be long according to UPnP spec!
-								(int) firstResult, (int) firstResult, renderer);
+								(int) firstResult, (int) maxResults, renderer);
 
 			// FIXME: Move to search()!
 //			if (searchCriteria != null && files != null) {
@@ -135,7 +151,7 @@ public class ContentDirectory extends AbstractContentDirectoryService {
 				LOGGER.trace("Files found: " + resources.size());
 
 				for (DLNAResource resource : resources) {
-					if (xbox && objectID != null) {
+					if (renderer.isXBOX() && objectID != null) {
 						resource.setFakeParentId(objectID);
 					}
 
@@ -181,16 +197,4 @@ public class ContentDirectory extends AbstractContentDirectoryService {
                                SortCriterion[] orderBy) throws ContentDirectoryException {
         return super.search(containerId, searchCriteria, filter, firstResult, maxResults, orderBy);
     }
-
-    /**
-     * Returns the correct renderer configuration to be used for a content
-     * directory request.
-     *
-     * @return the renderer configuration.
-     */
-	private RendererConfiguration getRendererConfiguration(UpnpHeaders headers) {
-		// FIXME: How to obtain the correct renderer configuration?
-		LOGGER.trace("Determining configuration based on {}", headers);
-		return RendererConfiguration.getDefaultConf();
-	}
 }
