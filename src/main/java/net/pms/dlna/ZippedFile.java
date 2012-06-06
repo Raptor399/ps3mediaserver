@@ -39,22 +39,22 @@ import net.pms.configuration.RendererConfiguration;
 import net.pms.formats.Format;
 
 import org.apache.commons.lang.StringUtils;
+import org.fourthline.cling.support.model.DIDLAttribute;
+import org.fourthline.cling.support.model.DIDLObject;
+import org.fourthline.cling.support.model.DIDLObject.Property;
+import org.fourthline.cling.support.model.PersonWithRole;
+import org.fourthline.cling.support.model.Protocol;
+import org.fourthline.cling.support.model.ProtocolInfo;
+import org.fourthline.cling.support.model.Res;
+import org.fourthline.cling.support.model.WriteStatus;
+import org.fourthline.cling.support.model.container.Container;
+import org.fourthline.cling.support.model.item.ImageItem;
+import org.fourthline.cling.support.model.item.Item;
+import org.fourthline.cling.support.model.item.MusicTrack;
+import org.fourthline.cling.support.model.item.PlaylistItem;
+import org.fourthline.cling.support.model.item.VideoItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.teleal.cling.support.model.DIDLAttribute;
-import org.teleal.cling.support.model.DIDLObject;
-import org.teleal.cling.support.model.DIDLObject.Property;
-import org.teleal.cling.support.model.PersonWithRole;
-import org.teleal.cling.support.model.Protocol;
-import org.teleal.cling.support.model.ProtocolInfo;
-import org.teleal.cling.support.model.Res;
-import org.teleal.cling.support.model.WriteStatus;
-import org.teleal.cling.support.model.container.Container;
-import org.teleal.cling.support.model.item.ImageItem;
-import org.teleal.cling.support.model.item.Item;
-import org.teleal.cling.support.model.item.MusicTrack;
-import org.teleal.cling.support.model.item.PlaylistItem;
-import org.teleal.cling.support.model.item.VideoItem;
 
 public class ZippedFile extends DLNAResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ZippedFile.class);

@@ -46,20 +46,20 @@ import net.pms.util.NaturalComparator;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.teleal.cling.support.model.DIDLAttribute;
-import org.teleal.cling.support.model.DIDLObject;
-import org.teleal.cling.support.model.DIDLObject.Property;
-import org.teleal.cling.support.model.PersonWithRole;
-import org.teleal.cling.support.model.Protocol;
-import org.teleal.cling.support.model.ProtocolInfo;
-import org.teleal.cling.support.model.Res;
-import org.teleal.cling.support.model.WriteStatus;
-import org.teleal.cling.support.model.container.Container;
-import org.teleal.cling.support.model.item.ImageItem;
-import org.teleal.cling.support.model.item.Item;
-import org.teleal.cling.support.model.item.MusicTrack;
-import org.teleal.cling.support.model.item.PlaylistItem;
-import org.teleal.cling.support.model.item.VideoItem;
+import org.fourthline.cling.support.model.DIDLAttribute;
+import org.fourthline.cling.support.model.DIDLObject;
+import org.fourthline.cling.support.model.DIDLObject.Property;
+import org.fourthline.cling.support.model.PersonWithRole;
+import org.fourthline.cling.support.model.Protocol;
+import org.fourthline.cling.support.model.ProtocolInfo;
+import org.fourthline.cling.support.model.Res;
+import org.fourthline.cling.support.model.WriteStatus;
+import org.fourthline.cling.support.model.container.Container;
+import org.fourthline.cling.support.model.item.ImageItem;
+import org.fourthline.cling.support.model.item.Item;
+import org.fourthline.cling.support.model.item.MusicTrack;
+import org.fourthline.cling.support.model.item.PlaylistItem;
+import org.fourthline.cling.support.model.item.VideoItem;
 
 /**
  * TODO: Change all instance variables to private. For backwards compatibility
@@ -448,7 +448,7 @@ public class MapFile extends DLNAResource {
 	 * @param includeChildren
 	 *            Set to true if the resource should include its immediate
 	 *            children as container items.
-	 * @return The {@link org.teleal.cling.support.model.item.Item Item}.
+	 * @return The {@link org.fourthline.cling.support.model.item.Item Item}.
 	 */
 	public DIDLObject getDidlObject(RendererConfiguration renderer, boolean includeChildren) {
 		Container result = new Container();

@@ -30,21 +30,21 @@ import net.pms.dlna.DLNAResource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.teleal.cling.binding.annotations.UpnpService;
-import org.teleal.cling.binding.annotations.UpnpServiceId;
-import org.teleal.cling.binding.annotations.UpnpServiceType;
-import org.teleal.cling.model.message.UpnpHeaders;
-import org.teleal.cling.protocol.sync.ReceivingAction;
-import org.teleal.cling.support.contentdirectory.AbstractContentDirectoryService;
-import org.teleal.cling.support.contentdirectory.ContentDirectoryException;
-import org.teleal.cling.support.contentdirectory.DIDLParser;
-import org.teleal.cling.support.model.BrowseFlag;
-import org.teleal.cling.support.model.BrowseResult;
-import org.teleal.cling.support.model.DIDLContent;
-import org.teleal.cling.support.model.DIDLObject;
-import org.teleal.cling.support.model.SortCriterion;
-import org.teleal.cling.support.model.container.Container;
-import org.teleal.cling.support.model.item.Item;
+import org.fourthline.cling.binding.annotations.UpnpService;
+import org.fourthline.cling.binding.annotations.UpnpServiceId;
+import org.fourthline.cling.binding.annotations.UpnpServiceType;
+import org.fourthline.cling.model.message.UpnpHeaders;
+import org.fourthline.cling.protocol.sync.ReceivingAction;
+import org.fourthline.cling.support.contentdirectory.AbstractContentDirectoryService;
+import org.fourthline.cling.support.contentdirectory.ContentDirectoryException;
+import org.fourthline.cling.support.contentdirectory.DIDLParser;
+import org.fourthline.cling.support.model.BrowseFlag;
+import org.fourthline.cling.support.model.BrowseResult;
+import org.fourthline.cling.support.model.DIDLContent;
+import org.fourthline.cling.support.model.DIDLObject;
+import org.fourthline.cling.support.model.SortCriterion;
+import org.fourthline.cling.support.model.container.Container;
+import org.fourthline.cling.support.model.item.Item;
 
 /**
  * This class implements the UPnP ContentDirectory service that allows a

@@ -24,26 +24,26 @@ import net.pms.util.PropertiesUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.teleal.cling.DefaultUpnpServiceConfiguration;
-import org.teleal.cling.UpnpService;
-import org.teleal.cling.UpnpServiceConfiguration;
-import org.teleal.cling.UpnpServiceImpl;
-import org.teleal.cling.binding.LocalServiceBindingException;
-import org.teleal.cling.binding.annotations.AnnotationLocalServiceBinder;
-import org.teleal.cling.model.DefaultServiceManager;
-import org.teleal.cling.model.ValidationException;
-import org.teleal.cling.model.meta.DeviceDetails;
-import org.teleal.cling.model.meta.DeviceIdentity;
-import org.teleal.cling.model.meta.Icon;
-import org.teleal.cling.model.meta.LocalDevice;
-import org.teleal.cling.model.meta.LocalService;
-import org.teleal.cling.model.meta.ManufacturerDetails;
-import org.teleal.cling.model.meta.ModelDetails;
-import org.teleal.cling.model.types.DLNADoc;
-import org.teleal.cling.model.types.DeviceType;
-import org.teleal.cling.model.types.UDADeviceType;
-import org.teleal.cling.model.types.UDN;
-import org.teleal.cling.support.connectionmanager.ConnectionManagerService;
+import org.fourthline.cling.DefaultUpnpServiceConfiguration;
+import org.fourthline.cling.UpnpService;
+import org.fourthline.cling.UpnpServiceConfiguration;
+import org.fourthline.cling.UpnpServiceImpl;
+import org.fourthline.cling.binding.LocalServiceBindingException;
+import org.fourthline.cling.binding.annotations.AnnotationLocalServiceBinder;
+import org.fourthline.cling.model.DefaultServiceManager;
+import org.fourthline.cling.model.ValidationException;
+import org.fourthline.cling.model.meta.DeviceDetails;
+import org.fourthline.cling.model.meta.DeviceIdentity;
+import org.fourthline.cling.model.meta.Icon;
+import org.fourthline.cling.model.meta.LocalDevice;
+import org.fourthline.cling.model.meta.LocalService;
+import org.fourthline.cling.model.meta.ManufacturerDetails;
+import org.fourthline.cling.model.meta.ModelDetails;
+import org.fourthline.cling.model.types.DLNADoc;
+import org.fourthline.cling.model.types.DeviceType;
+import org.fourthline.cling.model.types.UDADeviceType;
+import org.fourthline.cling.model.types.UDN;
+import org.fourthline.cling.support.connectionmanager.ConnectionManagerService;
 
 /**
  * As a server, PMS does two big things: (1) it defines and provides UPnP

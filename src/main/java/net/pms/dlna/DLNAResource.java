@@ -71,9 +71,9 @@ import net.pms.util.Iso639;
 import net.pms.util.MpegUtil;
 
 import org.apache.commons.lang.StringUtils;
+import org.fourthline.cling.support.model.DIDLObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.teleal.cling.support.model.DIDLObject;
 
 /**
  * Represents any item that can be browsed via the UPNP ContentDirectory service.
