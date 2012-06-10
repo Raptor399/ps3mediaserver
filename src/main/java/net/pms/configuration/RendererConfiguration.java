@@ -25,9 +25,17 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.fourthline.cling.model.message.UpnpHeaders;
+import org.fourthline.cling.model.meta.DeviceDetails;
+import org.fourthline.cling.model.profile.HeaderDeviceDetailsProvider;
 
 import com.sun.jna.Platform;
 
+/**
+ * This class takes care of loading renderer configurations and offers several
+ * methods to recognize a connecting renderer based on HTTP headers. Once a
+ * renderer has been recognized, the resulting instance provides methods to
+ * query the possibilities of the renderer.
+ */
 public class RendererConfiguration {
 	/*
 	 * Static section
@@ -37,6 +45,12 @@ public class RendererConfiguration {
 	private static PmsConfiguration pmsConfiguration;
 	private static RendererConfiguration defaultConf;
 	private static Map<InetAddress, RendererConfiguration> addressAssociation = new HashMap<InetAddress, RendererConfiguration>();
+
+	/**
+	 * Device recognition by headers for Cling
+	 */
+	private static final Map<HeaderDeviceDetailsProvider.Key, DeviceDetails> headerDetails = new HashMap<HeaderDeviceDetailsProvider.Key, DeviceDetails>();
+
 
 	public static RendererConfiguration getDefaultConf() {
 		return defaultConf;
@@ -92,6 +106,11 @@ public class RendererConfiguration {
 				}
 			}
 		}
+
+		DeviceDetails defaultDeviceDetails = new DeviceDetails(defaultConf.getRendererName());
+
+		// FIXME: Figure out what to do with the instance created here...
+		// new HeaderDeviceDetailsProvider(defaultDeviceDetails, headerDetails);
 	}
 
 	/**
@@ -437,6 +456,23 @@ public class RendererConfiguration {
 
 		if (isMediaParserV2()) {
 			formatConfiguration = new FormatConfiguration(configuration.getList(SUPPORTED));
+		}
+
+		// Initialize Cling device recognition by headers
+		DeviceDetails deviceDetails = new DeviceDetails(getRendererName());
+
+		String userAgent = getUserAgent();
+
+		if (!"".equals(userAgent)) {
+			headerDetails.put(new HeaderDeviceDetailsProvider.Key("User-Agent", userAgent), deviceDetails);
+		}
+
+		String userAgentAdditionalHeader = getUserAgentAdditionalHttpHeader();
+		String userAgentAdditionalHeaderSearch = getUserAgentAdditionalHttpHeaderSearch();
+
+		if (!"".equals(userAgentAdditionalHeader) && !"".equals(userAgentAdditionalHeaderSearch)) {
+			headerDetails.put(new HeaderDeviceDetailsProvider.Key(userAgentAdditionalHeader,
+					userAgentAdditionalHeaderSearch), deviceDetails);
 		}
 	}
 
