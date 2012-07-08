@@ -19,21 +19,31 @@
 
 package net.pms.test;
 
-import ch.qos.logback.classic.LoggerContext;
-import net.pms.configuration.PmsConfiguration;
+import static net.pms.configuration.RendererConfiguration.RENDERER_ID_PLAYSTATION3;
+import static net.pms.configuration.RendererConfiguration.getRendererConfigurationByUA;
+import static net.pms.configuration.RendererConfiguration.getRendererConfigurationByUAAHH;
+import static net.pms.configuration.RendererConfiguration.loadRendererConfigurations;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import net.pms.api.PmsConfiguration;
+import net.pms.configuration.PmsConfigurationImpl;
 import net.pms.configuration.RendererConfiguration;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-
-import static net.pms.configuration.RendererConfiguration.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import ch.qos.logback.classic.LoggerContext;
 
 
 /**
@@ -195,7 +205,7 @@ public class RendererConfigurationTest {
 		PmsConfiguration pmsConf = null;
 
 		try {
-			pmsConf = new PmsConfiguration(false);
+			pmsConf = new PmsConfigurationImpl(false);
 		} catch (IOException e) {
 			// This should be impossible since no configuration file will be loaded.
 		} catch (ConfigurationException e) {
