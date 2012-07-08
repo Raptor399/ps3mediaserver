@@ -43,7 +43,7 @@ public interface PmsCore {
 	 * 
 	 * @return {@link IFrame} Main PMS window.
 	 */
-	public abstract IFrame getFrame();
+	public IFrame getFrame();
 
 	/**
 	 * getRootFolder returns the Root Folder for a given renderer. There could
@@ -56,7 +56,7 @@ public interface PmsCore {
 	 *            renderer is used.
 	 * @return {@link RootFolder} The root folder structure for a given renderer
 	 */
-	public abstract RootFolder getRootFolder(RendererConfiguration renderer);
+	public RootFolder getRootFolder(RendererConfiguration renderer);
 
 	/**
 	 * Adds a {@link RendererConfiguration} to the list of media renderers
@@ -66,19 +66,19 @@ public interface PmsCore {
 	 * @param mediarenderer
 	 *            {@link RendererConfiguration}
 	 */
-	public abstract void setRendererfound(RendererConfiguration mediarenderer);
+	public void setRendererfound(RendererConfiguration mediarenderer);
 
-	public abstract ProxyServer getProxy();
+	public ProxyServer getProxy();
 
 	/**
 	 * @see Platform#isWindows()
 	 */
-	public abstract boolean isWindows();
+	public boolean isWindows();
 
 	/**
 	 * @see WinUtils
 	 */
-	public abstract SystemUtils getRegistry();
+	public SystemUtils getRegistry();
 
 	/**
 	 * Used to get the database. Needed in the case of the Xbox 360, that
@@ -87,14 +87,14 @@ public interface PmsCore {
 	 * @return (DLNAMediaDatabase) a reference to the database instance or
 	 *         <b>null</b> if one isn't defined (e.g. if the cache is disabled).
 	 */
-	public abstract DLNAMediaDatabase getDatabase();
+	public DLNAMediaDatabase getDatabase();
 
 	/**
 	 * Returns the MediaLibrary used by PMS.
 	 * 
 	 * @return (MediaLibrary) Used mediaLibrary, if any. null if none is in use.
 	 */
-	public abstract MediaLibrary getLibrary();
+	public MediaLibrary getLibrary();
 
 	/**
 	 * Executes the needed commands in order to make PMS a Windows service that
@@ -104,7 +104,7 @@ public interface PmsCore {
 	 * @return true if PMS could be installed as a Windows service.
 	 * @see GeneralTab#build()
 	 */
-	public abstract boolean installWin32Service();
+	public boolean installWin32Service();
 
 	/**
 	 * Transforms a comma separated list of directory entries into an array of
@@ -116,9 +116,9 @@ public interface PmsCore {
 	 * @return {@link File}[] Array of directories.
 	 * @throws IOException
 	 */
-	public abstract File[] getFoldersConf(boolean log);
+	public File[] getFoldersConf(boolean log);
 
-	public abstract File[] getFoldersConf();
+	public File[] getFoldersConf();
 
 	/**
 	 * Restarts the server. The trigger is either a button on the main PMS
@@ -126,7 +126,7 @@ public interface PmsCore {
 	 * 
 	 * @throws IOException
 	 */
-	public abstract void reset();
+	public void reset();
 
 	/**
 	 * Creates a new {@link #uuid} for the UPnP server to use. Tries to follow
@@ -135,20 +135,20 @@ public interface PmsCore {
 	 * 
 	 * @return {@link String} with an Universally Unique Identifier.
 	 */
-	public abstract String usn();
+	public String usn();
 
 	/**
 	 * Returns the user friendly name of the UPnP server.
 	 * 
 	 * @return {@link String} with the user friendly name.
 	 */
-	public abstract String getServerName();
+	public String getServerName();
 
-	public abstract HTTPServer getServer();
+	public HTTPServer getServer();
 
-	public abstract void save();
+	public void save();
 
-	public abstract void storeFileInCache(File file, int formatType);
+	public void storeFileInCache(File file, int formatType);
 
 	/**
 	 * Returns the list of active processes. This method returns the list as a
