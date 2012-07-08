@@ -158,4 +158,6 @@ public interface PmsCore {
 	 * @return The list of current processes
 	 */
 	public ArrayList<Process> getCurrentProcesses(); 
+
+	public boolean init() throws Exception;
 }

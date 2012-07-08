@@ -23,6 +23,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.io.IOException;
 
+import javax.inject.Inject;
 import javax.swing.JOptionPane;
 
 import net.pms.api.PmsCore;
@@ -49,11 +50,18 @@ public class PMS extends PmsCoreImpl {
 	private static final String NOCONSOLE = "noconsole";
 	private static final String PROFILES = "profiles";
 
+	@Inject
+	private static PmsCore pmsCore;
+
 	/**
 	 * This class is not supposed to be instantiated.
 	 * Use {@link #get()} instead.
 	 */
 	private PMS() {
+		// Init the Injector
+		new PmsGuice();
+
+		InjectionHelper.injectMembers(this);
 	}
 
 	/**
@@ -67,8 +75,6 @@ public class PMS extends PmsCoreImpl {
 	public static void main(final String args[]) throws IOException, ConfigurationException {
 		boolean displayProfileChooser = false;
 		boolean headless = true;
-
-		new PmsGuice(); // init the Injector
 
 		if (args.length > 0) {
 			for (int a = 0; a < args.length; a++) {
@@ -116,7 +122,16 @@ public class PMS extends PmsCoreImpl {
 			LoggingConfigFileLoader.load();
 
 			// create the PMS instance returned by get()
-			createInstance();
+			//createInstance();
+			try {
+				if (pmsCore.init()) {
+					LOGGER.info("The server should now appear on your renderer");
+				} else {
+					LOGGER.error("A serious error occurred during PMS init");
+				}
+			} catch (final Exception e) {
+				LOGGER.error("A serious error occurred during PMS init", e);
+			}
 		} catch (final Throwable t) {
 			System.err.println("Configuration error: " + t.getMessage());
 			LOGGER.error("Configuration error", t);

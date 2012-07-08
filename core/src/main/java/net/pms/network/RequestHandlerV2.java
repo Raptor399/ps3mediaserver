@@ -18,19 +18,6 @@
  */
 package net.pms.network;
 
-import net.pms.PMS;
-import net.pms.configuration.RendererConfiguration;
-import net.pms.plugins.StartStopListenerDelegate;
-
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.*;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.handler.codec.frame.TooLongFrameException;
-import org.jboss.netty.handler.codec.http.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -39,6 +26,35 @@ import java.nio.charset.Charset;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.inject.Inject;
+
+import net.pms.PMS;
+import net.pms.api.PmsCore;
+import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
+import net.pms.plugins.StartStopListenerDelegate;
+
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFutureListener;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.ExceptionEvent;
+import org.jboss.netty.channel.MessageEvent;
+import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.channel.group.ChannelGroup;
+import org.jboss.netty.handler.codec.frame.TooLongFrameException;
+import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.HttpResponse;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 	private static final Logger logger = LoggerFactory.getLogger(RequestHandlerV2.class);
@@ -64,9 +80,13 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 		"Timeout",
 		"User-Agent"
 	};
-	
+
+	@Inject
+	private PmsCore pmsCore;
+
 	public RequestHandlerV2(ChannelGroup group) {
 		this.group = group;
+		InjectionHelper.injectMembers(this);
 	}
 
 	@Override
@@ -91,7 +111,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 		}
 
 		logger.trace("Opened request handler on socket " + remoteAddress);
-		PMS.get().getRegistry().disableGoToSleep();
+		pmsCore.getRegistry().disableGoToSleep();
 
 		if (HttpMethod.GET.equals(nettyRequest.getMethod())) {
 			request = new RequestV2("GET", nettyRequest.getUri().substring(1));
@@ -118,7 +138,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 		renderer = RendererConfiguration.getRendererConfigurationBySocketAddress(ia);
 
 		if (renderer != null) {
-			PMS.get().setRendererfound(renderer);
+			pmsCore.setRendererfound(renderer);
 			request.setMediaRenderer(renderer);
 			logger.trace("Matched media renderer \"" + renderer.getRendererName() + "\" based on address " + ia);
 		}
@@ -138,7 +158,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 				if (renderer != null) {
 					request.setMediaRenderer(renderer);
 					renderer.associateIP(ia);	// Associate IP address for later requests
-					PMS.get().setRendererfound(renderer);
+					pmsCore.setRendererfound(renderer);
 					logger.trace("Matched media renderer \"" + renderer.getRendererName() + "\" based on header \"" + headerLine + "\"");
 				}
 			}
@@ -150,7 +170,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 				if (renderer != null) {
 					request.setMediaRenderer(renderer);
 					renderer.associateIP(ia);	// Associate IP address for later requests
-					PMS.get().setRendererfound(renderer);
+					pmsCore.setRendererfound(renderer);
 					logger.trace("Matched media renderer \"" + renderer.getRendererName() + "\" based on header \"" + headerLine + "\"");
 				}
 			}
@@ -231,7 +251,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 					// We have found an unknown renderer
 					logger.info("Media renderer was not recognized. Possible identifying HTTP headers: User-Agent: " + userAgentString
 							+ ("".equals(unknownHeaders.toString()) ? "" : ", " + unknownHeaders.toString()));
-					PMS.get().setRendererfound(request.getMediaRenderer());
+					pmsCore.setRendererfound(request.getMediaRenderer());
 				}
 			} else {
 				if (userAgentString != null) {

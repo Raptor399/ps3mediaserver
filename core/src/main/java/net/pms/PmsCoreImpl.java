@@ -34,6 +34,8 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.LogManager;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.swing.JOptionPane;
 
 import net.pms.api.PmsConfiguration;
@@ -79,6 +81,13 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.jna.Platform;
 
+/**
+ * This class provides access to the core of PMS. The class is a singleton and
+ * should be accessed via dependency injection.
+ *
+ * @since 2.0.0 
+ */
+@Singleton
 public class PmsCoreImpl implements PmsCore {
 	private static final String CONSOLE = "console";
 
@@ -87,6 +96,13 @@ public class PmsCoreImpl implements PmsCore {
 
 	// TODO(tcox):  This shouldn't be static
 	private static PmsConfiguration configuration;
+
+	/**
+	 * Default constructor.
+	 */
+	@Inject
+	PmsCoreImpl() {
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -273,7 +289,7 @@ public class PmsCoreImpl implements PmsCore {
 	 * not be set to listen on the UPnP port.
 	 * @throws Exception
 	 */
-	private boolean init() throws Exception {
+	public boolean init() throws Exception {
 		AutoUpdater autoUpdater = null;
 
 		if (Build.isUpdatable()) {
@@ -728,9 +744,11 @@ public class PmsCoreImpl implements PmsCore {
 
 	/**
 	 * Returns the PMS instance.
+	 * @deprecated
 	 * 
 	 * @return {@link PmsCoreImpl}
 	 */
+	@Deprecated
 	public static PmsCore get() {
 		// XXX when PMS is run as an application, the instance is initialized via the createInstance call in main().
 		// However, plugin tests may need access to a PMS instance without going
@@ -743,19 +761,23 @@ public class PmsCoreImpl implements PmsCore {
 		return instance;
 	}
 
+	/**
+	 * @deprecated TODO: Use dependency injection instead.
+	 */
+	@Deprecated
 	protected synchronized static void createInstance() {
-		assert instance == null; // this should only be called once
-		instance = new PmsCoreImpl();
-
-		try {
-			if (instance.init()) {
-				logger.info("The server should now appear on your renderer");
-			} else {
-				logger.error("A serious error occurred during PMS init");
-			}
-		} catch (final Exception e) {
-			logger.error("A serious error occurred during PMS init", e);
-		}
+//		assert instance == null; // this should only be called once
+//		instance = new PmsCoreImpl();
+//
+//		try {
+//			if (instance.init()) {
+//				logger.info("The server should now appear on your renderer");
+//			} else {
+//				logger.error("A serious error occurred during PMS init");
+//			}
+//		} catch (final Exception e) {
+//			logger.error("A serious error occurred during PMS init", e);
+//		}
 	}
 
 	/**
