@@ -25,7 +25,10 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
+import net.pms.api.PmsCore;
 import net.pms.configuration.PmsConfigurationImpl;
+import net.pms.di.InjectionHelper;
+import net.pms.di.PmsGuice;
 import net.pms.logging.LoggingConfigFileLoader;
 import net.pms.newgui.ProfileChooser;
 
@@ -64,6 +67,8 @@ public class PMS extends PmsCoreImpl {
 	public static void main(final String args[]) throws IOException, ConfigurationException {
 		boolean displayProfileChooser = false;
 		boolean headless = true;
+
+		new PmsGuice(); // init the Injector
 
 		if (args.length > 0) {
 			for (int a = 0; a < args.length; a++) {

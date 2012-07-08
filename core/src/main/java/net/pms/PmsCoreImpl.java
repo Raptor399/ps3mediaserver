@@ -40,7 +40,6 @@ import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.Build;
 import net.pms.configuration.RendererConfiguration;
-import net.pms.di.PmsGuice;
 import net.pms.dlna.DLNAMediaDatabase;
 import net.pms.dlna.virtual.MediaLibrary;
 import net.pms.encoders.PlayerFactory;
@@ -747,8 +746,6 @@ public class PmsCoreImpl implements PmsCore {
 	protected synchronized static void createInstance() {
 		assert instance == null; // this should only be called once
 		instance = new PmsCoreImpl();
-
-		new PmsGuice(); // init the Injector
 
 		try {
 			if (instance.init()) {
