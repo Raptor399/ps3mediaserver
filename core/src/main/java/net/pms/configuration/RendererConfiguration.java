@@ -5,7 +5,7 @@ import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.MediaInfoParser;
+import net.pms.dlna.LibMediaInfoParser;
 import net.pms.formats.Format;
 import net.pms.medialibrary.dlna.RootFolder;
 import net.pms.network.HTTPResource;
@@ -250,28 +250,24 @@ public class RendererConfiguration {
 		return rank;
 	}
 
-	// Those 'is' methods should disappear
+	// Those 'is' methods should disappear. Use getRendererUniqueID() instead.
+	@Deprecated
 	public boolean isXBOX() {
 		return getRendererName().toUpperCase().contains("XBOX");
 	}
 
-	public boolean isXBMC() {
-		return getRendererName().toUpperCase().contains("XBMC");
-	}
-
-	public boolean isPS3() {
-		return getRendererName().toUpperCase().contains("PLAYSTATION") || getRendererName().toUpperCase().contains("PS3");
-	}
-
+	@Deprecated
 	public boolean isBRAVIA() {
 		return getRendererName().toUpperCase().contains("BRAVIA");
 	}
 
+	@Deprecated
 	public boolean isFDSSDP() {
 		return getRendererName().toUpperCase().contains("FDSSDP");
 	}
 
 	private static final String RENDERER_NAME = "RendererName";
+	private static final String RENDERER_UNIQUE_ID = "RendererUniqueID";
 	private static final String RENDERER_ICON = "RendererIcon";
 	private static final String USER_AGENT = "UserAgentSearch";
 	private static final String USER_AGENT_ADDITIONAL_HEADER = "UserAgentAdditionalHeader";
@@ -328,6 +324,9 @@ public class RendererConfiguration {
 	private static final String SHOW_DVD_TITLE_DURATION = "ShowDVDTitleDuration";
 	private static final String CBR_VIDEO_BITRATE = "CBRVideoBitrate";
 	private static final String BYTE_TO_TIMESEEK_REWIND_SECONDS = "ByteToTimeseekRewindSeconds";
+
+	// known renderers with special code workarounds
+	public final static String RENDERER_ID_PLAYSTATION3 = "ps3";
 
 	// Ditlew
 	public int getByteToTimeseekRewindSeconds() {
@@ -604,6 +603,17 @@ public class RendererConfiguration {
 	}
 
 	/**
+	 * RendererUniqueID: Determines renderer's unique ID. PS3 Media Server may apply
+	 * workarounds specific to this client type based on RendererUniqueID. Defaults
+	 * to RendererName if not set.
+	 *
+	 * @return The renderer unique ID.
+	 */
+	public String getRendererUniqueID() {
+		return getString(RENDERER_UNIQUE_ID, getRendererName());
+	}
+
+	/**
 	 * Returns the icon to use for displaying this renderer in PMS as defined
 	 * in the renderer configurations. Default value is "unknown.png".
 	 *
@@ -690,7 +700,7 @@ public class RendererConfiguration {
 		if (isMediaParserV2()) {
 			return getFormatConfiguration().isMpeg2Supported();
 		}
-		return isPS3();
+		return getRendererUniqueID().equalsIgnoreCase(RENDERER_ID_PLAYSTATION3);
 	}
 
 	/**
@@ -861,15 +871,15 @@ public class RendererConfiguration {
 	}
 
 	public boolean isMediaParserV2() {
-		return getBoolean(MEDIAPARSERV2, false) && MediaInfoParser.isValid();
+		return getBoolean(MEDIAPARSERV2, false) && LibMediaInfoParser.isValid();
 	}
 
 	public boolean isMediaParserV2ThumbnailGeneration() {
-		return getBoolean(MEDIAPARSERV2_THUMB, false) && MediaInfoParser.isValid();
+		return getBoolean(MEDIAPARSERV2_THUMB, false) && LibMediaInfoParser.isValid();
 	}
 
 	public boolean isForceJPGThumbnails() {
-		return (getBoolean(FORCE_JPG_THUMBNAILS, false) && MediaInfoParser.isValid()) || isBRAVIA();
+		return (getBoolean(FORCE_JPG_THUMBNAILS, false) && LibMediaInfoParser.isValid()) || isBRAVIA();
 	}
 
 	public boolean isShowAudioMetadata() {
@@ -881,7 +891,7 @@ public class RendererConfiguration {
 	}
 
 	public boolean isDLNATreeHack() {
-		return getBoolean(DLNA_TREE_HACK, false) && MediaInfoParser.isValid();
+		return getBoolean(DLNA_TREE_HACK, false) && LibMediaInfoParser.isValid();
 	}
 
 	/**

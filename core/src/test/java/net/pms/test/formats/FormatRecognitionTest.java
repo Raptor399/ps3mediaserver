@@ -32,7 +32,7 @@ import net.pms.configuration.PmsConfigurationImpl;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.MediaInfoParser;
+import net.pms.dlna.LibMediaInfoParser;
 import net.pms.formats.DVRMS;
 import net.pms.formats.Format;
 import net.pms.formats.GIF;
@@ -83,7 +83,7 @@ public class FormatRecognitionTest {
 		// Initialize the RendererConfiguration
 		RendererConfiguration.loadRendererConfigurations(pmsConf);
 
-		mediaInfoParserIsValid = MediaInfoParser.isValid();
+		mediaInfoParserIsValid = LibMediaInfoParser.isValid();
 	}
 
     /**
@@ -393,8 +393,8 @@ public class FormatRecognitionTest {
 		// Continue the test if the configuration loaded, otherwise skip it.
 		assumeTrue(configurationLoaded);
 
-		// Continue the test if the MediaInfoParser can be loaded, otherwise skip it.
-		assumeTrue(MediaInfoParser.isValid());
+		// Continue the test if the LibMediaInfoParser can be loaded, otherwise skip it.
+		assumeTrue(LibMediaInfoParser.isValid());
 		
 		// Construct media info exactly as VirtualVideoAction does
 		DLNAMediaInfo info = new DLNAMediaInfo();
