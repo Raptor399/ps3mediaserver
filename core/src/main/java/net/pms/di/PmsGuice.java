@@ -1,5 +1,6 @@
 package net.pms.di;
 
+import net.pms.di.modules.CoreModule;
 import net.pms.di.modules.FileImportModule;
 import net.pms.di.modules.JobModule;
 import net.pms.di.modules.LegacyModule;
@@ -23,7 +24,7 @@ public class PmsGuice {
 	 * c'tor
 	 */
 	public PmsGuice() {
-		injector = Guice.createInjector(new FileImportModule(),
+		injector = Guice.createInjector(new CoreModule(), new FileImportModule(),
 				new JobModule(), new LegacyModule());
 		InjectionHelper.setInjector(injector);
 	}
