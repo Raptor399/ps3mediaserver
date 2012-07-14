@@ -3,7 +3,6 @@ package net.pms.medialibrary.scanner.impl;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Queue;
 
@@ -71,17 +70,15 @@ public class ImportJob extends AbstractJob {
 
 		// This could be handed off to a separate Job
 		for (final DOManagedFile doManagedFile : filesToAdd) {
-			final Date lastUpdated = mediaLibraryStorage
-					.getFileInfoLastUpdated(doManagedFile.getPath());
-
-			if (lastUpdated == null || lastUpdated.getTime() == 0) {
-
-				final Optional<DOFileInfo> fileInfo = fileInfoCollector
-						.analyze(doManagedFile);
-
-				if (fileInfo.isPresent()) {
-					mediaLibraryStorage.insertFileInfo(fileInfo.get());
+			DOFileInfo fileInfo = mediaLibraryStorage.getFileInfoByFilePath(doManagedFile.getPath());
+			if(fileInfo == null) {
+				Optional<DOFileInfo> analyzedFileInfo = fileInfoCollector.analyze(doManagedFile);
+				if(analyzedFileInfo.isPresent()) {
+					mediaLibraryStorage.insertFileInfo(analyzedFileInfo.get());	
 				}
+			} else {
+				fileInfoCollector.analyzeAndUpdate(doManagedFile, fileInfo);
+				mediaLibraryStorage.updateFileInfo(fileInfo);	
 			}
 		}
 	}

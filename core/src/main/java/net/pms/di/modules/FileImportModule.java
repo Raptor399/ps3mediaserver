@@ -1,8 +1,8 @@
 package net.pms.di.modules;
 
 import net.pms.job.Job;
-import net.pms.medialibrary.scanner.FileInfoCollector;
 import net.pms.medialibrary.scanner.ImportScannerService;
+import net.pms.medialibrary.scanner.FileInfoCollector;
 import net.pms.medialibrary.scanner.MediaInfo;
 import net.pms.medialibrary.scanner.impl.DefaultFileInfoCollector;
 import net.pms.medialibrary.scanner.impl.DispatchingImportScannerService;
