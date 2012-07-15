@@ -903,68 +903,6 @@ public class PMS {
 		return FormatFactory.getExtensions();
 	}
 
-	/**
-	 * @deprecated Use {@link PlayerFactory#registerPlayer(Player)} instead.
-	 *
-	 * Adds a single {@link Player} to the list of Players.
-	 *
-	 * @param player Player to be added to the list.
-	 * @see Player
-	 */
-	@Deprecated
-	public void registerPlayer(final Player player) {
-		PlayerFactory.registerPlayer(player);
-	}
-
-	/**
-	 * @deprecated Use {@link PlayerFactory#getPlayers()} instead.
-	 *
-	 * Returns the list of players that have been verified as okay.
-	 *
-	 * @return The list of players.
-	 */
-	@Deprecated
-	public ArrayList<Player> getPlayers() {
-		return PlayerFactory.getPlayers();
-	}
-
-	/**
-	 * @deprecated Use {@link PlayerFactory#getAllPlayers()} instead.
-	 *
-	 * Returns the list of all players. This includes the ones not verified as
-	 * being okay.
-	 *
-	 * @return The list of players.
-	 */
-	@Deprecated
-	public ArrayList<Player> getAllPlayers() {
-		return PlayerFactory.getAllPlayers();
-	}
-
-	/**
-	 * @deprecated Use {@link PlayerFactory#getPlayer(Class, Format)} instead.
-	 *
-	 * @param profileClass
-	 * @param ext
-	 * @return The player if a match could be found
-	 */
-	@Deprecated
-	public Player getPlayer(final Class<? extends Player> profileClass, final Format ext) {
-		return PlayerFactory.getPlayer(profileClass, ext);
-	}
-
-	/**
-	 * @deprecated Use {@link PlayerFactory#getPlayers(ArrayList, int)} instead.
-	 *
-	 * @param profileClasses
-	 * @param type
-	 * @return The list of players that match
-	 */
-	@Deprecated
-	public ArrayList<Player> getPlayers(final ArrayList<Class<? extends Player>> profileClasses, final int type) {
-		return PlayerFactory.getPlayers(profileClasses, type);
-	}
-
 	public void save() {
 		try {
 			configuration.save();

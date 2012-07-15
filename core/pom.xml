@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>github.com.taconaut</groupId>
 		<artifactId>pms</artifactId>
-		<version>1.54.1-mlx_0.9-SNAPSHOT</version>
+		<version>1.60.0-mlx_0.9-SNAPSHOT</version>
 	</parent>
 
 	<organization>
@@ -63,7 +63,7 @@
 		<!-- JNA 3.4.0 solves issue #1152, but causes a bug in Windows. The version 
 			is therefore overruled in the Windows profile. This property should be removed 
 			when Windows can use the same version. -->
-		<jna-version>3.4.0</jna-version>
+		<jna-version>3.4.0</jna-version> 
     <guice-version>3.0</guice-version>
 		<slf4j-version>1.6.4</slf4j-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -1068,7 +1068,7 @@
 								</configuration>
 							</execution>
                             <execution>
-                                <id>prepare-package-windows</id>
+                                <id>copy-mediainfo-windows</id>
                                 <phase>process-resources</phase>
                                 <goals>
                                     <goal>run</goal>
