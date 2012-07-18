@@ -98,7 +98,7 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 	private static boolean lookAndFeelInitialized = false;
 
 	@Inject
-	public LooksFrame(PmsCore pmsCore, PmsConfiguration configuration) {
+	protected LooksFrame(PmsCore pmsCore, PmsConfiguration configuration) {
 		this.pmsCore = pmsCore;
 		this.configuration = configuration;
 	}

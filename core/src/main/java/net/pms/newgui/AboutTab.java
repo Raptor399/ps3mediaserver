@@ -46,7 +46,7 @@ public class AboutTab {
 	private JProgressBar jpb;
 
 	@Inject
-	public AboutTab(PmsCore pmsCore) {
+	protected AboutTab(PmsCore pmsCore) {
 		this.pmsCore = pmsCore;
 	}
 

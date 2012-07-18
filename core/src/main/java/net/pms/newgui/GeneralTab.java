@@ -84,7 +84,7 @@ public class GeneralTab {
 	private final PmsCore pmsCore;
 
 	@Inject
-	public GeneralTab(PmsCore pmsCore, PmsConfiguration configuration) {
+	protected GeneralTab(PmsCore pmsCore, PmsConfiguration configuration) {
 		this.pmsCore = pmsCore;
 		this.configuration = configuration;
 	}

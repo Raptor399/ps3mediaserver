@@ -31,7 +31,7 @@ public class AudioAsVideo extends MKV {
 	private final PmsCore pmsCore;
 
 	@Inject
-	public AudioAsVideo(PmsCore pmsCore) {
+	protected AudioAsVideo(PmsCore pmsCore) {
 		this.pmsCore = pmsCore;
 	}
 

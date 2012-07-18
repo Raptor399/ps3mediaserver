@@ -58,7 +58,7 @@ public class TracesTab {
 	private final PmsConfiguration configuration;
 
 	@Inject
-	public TracesTab(PmsConfiguration configuration) {
+	protected TracesTab(PmsConfiguration configuration) {
 		this.configuration = configuration;
 	}
 

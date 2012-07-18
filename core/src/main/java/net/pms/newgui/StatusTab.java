@@ -64,7 +64,7 @@ public class StatusTab {
 	private DecimalFormat formatter = new DecimalFormat("#,###");
 
 	@Inject
-	public StatusTab(PmsConfiguration configuration) {
+	protected StatusTab(PmsConfiguration configuration) {
 		this.configuration = configuration;
 	}
 

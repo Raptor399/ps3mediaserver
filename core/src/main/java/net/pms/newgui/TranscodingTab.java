@@ -111,7 +111,7 @@ public class TranscodingTab {
 	private static final int MAX_CORES = 32;
 
 	@Inject
-	public TranscodingTab(PmsCore pmsCore, PmsConfiguration configuration) {
+	protected TranscodingTab(PmsCore pmsCore, PmsConfiguration configuration) {
 		this.pmsCore = pmsCore;
 		this.configuration = configuration;
 	}
