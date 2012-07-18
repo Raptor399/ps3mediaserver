@@ -71,12 +71,14 @@ public class NetworkTab {
 	private JComboBox langs;
 	private JComboBox networkinterfacesCBX;
 	private JTextField ip_filter;
-
-	@Inject
 	private PmsCore pmsCore;
+	private PmsConfiguration configuration;
 
 	@Inject
-	private PmsConfiguration configuration;
+	public NetworkTab(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+	}
 
 	public JComponent build() {
 		FormLayout layout = new FormLayout(

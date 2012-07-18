@@ -18,11 +18,6 @@
  */
 package net.pms.io;
 
-import net.pms.Messages;
-import net.pms.PMS;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +26,17 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import javax.inject.Inject;
+
+import net.pms.Messages;
+import net.pms.PMS;
+import net.pms.api.PmsCore;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.assistedinject.Assisted;
 
 /**
  * Circular memory buffer that can be used as {@link java.io.OutputStream OutputStream} and
@@ -46,7 +52,10 @@ import java.util.TimerTask;
  */
 public class BufferedOutputFileImpl extends OutputStream implements BufferedOutputFile {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BufferedOutputFileImpl.class);
-	
+
+	@Inject
+	private PmsCore pmsCore;
+
 	/**
 	 * Initial size for the buffer in bytes.
 	 */
@@ -169,7 +178,8 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 	 * @param params {@link net.pms.io.OutputParams} object that contains preferences for the buffers
 	 * 				dimensions and behavior.
 	 */
-	public BufferedOutputFileImpl(OutputParams params) {
+	@Inject
+	public BufferedOutputFileImpl(@Assisted OutputParams params) {
 		this.minMemorySize = (int) (1048576 * params.minBufferSize);
 		this.maxMemorySize = (int) (1048576 * params.maxBufferSize);
 
@@ -215,7 +225,7 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 					long rc = 0;
 					if (getCurrentInputStream() != null) {
 						rc = getCurrentInputStream().getReadCount();
-						PMS.get().getFrame().setReadValue(rc, "");
+						pmsCore.getFrame().setReadValue(rc, "");
 					}
 					long space = (writeCount - rc);
 					LOGGER.trace("buffered: " + formatter.format(space) + " bytes / inputs: " + inputStreams.size());
@@ -223,7 +233,7 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 					// There are 1048576 bytes in a megabyte
 					long bufferInMBs = space / 1048576;
 
-					PMS.get().getFrame().setValue((int) (100 * space / maxMemorySize), formatter.format(bufferInMBs) + " " + Messages.getString("StatusTab.12"));
+					pmsCore.getFrame().setValue((int) (100 * space / maxMemorySize), formatter.format(bufferInMBs) + " " + Messages.getString("StatusTab.12"));
 				}
 			}, 0, 2000);
 		}
@@ -742,7 +752,7 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 	
 	@Override
 	public void detachInputStream() {
-		PMS.get().getFrame().setReadValue(0, "");
+		pmsCore.getFrame().setReadValue(0, "");
 		if (attachedThread != null) {
 			attachedThread.setReadyToStop(true);
 		}
@@ -780,7 +790,7 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 		}
 		buffered = false;
 		if (maxMemorySize != 1048576) {
-			PMS.get().getFrame().setValue(0, "Empty");
+			pmsCore.getFrame().setValue(0, "Empty");
 		}
 	}
 }

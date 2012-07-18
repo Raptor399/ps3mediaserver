@@ -40,12 +40,15 @@ import java.io.IOException;
 public class AboutTab {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AboutTab.class);
 
-	@Inject
 	private PmsCore pmsCore;
-
 	private ImagePanel imagePanel;
 	private JLabel jl;
 	private JProgressBar jpb;
+
+	@Inject
+	public AboutTab(PmsCore pmsCore) {
+		this.pmsCore = pmsCore;
+	}
 
 	public JProgressBar getJpb() {
 		return jpb;

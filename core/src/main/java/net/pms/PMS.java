@@ -61,6 +61,8 @@ public class PMS extends PmsCoreImpl {
 	 * Use {@link #get()} instead.
 	 */
 	private PMS() {
+		// FIXME: This can go when the super class is removed. 
+		super(null);
 	}
 
 	/**
@@ -116,7 +118,6 @@ public class PMS extends PmsCoreImpl {
 
 		try {
 			PmsConfiguration configuration = injector.getInstance(PmsConfigurationImpl.class);
-			setConfiguration(configuration);
 
 			assert getConfiguration() != null;
 

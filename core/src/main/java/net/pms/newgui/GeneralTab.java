@@ -80,12 +80,14 @@ public class GeneralTab {
 	private JTextField ip_filter;
 	private JTextField maxbitrate;
 	private JComboBox renderers;
-
-	@Inject
 	private PmsConfiguration configuration;
+	private PmsCore pmsCore;
 
 	@Inject
-	private PmsCore pmsCore;
+	public GeneralTab(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+	}
 
 	public JComponent build() {
 		// Apply the orientation for the locale

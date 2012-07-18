@@ -83,10 +83,7 @@ public class TranscodingTab {
 	private static final String MAIN_COL_SPEC = "left:pref, pref, 7dlu, pref, pref, fill:10:grow";
 	private static final String MAIN_ROW_SPEC = "fill:10:grow";
 
-	@Inject
 	private PmsCore pmsCore;
-
-	@Inject
 	private PmsConfiguration configuration;
 
 	private JCheckBox disableSubs;
@@ -112,6 +109,12 @@ public class TranscodingTab {
 	private JCheckBox chapter_support;
 	private JTextField chapter_interval;
 	private static final int MAX_CORES = 32;
+
+	@Inject
+	public TranscodingTab(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+	}
 
 	private void updateEngineModel() {
 		ArrayList<String> engines = new ArrayList<String>();

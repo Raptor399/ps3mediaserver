@@ -52,10 +52,7 @@ public class StatusTab {
 
 	private static final int MAX_RENDERERS = 10;
 	private ImagePanel imagePanel;
-
-	@Inject
 	private PmsConfiguration configuration;
-
 	private ImagePanel renderers[] = new ImagePanel[MAX_RENDERERS];
 	private JLabel rendererLabels[] = new JLabel[MAX_RENDERERS];
 	private int numRenderers;
@@ -65,6 +62,11 @@ public class StatusTab {
 	private long rc = 0;
 	private long peak;
 	private DecimalFormat formatter = new DecimalFormat("#,###");
+
+	@Inject
+	public StatusTab(PmsConfiguration configuration) {
+		this.configuration = configuration;
+	}
 
 	public JProgressBar getJpb() {
 		return jpb;

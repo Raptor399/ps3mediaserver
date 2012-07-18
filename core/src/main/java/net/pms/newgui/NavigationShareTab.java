@@ -93,17 +93,18 @@ public class NavigationShareTab {
 	private JCheckBox itunes;
 	private JButton select;
 	private JButton cachereset;
-
-	@Inject
 	private PmsCore pmsCore;
+	private PmsConfiguration configuration;
 
 	@Inject
-	private PmsConfiguration configuration;
+	NavigationShareTab(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+	}
 
 	public DefaultListModel getDf() {
 		return df;
 	}
-
 
 	private void updateModel() {
 		if (df.size() == 1 && df.getElementAt(0).equals(ALL_DRIVES)) {

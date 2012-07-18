@@ -96,14 +96,15 @@ public class PmsCoreImpl implements PmsCore {
 	// (innot): The logger used for all logging.
 	private static final Logger LOGGER = LoggerFactory.getLogger(PmsCoreImpl.class);
 
-	// TODO(tcox):  This shouldn't be static
+	// FIXME: Lose the "static" modifier.
 	private static PmsConfiguration configuration;
 
 	/**
 	 * Default constructor.
 	 */
 	@Inject
-	PmsCoreImpl() {
+	PmsCoreImpl(PmsConfiguration configuration) {
+		this.configuration = configuration;
 	}
 
 	/**
@@ -826,13 +827,6 @@ public class PmsCoreImpl implements PmsCore {
 	 */
 	public static PmsConfiguration getConfiguration() {
 		return configuration;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public static void setConfiguration(final PmsConfiguration conf) {
-		configuration = conf;
 	}
 
 	/**

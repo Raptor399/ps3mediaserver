@@ -25,14 +25,21 @@ import com.sun.jna.Structure;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
 import net.pms.PMS;
+import net.pms.api.io.BufferedOutputFileFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 public class WindowsNamedPipe extends Thread implements ProcessWrapper {
 	private static final Logger logger = LoggerFactory.getLogger(WindowsNamedPipe.class);
+
+	@Inject
+	private BufferedOutputFileFactory bufferedOutputFileFactory;
 
 	/**
 	 * Size for the buffer used in defining pipes for Windows in bytes. The buffer is used
@@ -117,7 +124,7 @@ public class WindowsNamedPipe extends Thread implements ProcessWrapper {
 						BUFSIZE, BUFSIZE, 0, null);
 				}
 				if (params != null) {
-					directBuffer = new BufferedOutputFileImpl(params);
+					directBuffer = bufferedOutputFileFactory.create(params);
 				} else {
 					writable = new PipedOutputStream();
 					readable = new PipedInputStream((PipedOutputStream) writable, BUFSIZE);

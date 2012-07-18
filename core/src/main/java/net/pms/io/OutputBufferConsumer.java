@@ -18,17 +18,24 @@
  */
 package net.pms.io;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import net.pms.api.io.BufferedOutputFileFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class OutputBufferConsumer extends OutputConsumer {
 	private static final Logger logger = LoggerFactory.getLogger(OutputBufferConsumer.class);
 	private BufferedOutputFile outputBuffer;
-	
+
+	@Inject
+	private BufferedOutputFileFactory bufferedOutputFileFactory;
+
 	/**
 	 * Size of a buffer in bytes. The buffer is used to copy data from an
 	 * {@link java.io.InputStream InputStream} to an {@link java.io.OutputStream OutputStream}
@@ -44,7 +51,7 @@ public class OutputBufferConsumer extends OutputConsumer {
 
 	public OutputBufferConsumer(InputStream inputStream, OutputParams params) {
 		super(inputStream);
-		outputBuffer = new BufferedOutputFileImpl(params);
+		outputBuffer = bufferedOutputFileFactory.create(params);
 	}
 
 	public void run() {

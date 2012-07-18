@@ -80,11 +80,7 @@ import com.sun.jna.Platform;
 public class LooksFrame extends JFrame implements IFrame, Observer {
 	private static final Logger logger = LoggerFactory.getLogger(LooksFrame.class);
 	private AutoUpdater autoUpdater;
-
-	@Inject
 	private PmsCore pmsCore;
-
-	@Inject
 	private PmsConfiguration configuration;
 
 	public static final String START_SERVICE = "start.service";
@@ -100,6 +96,12 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 	// https://code.google.com/p/ps3mediaserver/issues/detail?id=949
 	protected static final Dimension MINIMUM_SIZE = new Dimension(800, 480);
 	private static boolean lookAndFeelInitialized = false;
+
+	@Inject
+	public LooksFrame(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+	}
 
 	public TracesTab getTt() {
 		return tt;

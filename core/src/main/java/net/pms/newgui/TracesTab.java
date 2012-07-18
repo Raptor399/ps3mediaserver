@@ -55,8 +55,12 @@ import com.jgoodies.forms.layout.FormLayout;
 public class TracesTab {
 	private static final Logger logger = LoggerFactory.getLogger(TracesTab.class);
 
-	@Inject
 	private PmsConfiguration configuration;
+
+	@Inject
+	public TracesTab(PmsConfiguration configuration) {
+		this.configuration = configuration;
+	}
 
 	class PopupTriggerMouseListener extends MouseAdapter {
 		private JPopupMenu popup;
