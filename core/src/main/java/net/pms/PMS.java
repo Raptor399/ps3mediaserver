@@ -39,7 +39,12 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Injector;
 
 /**
- * This class takes care of initializing and starting up PMS. 
+ * This class takes care of initializing and starting up PMS.
+ *
+ * FIXME: This class should not extend PmsCoreImpl. For now, during the
+ * process rewriting the code, it does so anyway to allow easy development.
+ * Once rewriting is finished and the rest of the code has no direct
+ * dependency to PMS, the "extends PmsCoreImpl" must be removed.
  */
 public class PMS extends PmsCoreImpl {
 	/** The logger */
