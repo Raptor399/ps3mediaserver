@@ -379,16 +379,16 @@ public class FormatRecognitionTest {
 	public void testVirtualVideoActionInitializationCompatibility() {
 		boolean configurationLoaded = false;
 
-		try {
-			// Initialize PMS configuration like at initialization time, this
-			// is relevant for RendererConfiguration.isCompatible().
-			PMS.setConfiguration(new PmsConfigurationImpl());
-			configurationLoaded = true;
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			// Initialize PMS configuration like at initialization time, this
+//			// is relevant for RendererConfiguration.isCompatible().
+//			PMS.setConfiguration(new PmsConfigurationImpl());
+//			configurationLoaded = true;
+//		} catch (ConfigurationException e) {
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 
 		// Continue the test if the configuration loaded, otherwise skip it.
 		assumeTrue(configurationLoaded);
