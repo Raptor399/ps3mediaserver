@@ -17,12 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package net.pms.test;
+package net.pms.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import net.pms.dlna.DLNAMediaLang;
-import net.pms.util.Iso639;
 
 import org.junit.Before;
 import org.junit.Test;

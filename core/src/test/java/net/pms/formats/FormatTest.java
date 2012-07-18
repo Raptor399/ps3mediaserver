@@ -17,34 +17,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package net.pms.test.formats;
+package net.pms.formats;
 
 import static org.junit.Assert.assertEquals;
 import net.pms.di.PmsGuice;
-import net.pms.formats.DVRMS;
-import net.pms.formats.FLAC;
-import net.pms.formats.Format;
-import net.pms.formats.GIF;
-import net.pms.formats.ISO;
-import net.pms.formats.JPG;
-import net.pms.formats.M4A;
-import net.pms.formats.MKV;
-import net.pms.formats.MP3;
-import net.pms.formats.MPG;
-import net.pms.formats.OGG;
-import net.pms.formats.PNG;
-import net.pms.formats.RAW;
-import net.pms.formats.TIF;
-import net.pms.formats.WAV;
-import net.pms.formats.WEB;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Injector;
-
 import ch.qos.logback.classic.LoggerContext;
+
+import com.google.inject.Injector;
 
 
 /**
@@ -59,8 +43,8 @@ public class FormatTest {
 		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.reset();
 
-        // Initialize the Guice dependency injector
-     	injector = new PmsGuice().getInjector();
+		// Instantiate Guice because some classes use InjectionHelper.getInjector()
+		injector = new PmsGuice().getInjector();
 	}
 
     /**

@@ -17,12 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package net.pms.test.formats;
+package net.pms.formats;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import net.pms.formats.Format;
-import net.pms.formats.FormatFactory;
+import net.pms.di.PmsGuice;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,10 +29,14 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
 
+import com.google.inject.Injector;
+
 /**
  * Test basic functionality of {@link Format}.
  */
 public class FormatFactoryTest {
+	private Injector injector;
+
 	/**
 	 * Set up testing conditions before running the tests.
 	 */
@@ -42,6 +45,9 @@ public class FormatFactoryTest {
 		// Silence all log messages from the PMS code that is being tested
 		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 		context.reset();
+
+		// Instantiate Guice because some classes use InjectionHelper.getInjector()
+		injector = new PmsGuice().getInjector();
 	}
 
 	/**
@@ -49,22 +55,22 @@ public class FormatFactoryTest {
 	 */
 	@Test
 	public final void testFormatFactoryEdgeCases() {
-//		// Null string
-//		Format result = FormatFactory.getAssociatedExtension(null);
-//		assertNull("Null string matches no format", result);
-//
-//		// Empty string
-//		result = FormatFactory.getAssociatedExtension("");
-//		assertNull("Empty string matches no extension", result);
-//
-//		// Unsupported protocol and extension
-//		result = FormatFactory.getAssociatedExtension(
-//			"bogus://example.com/test.bogus"
-//		);
-//		assertNull(
-//		    "Unsupported protocol and extension: \"bogus://example.com/test.bogus\" matches no format",
-//		    result
-//		);
+		// Null string
+		Format result = FormatFactory.getAssociatedExtension(null);
+		assertNull("Null string matches no format", result);
+
+		// Empty string
+		result = FormatFactory.getAssociatedExtension("");
+		assertNull("Empty string matches no extension", result);
+
+		// Unsupported protocol and extension
+		result = FormatFactory.getAssociatedExtension(
+			"bogus://example.com/test.bogus"
+		);
+		assertNull(
+		    "Unsupported protocol and extension: \"bogus://example.com/test.bogus\" matches no format",
+		    result
+		);
 				
 		// XXX an unsupported (here misspelt) protocol should result in a failed match rather
 		// than fall through to an extension match
@@ -78,18 +84,18 @@ public class FormatFactoryTest {
 			);
 		*/
 
-//		// Unsupported extension
-//		result = FormatFactory.getAssociatedExtension(
-//			"test.bogus"
-//		);
-//		assertNull(
-//			"Unsupported extension: \"test.bogus\" matches no format",
-//			result
-//		);
-//
-//		// Confirm the protocol (e.g. WEB) is checked before the extension
-//		testSingleFormat("http://example.com/test.mp3", "WEB");
-//		testSingleFormat("http://example.com/test.asf?format=.wmv", "WEB");
+		// Unsupported extension
+		result = FormatFactory.getAssociatedExtension(
+			"test.bogus"
+		);
+		assertNull(
+			"Unsupported extension: \"test.bogus\" matches no format",
+			result
+		);
+
+		// Confirm the protocol (e.g. WEB) is checked before the extension
+		testSingleFormat("http://example.com/test.mp3", "WEB");
+		testSingleFormat("http://example.com/test.asf?format=.wmv", "WEB");
 	}
 
 	/**
@@ -125,13 +131,13 @@ public class FormatFactoryTest {
 	 *            The name of the expected format.
 	 */
 	private void testSingleFormat(final String filename, final String formatName) {
-//		Format result = FormatFactory.getAssociatedExtension(filename);
-//
-//		if (result != null) {
-//			assertEquals("\"" + filename + "\" is expected to match",
-//					formatName, result.toString());
-//		} else {
-//			assertNull("\"" + filename + "\" is expected to match nothing", formatName);
-//		}
+		Format result = FormatFactory.getAssociatedExtension(filename);
+
+		if (result != null) {
+			assertEquals("\"" + filename + "\" is expected to match",
+					formatName, result.toString());
+		} else {
+			assertNull("\"" + filename + "\" is expected to match nothing", formatName);
+		}
 	}
 }

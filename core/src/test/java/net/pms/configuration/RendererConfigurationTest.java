@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package net.pms.test;
+package net.pms.configuration;
 
 import static net.pms.configuration.RendererConfiguration.RENDERER_ID_PLAYSTATION3;
 import static net.pms.configuration.RendererConfiguration.getRendererConfigurationByUA;
@@ -35,8 +35,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import net.pms.api.PmsConfiguration;
-import net.pms.configuration.PmsConfigurationImpl;
-import net.pms.configuration.RendererConfiguration;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.junit.Before;
