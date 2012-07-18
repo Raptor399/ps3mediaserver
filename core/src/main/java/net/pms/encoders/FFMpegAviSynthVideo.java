@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
  * This class handles the Windows specific AviSynth/FFmpeg player combination. 
  */
 public class FFMpegAviSynthVideo extends FFMpegVideo {
+	private static final String AVS_SEPARATOR = "\1";
 	private static final Logger logger = LoggerFactory.getLogger(FFMpegAviSynthVideo.class);
 	public static final String ID      = "avsffmpeg";
 
@@ -98,7 +99,7 @@ public class FFMpegAviSynthVideo extends FFMpegVideo {
 
 		boolean fullyManaged = false;
 		String script = PMS.getConfiguration().getAvisynthScript();
-		StringTokenizer st = new StringTokenizer(script, PMS.AVS_SEPARATOR);
+		StringTokenizer st = new StringTokenizer(script, AVS_SEPARATOR);
 		while (st.hasMoreTokens()) {
 			String line = st.nextToken();
 			if (line.contains("<movie") || line.contains("<sub"))

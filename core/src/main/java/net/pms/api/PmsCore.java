@@ -35,8 +35,14 @@ import net.pms.network.ProxyServer;
 import com.sun.jna.Platform;
 
 public interface PmsCore {
-
-	public static final String AVS_SEPARATOR = "\1";
+	/**
+	 * Retrieves the {@link net.pms.configuration.PmsConfigurationImpl PmsConfiguration} object
+	 * that contains all configured settings for PMS. The object provides getters for all
+	 * configurable PMS settings.
+	 *
+	 * @return The configuration object
+	 */
+	public PmsConfiguration getConfiguration();
 
 	/**
 	 * Returns a pointer to the main PMS GUI.
@@ -160,4 +166,11 @@ public interface PmsCore {
 	public ArrayList<Process> getCurrentProcesses(); 
 
 	public boolean init() throws Exception;
+
+	/**
+	 * Returns the build version number of PMS.
+	 *
+	 * @return The version number.
+	 */
+	public String getVersion(); 
 }

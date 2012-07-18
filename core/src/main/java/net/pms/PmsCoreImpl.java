@@ -103,7 +103,7 @@ public class PmsCoreImpl implements PmsCore {
 	 * Default constructor.
 	 */
 	@Inject
-	PmsCoreImpl(PmsConfiguration configuration) {
+	protected PmsCoreImpl(PmsConfiguration configuration) {
 		this.configuration = configuration;
 	}
 
@@ -506,7 +506,7 @@ public class PmsCoreImpl implements PmsCore {
 							ProcessUtil.destroy(p);
 						}
 					}
-					get().getServer().stop();
+					getServer().stop();
 					Thread.sleep(500);
 				} catch (final IOException e) {
 					LOGGER.debug("Caught exception", e);
@@ -692,9 +692,9 @@ public class PmsCoreImpl implements PmsCore {
 				NetworkInterface ni = null;
 				try {
 					ni = NetworkConfiguration.getInstance().getNetworkInterfaceByServerName();
-					// if no ni comes from the server host name, we should get the default.
+					// if no network interface comes from the server host name, we should get the default.
 					if (ni != null) {
-						ni = get().getServer().getNi();
+						ni = getServer().getNi();
 					}
 
 					if (ni != null) {
@@ -749,44 +749,6 @@ public class PmsCoreImpl implements PmsCore {
 	}
 
 	/**
-	 * Returns the PMS instance.
-	 * @deprecated
-	 * 
-	 * @return {@link PmsCoreImpl}
-	 */
-	@Deprecated
-	public static PmsCore get() {
-		// XXX when PMS is run as an application, the instance is initialized via the createInstance call in main().
-		// However, plugin tests may need access to a PMS instance without going
-		// to the trouble of launching the PMS application, so we provide a fallback
-		// initialization here. Either way, createInstance() should only be called once (see below)
-		if (instance == null) {
-			createInstance();
-		}
-
-		return instance;
-	}
-
-	/**
-	 * @deprecated TODO: Use dependency injection instead.
-	 */
-	@Deprecated
-	protected synchronized static void createInstance() {
-//		assert instance == null; // this should only be called once
-//		instance = new PmsCoreImpl();
-//
-//		try {
-//			if (instance.init()) {
-//				logger.info("The server should now appear on your renderer");
-//			} else {
-//				logger.error("A serious error occurred during PMS init");
-//			}
-//		} catch (final Exception e) {
-//			logger.error("A serious error occurred during PMS init", e);
-//		}
-	}
-
-	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -819,20 +781,16 @@ public class PmsCoreImpl implements PmsCore {
 	}
 
 	/**
-	 * Retrieves the {@link net.pms.configuration.PmsConfigurationImpl PmsConfiguration} object
-	 * that contains all configured settings for PMS. The object provides getters for all
-	 * configurable PMS settings.
-	 *
-	 * @return The configuration object
+	 * {@inheritDoc}
 	 */
-	public static PmsConfiguration getConfiguration() {
+	public PmsConfiguration getConfiguration() {
 		return configuration;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public static String getVersion() {
+	public String getVersion() {
 		return PropertiesUtil.getProjectProperties().get("project.version");
 	}
 

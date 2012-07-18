@@ -43,6 +43,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 public class MEncoderAviSynth extends MEncoderVideo {
+	private static final String AVS_SEPARATOR = "\1";
+
 	public MEncoderAviSynth(PmsConfiguration configuration) {
 		super(configuration);
 	}
@@ -83,7 +85,7 @@ public class MEncoderAviSynth extends MEncoderVideo {
 			clip = "";
 		}
 		StringBuilder sb = new StringBuilder();
-		StringTokenizer st = new StringTokenizer(clip, PMS.AVS_SEPARATOR);
+		StringTokenizer st = new StringTokenizer(clip, AVS_SEPARATOR);
 		int i = 0;
 		while (st.hasMoreTokens()) {
 			if (i > 0) {
@@ -109,7 +111,7 @@ public class MEncoderAviSynth extends MEncoderVideo {
 				int i = 0;
 				while (st.hasMoreTokens()) {
 					if (i > 0) {
-						sb.append(PMS.AVS_SEPARATOR);
+						sb.append(AVS_SEPARATOR);
 					}
 					sb.append(st.nextToken());
 					i++;

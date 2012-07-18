@@ -23,6 +23,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.io.IOException;
 
+import javax.inject.Inject;
 import javax.swing.JOptionPane;
 
 import net.pms.api.PmsConfiguration;
@@ -31,6 +32,7 @@ import net.pms.configuration.PmsConfigurationImpl;
 import net.pms.di.PmsGuice;
 import net.pms.logging.LoggingConfigFileLoader;
 import net.pms.newgui.ProfileChooser;
+import net.pms.util.PropertiesUtil;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
@@ -46,9 +48,12 @@ import com.google.inject.Injector;
  * Once rewriting is finished and the rest of the code has no direct
  * dependency to PMS, the "extends PmsCoreImpl" must be removed.
  */
-public class PMS extends PmsCoreImpl {
+public class PMS {
 	/** The logger */
 	private static final Logger LOGGER = LoggerFactory.getLogger(PMS.class);
+
+	@Inject
+	public static PmsCore pmsCore;
 
 	private static final String SCROLLBARS = "scrollbars";
 	private static final String NATIVELOOK = "nativelook";
@@ -61,8 +66,6 @@ public class PMS extends PmsCoreImpl {
 	 * Use {@link #get()} instead.
 	 */
 	private PMS() {
-		// FIXME: This can go when the super class is removed. 
-		super(null);
 	}
 
 	/**
@@ -141,5 +144,32 @@ public class PMS extends PmsCoreImpl {
 			LOGGER.error("Configuration error", t);
 			JOptionPane.showMessageDialog(null, "Configuration error:"+t.getMessage(), "Error initalizing PMS!", JOptionPane.ERROR_MESSAGE);
 		}
+	}
+
+	/**
+	 * Returns the singleton instance of the PMS core.
+	 *
+	 * @return The PMS instance.
+	 */
+	public static PmsCore get() {
+		return pmsCore;
+	}
+
+	/**
+	 * Returns the singleton instance of the PMS configuration object.
+	 *
+	 * @return The configuration instance.
+	 */
+	public static PmsConfiguration getConfiguration() {
+		return pmsCore.getConfiguration();
+	}
+
+	/**
+	 * Returns the build version of PMS.
+	 *
+	 * @return The build version.
+	 */
+	public static String getVersion() {
+		return pmsCore.getVersion();
 	}
 }
