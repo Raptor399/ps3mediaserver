@@ -20,7 +20,7 @@
 package net.pms.dlna;
 
 import net.pms.PMS;
-import net.pms.formats.SubtitleType;
+import net.pms.formats.v2.SubtitleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ import java.io.*;
  */
 public class DLNAMediaSubtitle extends DLNAMediaLang implements Cloneable {
 	private static final Logger logger = LoggerFactory.getLogger(DLNAMediaSubtitle.class);
-	private SubtitleType type;
+	private SubtitleType type = SubtitleType.UNKNOWN;
 	private String flavor; // subtrack title / language ?
 	private File externalFile;
 	private boolean isExternalFileUtf8;
@@ -122,6 +122,9 @@ public class DLNAMediaSubtitle extends DLNAMediaLang implements Cloneable {
 	 * @param type the type to set
 	 */
 	public void setType(SubtitleType type) {
+		if (type == null) {
+			throw new IllegalArgumentException("Can't set null SubtitleType.");
+		}
 		this.type = type;
 	}
 
@@ -171,7 +174,8 @@ public class DLNAMediaSubtitle extends DLNAMediaLang implements Cloneable {
 	
 	@Override
 	public int hashCode(){
-		int hashCode = 24 + getType().hashCode();
+		int hashCode = super.hashCode();
+		hashCode *= 24 + getType().hashCode();
 		hashCode *= 24 + (getFlavor() == null ? 1 : getFlavor().hashCode());
 		hashCode *= 24 + (getPlayableExternalFile() == null ? 2 : getPlayableExternalFile().hashCode());
 		hashCode *= 24 + (getExternalFile() == null ? 3 : getExternalFile().hashCode());

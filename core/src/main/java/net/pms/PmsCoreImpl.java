@@ -92,7 +92,7 @@ public class PmsCoreImpl implements PmsCore {
 	private static final String CONSOLE = "console";
 
 	// (innot): The logger used for all logging.
-	private static final Logger logger = LoggerFactory.getLogger(PmsCoreImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(PmsCoreImpl.class);
 
 	// TODO(tcox):  This shouldn't be static
 	private static PmsConfiguration configuration;
@@ -206,7 +206,7 @@ public class PmsCoreImpl implements PmsCore {
 	 * @throws Exception TODO: Check which exceptions to use
 	 */
 	private boolean checkProcessExistence(final String name, final boolean error, final File workDir, final String... params) throws Exception {
-		logger.debug("launching: " + params[0]);
+		LOGGER.debug("launching: " + params[0]);
 
 		try {
 			final ProcessBuilder pb = new ProcessBuilder(params);
@@ -247,14 +247,14 @@ public class PmsCoreImpl implements PmsCore {
 			final int exit = process.exitValue();
 			if (exit != 0) {
 				if (error) {
-					logger.info("[" + exit + "] Cannot launch " + name + " / Check the presence of " + params[0] + " ...");
+					LOGGER.info("[" + exit + "] Cannot launch " + name + " / Check the presence of " + params[0] + " ...");
 				}
 				return false;
 			}
 			return true;
 		} catch (final Exception e) {
 			if (error) {
-				logger.error("Cannot launch " + name + " / Check the presence of " + params[0] + " ...", e);
+				LOGGER.error("Cannot launch " + name + " / Check the presence of " + params[0] + " ...", e);
 			}
 			return false;
 		}
@@ -309,8 +309,8 @@ public class PmsCoreImpl implements PmsCore {
 		if (System.getProperty(CONSOLE) == null) {
 			frame = new LooksFrame(autoUpdater, configuration);
 		} else {
-			logger.info("GUI environment not available");
-			logger.info("Switching to console mode");
+			LOGGER.info("GUI environment not available");
+			LOGGER.info("Switching to console mode");
 			frame = new DummyFrame();
 		}
 		configuration.addConfigurationListener(new ConfigurationListener() {
@@ -326,50 +326,50 @@ public class PmsCoreImpl implements PmsCore {
 		frame.setStatusCode(0, Messages.getString("PMS.130"), "connect_no-220.png");
 		proxy = -1;
 
-		logger.info("Starting " + PropertiesUtil.getProjectProperties().get("project.name") + " " + getVersion());
-		logger.info("by shagrath / 2008-2012");
-		logger.info("http://ps3mediaserver.org");
-		logger.info("https://github.com/ps3mediaserver/ps3mediaserver");
-		logger.info("http://ps3mediaserver.blogspot.com");
-		logger.info("");
+		LOGGER.info("Starting " + PropertiesUtil.getProjectProperties().get("project.name") + " " + getVersion());
+		LOGGER.info("by shagrath / 2008-2012");
+		LOGGER.info("http://ps3mediaserver.org");
+		LOGGER.info("https://github.com/ps3mediaserver/ps3mediaserver");
+		LOGGER.info("http://ps3mediaserver.blogspot.com");
+		LOGGER.info("");
 
 		final String commitId = PropertiesUtil.getProjectProperties().get("git.commit.id");
 		final String commitTime = PropertiesUtil.getProjectProperties().get("git.commit.time");
 		final String shortCommitId = commitId.substring(0,  9);
 
-		logger.info("Build: " + shortCommitId + " (" + commitTime + ")");
+		LOGGER.info("Build: " + shortCommitId + " (" + commitTime + ")");
 
 		// Log system properties
 		logSystemInfo();
 
 		final String cwd = new File("").getAbsolutePath();
-		logger.info("Working directory: " + cwd);
+		LOGGER.info("Working directory: " + cwd);
 
-		logger.info("Temp folder: " + configuration.getTempFolder());
-		logger.info("Logging config file: " + LoggingConfigFileLoader.getConfigFilePath());
+		LOGGER.info("Temp folder: " + configuration.getTempFolder());
+		LOGGER.info("Logging config file: " + LoggingConfigFileLoader.getConfigFilePath());
 
 		final HashMap<String, String> lfps = LoggingConfigFileLoader.getLogFilePaths();
 
 		if (lfps != null && lfps.size() > 0) {
 			if (lfps.size() == 1) {
 				final Entry<String, String> entry = lfps.entrySet().iterator().next();
-				logger.info(String.format("%s: %s", entry.getKey(), entry.getValue()));
+				LOGGER.info(String.format("%s: %s", entry.getKey(), entry.getValue()));
 			} else {
-				logger.info("Logging to multiple files:");
+				LOGGER.info("Logging to multiple files:");
 				final Iterator<Entry<String, String>> logsIterator = lfps.entrySet().iterator();
 				Entry<String, String> entry;
 				while (logsIterator.hasNext()) {
 					entry = logsIterator.next();
-					logger.info(String.format("%s: %s", entry.getKey(), entry.getValue()));
+					LOGGER.info(String.format("%s: %s", entry.getKey(), entry.getValue()));
 				}
 			}
 		}
 
-		logger.info("");
+		LOGGER.info("");
 
-		logger.info("Profile directory: " + configuration.getProfileDirectory());
+		LOGGER.info("Profile directory: " + configuration.getProfileDirectory());
 		final String profilePath = configuration.getProfilePath();
-		logger.info("Profile path: " + profilePath);
+		LOGGER.info("Profile path: " + profilePath);
 
 		final File profileFile = new File(profilePath);
 
@@ -378,37 +378,37 @@ public class PmsCoreImpl implements PmsCore {
 				profileFile.canRead()  ? "r" : "-",
 				profileFile.canWrite() ? "w" : "-"
 			);
-			logger.info("Profile status: " + status);
+			LOGGER.info("Profile status: " + status);
 		} else {
-			logger.info("Profile status: no such file");
+			LOGGER.info("Profile status: no such file");
 		}
 
-		logger.info("Profile name: " + configuration.getProfileName());
-		logger.info("");
+		LOGGER.info("Profile name: " + configuration.getProfileName());
+		LOGGER.info("");
 
-		logger.info("Checking MPlayer font cache. It can take a minute or so.");
+		LOGGER.info("Checking MPlayer font cache. It can take a minute or so.");
 		checkProcessExistence("MPlayer", true, null, configuration.getMplayerPath(), "dummy");
 		if (isWindows()) {
 			checkProcessExistence("MPlayer", true, configuration.getTempFolder(), configuration.getMplayerPath(), "dummy");
 		}
-		logger.info("Done!");
+		LOGGER.info("Done!");
 
 		// check the existence of Vsfilter.dll
 		if (registry.isAvis() && registry.getAvsPluginsDir() != null) {
-			logger.info("Found AviSynth plugins dir: " + registry.getAvsPluginsDir().getAbsolutePath());
+			LOGGER.info("Found AviSynth plugins dir: " + registry.getAvsPluginsDir().getAbsolutePath());
 			final File vsFilterdll = new File(registry.getAvsPluginsDir(), "VSFilter.dll");
 			if (!vsFilterdll.exists()) {
-				logger.info("VSFilter.dll is not in the AviSynth plugins directory. This can cause problems when trying to play subtitled videos with AviSynth");
+				LOGGER.info("VSFilter.dll is not in the AviSynth plugins directory. This can cause problems when trying to play subtitled videos with AviSynth");
 			}
 		}
 
 		if (registry.getVlcv() != null && registry.getVlcp() != null) {
-			logger.info("Found VideoLAN version " + registry.getVlcv() + " at: " + registry.getVlcp());
+			LOGGER.info("Found VideoLAN version " + registry.getVlcv() + " at: " + registry.getVlcp());
 		}
 
 		//check if Kerio is installed
 		if (registry.isKerioFirewall()) {
-			logger.info("Detected Kerio firewall");
+			LOGGER.info("Detected Kerio firewall");
 		}
 
 		// force use of specific dvr ms muxer when it's installed in the right place
@@ -438,8 +438,8 @@ public class PmsCoreImpl implements PmsCore {
 		try {
 			binding = server.start();
 		} catch (final BindException b) {
-			logger.info("FATAL ERROR: Unable to bind on port: " + configuration.getServerPort() + ", because: " + b.getMessage());
-			logger.info("Maybe another process is running or the hostname is wrong.");
+			LOGGER.info("FATAL ERROR: Unable to bind on port: " + configuration.getServerPort() + ", because: " + b.getMessage());
+			LOGGER.info("Maybe another process is running or the hostname is wrong.");
 		}
 
 		new Thread("Connection Checker") {
@@ -462,7 +462,7 @@ public class PmsCoreImpl implements PmsCore {
 		}
 
 		if (proxy > 0) {
-			logger.info("Starting HTTP Proxy Server on port: " + proxy);
+			LOGGER.info("Starting HTTP Proxy Server on port: " + proxy);
 			proxyServer = new ProxyServer(proxy);
 		}
 
@@ -470,7 +470,7 @@ public class PmsCoreImpl implements PmsCore {
 		if (configuration.getUseCache()) {
 			initializeDatabase(); // XXX: this must be done *before* new MediaLibrary -> new MediaLibraryFolder
 			mediaLibrary = new MediaLibrary();
-			logger.info("A tiny cache admin interface is available at: http://" + server.getHost() + ":" + server.getPort() + "/console/home");
+			LOGGER.info("A tiny cache admin interface is available at: http://" + server.getHost() + ":" + server.getPort() + "/console/home");
 		}
 
 		// XXX: this must be called:
@@ -491,27 +491,27 @@ public class PmsCoreImpl implements PmsCore {
 
 					UPNPHelper.shutDownListener();
 					UPNPHelper.sendByeBye();
-					logger.debug("Forcing shutdown of all active processes");
+					LOGGER.debug("Forcing shutdown of all active processes");
 					for (final Process p : currentProcesses) {
 						try {
 							p.exitValue();
 						} catch (final IllegalThreadStateException ise) {
-							logger.trace("Forcing shutdown of process: " + p);
+							LOGGER.trace("Forcing shutdown of process: " + p);
 							ProcessUtil.destroy(p);
 						}
 					}
 					get().getServer().stop();
 					Thread.sleep(500);
 				} catch (final IOException e) {
-					logger.debug("Caught exception", e);
+					LOGGER.debug("Caught exception", e);
 				} catch (final InterruptedException e) {
-					logger.debug("Caught exception", e);
+					LOGGER.debug("Caught exception", e);
 				}
 			}
 		});
 
 		UPNPHelper.sendAlive();
-		logger.trace("Waiting 250 milliseconds...");
+		LOGGER.trace("Waiting 250 milliseconds...");
 		Thread.sleep(250);
 		UPNPHelper.listen();
 
@@ -522,7 +522,7 @@ public class PmsCoreImpl implements PmsCore {
 		//Initialize media library (only let pms start if the media library is working)
 		MediaLibraryStorage.configure("pms_media_library.db");
 	    if (!MediaLibraryStorage.getInstance().isFunctional()) {
-	        logger.error("Failed to properly initialize MediaLibraryStorage");
+	        LOGGER.error("Failed to properly initialize MediaLibraryStorage");
 	        JOptionPane.showMessageDialog(null, Messages.getString("PMS.100"), Messages.getString("PMS.101"), JOptionPane.ERROR_MESSAGE);
 	        System.exit(1);
 	    }
@@ -572,7 +572,7 @@ public class PmsCoreImpl implements PmsCore {
 	 */
 	@Override
 	public boolean installWin32Service() {
-		logger.info(Messages.getString("PMS.41"));
+		LOGGER.info(Messages.getString("PMS.41"));
 		String cmdArray[] = new String[]{"win32/service/wrapper.exe", "-r", "wrapper.conf"};
 		final OutputParams output = new OutputParams(configuration);
 		output.noexitcheck = true;
@@ -605,15 +605,15 @@ public class PmsCoreImpl implements PmsCore {
 			// http://ps3mediaserver.org/forum/viewtopic.php?f=14&t=8883&start=250#p43520
 			folder = folder.replaceAll("&comma;", ",");
 			if (log) {
-				logger.info("Checking shared folder: " + folder);
+				LOGGER.info("Checking shared folder: " + folder);
 			}
 			final File file = new File(folder);
 			if (file.exists()) {
 				if (!file.isDirectory()) {
-					logger.warn("The file " + folder + " is not a directory! Please remove it from your Shared folders list on the Navigation/Share Settings tab");
+					LOGGER.warn("The file " + folder + " is not a directory! Please remove it from your Shared folders list on the Navigation/Share Settings tab");
 				}
 			} else {
-				logger.warn("The directory " + folder + " does not exist. Please remove it from your Shared folders list on the Navigation/Share Settings tab");
+				LOGGER.warn("The directory " + folder + " does not exist. Please remove it from your Shared folders list on the Navigation/Share Settings tab");
 			}
 
 			// add the file even if there are problems so that the user can update the shared folders as required.
@@ -643,7 +643,7 @@ public class PmsCoreImpl implements PmsCore {
 			@Override
 			public void run() {
 				try {
-					logger.trace("Waiting 1 second...");
+					LOGGER.trace("Waiting 1 second...");
 					UPNPHelper.sendByeBye();
 					server.stop();
 					server = null;
@@ -651,14 +651,14 @@ public class PmsCoreImpl implements PmsCore {
 					try {
 						Thread.sleep(1000);
 					} catch (final InterruptedException e) {
-						logger.trace("Caught exception", e);
+						LOGGER.trace("Caught exception", e);
 					}
 					server = new HTTPServer(configuration.getServerPort());
 					server.start();
 					UPNPHelper.sendAlive();
 					frame.setReloadable(false);
 				} catch (final IOException e) {
-					logger.error("error during restart :" +e.getMessage(), e);
+					LOGGER.error("error during restart :" +e.getMessage(), e);
 				}
 			}
 		});
@@ -695,19 +695,19 @@ public class PmsCoreImpl implements PmsCore {
 						final byte[] addr = getRegistry().getHardwareAddress(ni); // return null when java.net.preferIPv4Stack=true
 						if (addr != null) {
 							uuid = UUID.nameUUIDFromBytes(addr).toString();
-							logger.info(String.format("Generated new UUID based on the MAC address of the network adapter '%s'", ni.getDisplayName()));
+							LOGGER.info(String.format("Generated new UUID based on the MAC address of the network adapter '%s'", ni.getDisplayName()));
 						}
 					}
 				} catch (final SocketException e) {
-					logger.debug("Caught exception", e);
+					LOGGER.debug("Caught exception", e);
 				} catch (final UnknownHostException e) {
-					logger.debug("Caught exception", e);
+					LOGGER.debug("Caught exception", e);
 				}
 
 				//create random UUID if the generation by MAC address failed
 				if (uuid == null) {
 					uuid = UUID.randomUUID().toString();
-					logger.info("Generated new random UUID");
+					LOGGER.info("Generated new random UUID");
 				}
 
 				//save the newly generated UUID
@@ -715,11 +715,11 @@ public class PmsCoreImpl implements PmsCore {
 				try {
 					getConfiguration().save();
 				} catch (final ConfigurationException e) {
-					logger.error("Failed to save configuration with new UUID", e);
+					LOGGER.error("Failed to save configuration with new UUID", e);
 				}
 			}
 
-			logger.info("Using the following UUID configured in PMS.conf: " + uuid);
+			LOGGER.info("Using the following UUID configured in PMS.conf: " + uuid);
 		}
 		return "uuid:" + uuid;
 	}
@@ -796,7 +796,7 @@ public class PmsCoreImpl implements PmsCore {
 		try {
 			configuration.save();
 		} catch (final ConfigurationException e) {
-			logger.error("Could not save configuration", e);
+			LOGGER.error("Could not save configuration", e);
 		}
 	}
 
@@ -842,37 +842,37 @@ public class PmsCoreImpl implements PmsCore {
 	 * warnings where appropriate.
 	 */
 	private void logSystemInfo() {
-		logger.info("Java: " + System.getProperty("java.version") + "-" + System.getProperty("java.vendor"));
-		logger.info("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.arch") + " "
+		LOGGER.info("Java: " + System.getProperty("java.version") + "-" + System.getProperty("java.vendor"));
+		LOGGER.info("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.arch") + " "
 				+ System.getProperty("os.version"));
-		logger.info("Encoding: " + System.getProperty("file.encoding"));
-		logger.info("");
+		LOGGER.info("Encoding: " + System.getProperty("file.encoding"));
+		LOGGER.info("");
 
 		if (Platform.isMac()) {
 			// The binaries shipped with the Mac OS X version of PMS are being
 			// compiled against specific OS versions, making them incompatible
 			// with older versions. Warn the user about this when necessary.
-			final String osVersion = System.getProperty("os.version");
+			String osVersion = System.getProperty("os.version");
 
 			// Split takes a regular expression, so escape the dot.
-			final String[] versionNumbers = osVersion.split("\\.");
+			String[] versionNumbers = osVersion.split("\\.");
 
 			if (versionNumbers.length > 1) {
 				try {
-					final int osVersionMinor = Integer.parseInt(versionNumbers[1]);
+					int osVersionMinor = Integer.parseInt(versionNumbers[1]);
 
 					if (osVersionMinor < 6) {
-						logger.warn("-----------------------------------------------------------------");
-						logger.warn("WARNING!");
-						logger.warn("PMS ships with binaries compiled for Mac OS X 10.6 or higher.");
-						logger.warn("You are running an older version of Mac OS X so PMS may not work!");
-						logger.warn("More information in the FAQ:");
-						logger.warn("http://www.ps3mediaserver.org/forum/viewtopic.php?f=6&t=3507&p=66371#p66371");
-						logger.warn("-----------------------------------------------------------------");
-						logger.warn("");
+						LOGGER.warn("-----------------------------------------------------------------");
+						LOGGER.warn("WARNING!");
+						LOGGER.warn("PMS ships with binaries compiled for Mac OS X 10.6 or higher.");
+						LOGGER.warn("You are running an older version of Mac OS X so PMS may not work!");
+						LOGGER.warn("More information in the FAQ:");
+						LOGGER.warn("http://www.ps3mediaserver.org/forum/viewtopic.php?f=6&t=3507&p=66371#p66371");
+						LOGGER.warn("-----------------------------------------------------------------");
+						LOGGER.warn("");
 					}
-				} catch (final NumberFormatException e) {
-					logger.debug("Cannot parse minor os.version number");
+				} catch (NumberFormatException e) {
+					LOGGER.debug("Cannot parse minor os.version number");
 				}
 			}
 		}

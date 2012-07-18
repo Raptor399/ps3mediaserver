@@ -952,20 +952,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public String getMencoderAudioLanguages() {
-		return getString(KEY_MENCODER_AUDIO_LANGS, getDefaultLanguages());
-	}
-
-	/**
-	 * Returns a string of comma separated audio or subtitle languages,
-	 * ordered by priority. 
-	 * @return The string of languages.
-	 */
-	private String getDefaultLanguages() {
-		if ("fr".equals(getLanguage())) {
-			return "fre,jpn,ger,eng,und";
-		} else {
-			return "eng,fre,jpn,ger,und";
-		}
+		return getString(KEY_MENCODER_AUDIO_LANGS, Messages.getString("MEncoderVideo.126"));
 	}
 
 	/**
@@ -973,7 +960,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public String getMencoderSubLanguages() {
-		return getString(KEY_MENCODER_SUB_LANGS, getDefaultLanguages());
+		return getString(KEY_MENCODER_SUB_LANGS, Messages.getString("MEncoderVideo.127"));
 	}
 
 	/**
@@ -997,7 +984,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public String getMencoderAudioSubLanguages() {
-		return getString(KEY_MENCODER_AUDIO_SUB_LANGS, "");
+		return getString(KEY_MENCODER_AUDIO_SUB_LANGS, Messages.getString("MEncoderVideo.128"));
 	}
 
 	/**

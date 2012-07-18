@@ -351,15 +351,18 @@ public interface PmsConfiguration {
 	/**
 	 * Returns the audio language priority for MEncoder as a comma separated
 	 * string. For example: <code>"eng,fre,jpn,ger,und"</code>, where "und"
-	 * stands for "undefined".
+	 * stands for "undefined". Default value is "loc,eng,fre,jpn,ger,und".
+	 *
 	 * @return The audio language priority string.
 	 */
 	public String getMencoderAudioLanguages();
 
 	/**
-	 * Returns the subtitle language priority for MEncoder as a comma
-	 * separated string. For example: <code>"eng,fre,jpn,ger,und"</code>,
-	 * where "und" stands for "undefined".
+	 * Returns the subtitle language priority for MEncoder as a comma separated
+	 * string. For example: <code>"loc,eng,fre,jpn,ger,und"</code>, where "loc"
+	 * stands for the preferred local language and "und" stands for "undefined".
+	 * Default value is "loc,eng,fre,jpn,ger,und".
+	 *
 	 * @return The subtitle language priority string.
 	 */
 	public String getMencoderSubLanguages();
@@ -383,9 +386,10 @@ public interface PmsConfiguration {
 	 * ordered by priority for MEncoder to try to match. Audio language
 	 * and subtitle language should be comma separated as a pair,
 	 * individual pairs should be semicolon separated. "*" can be used to
-	 * match any language. Subtitle language can be defined as "off". For
-	 * example: <code>"en,off;jpn,eng;*,eng;*;*"</code>.
-	 * Default value is <code>""</code>.
+	 * match any language, "loc" to match the local language. Subtitle
+	 * language can be defined as "off".
+	 * Default value is <code>"loc,off;jpn,loc;*,loc;*,*"</code>.
+	 *
 	 * @return The audio and subtitle languages priority string.
 	 */
 	public String getMencoderAudioSubLanguages();

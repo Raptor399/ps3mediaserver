@@ -32,6 +32,14 @@ import net.pms.encoders.Player;
 import net.pms.encoders.TSMuxerVideo;
 
 public class MPG extends Format {
+	/**
+	 * {@inheritDoc} 
+	 */
+	@Override
+	public Identifier getIdentifier() {
+		return Identifier.MPG;
+	}
+
 	@Override
 	public ArrayList<Class<? extends Player>> getProfiles() {
 		PmsCore r = PMS.get();

@@ -1,10 +1,18 @@
 package net.pms.dlna.virtual;
 
-import net.pms.PMS;
-import net.pms.dlna.*;
-
 import java.io.File;
 import java.util.ArrayList;
+
+import javax.inject.Inject;
+
+import net.pms.PMS;
+import net.pms.api.PmsCore;
+import net.pms.di.InjectionHelper;
+import net.pms.dlna.DLNAMediaDatabase;
+import net.pms.dlna.DLNAResource;
+import net.pms.dlna.DVDISOFile;
+import net.pms.dlna.PlaylistFolder;
+import net.pms.dlna.RealFile;
 
 public class MediaLibraryFolder extends VirtualFolder {
 	public static final int FILES = 0;
@@ -15,6 +23,9 @@ public class MediaLibraryFolder extends VirtualFolder {
 	private int expectedOutputs[];
 	private DLNAMediaDatabase database;
 
+	@Inject
+	private PmsCore pmsCore;
+
 	public MediaLibraryFolder(String name, String sql, int expectedOutput) {
 		this(name, new String[]{sql}, new int[]{expectedOutput});
 	}
@@ -23,6 +34,7 @@ public class MediaLibraryFolder extends VirtualFolder {
 		super(name, null);
 		this.sqls = sql;
 		this.expectedOutputs = expectedOutput;
+		InjectionHelper.injectMembers(this);
 		this.database = PMS.get().getDatabase();
 		// double check the database has been initialized (via PMS.init -> PMS.initializeDatabase)
 		// http://www.ps3mediaserver.org/forum/viewtopic.php?f=6&t=11474

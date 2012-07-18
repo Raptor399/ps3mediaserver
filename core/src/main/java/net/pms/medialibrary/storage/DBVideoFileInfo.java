@@ -35,7 +35,7 @@ import java.util.List;
 
 import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaSubtitle;
-import net.pms.formats.SubtitleType;
+import net.pms.formats.v2.SubtitleType;
 import net.pms.medialibrary.commons.MediaLibraryConfiguration;
 import net.pms.medialibrary.commons.dataobjects.DOCertification;
 import net.pms.medialibrary.commons.dataobjects.DOFilter;
@@ -239,9 +239,9 @@ class DBVideoFileInfo extends DBFileInfo {
 			        + ", VIDEO.ORIGINALNAME, VIDEO.NAME, VIDEO.SORTNAME, VIDEO.TMDBID, VIDEO.IMDBID, VIDEO.OVERVIEW, VIDEO.BUDGET, VIDEO.REVENUE, VIDEO.HOMEPAGEURL, VIDEO.TRAILERURL" 
 			        + ", VIDEO.AGERATINGLEVEL, VIDEO.AGERATINGREASON, VIDEO.RATINGPERCENT, VIDEO.RATINGVOTERS, VIDEO.DIRECTOR, VIDEO.TAGLINE"
 			        + ", VIDEO.ASPECTRATIO, VIDEO.BITRATE, VIDEO.BITSPERPIXEL, VIDEO.CODECV, VIDEO.DURATIONSEC, VIDEO.CONTAINER, VIDEO.DVDTRACK, VIDEO.FRAMERATE"
-			        + ", VIDEO.HEIGHT, VIDEO.MIMETYPE, VIDEO.MODEL, VIDEO.MUXABLE, VIDEO.WIDTH, VIDEO.YEAR, VIDEO.MUXINGMODE" // VIDEO
+			        + ", VIDEO.HEIGHT, VIDEO.MIMETYPE, VIDEO.MODEL, VIDEO.MUXABLE, VIDEO.WIDTH, VIDEO.YEAR, VIDEO.MUXINGMODE, VIDEO.FRAMERATEMODE" // VIDEO
 			        + ", FILEPLAYS.DATEPLAYEND" //last play
-			        + ", VIDEOAUDIO.LANG, VIDEOAUDIO.NRAUDIOCHANNELS, VIDEOAUDIO.SAMPLEFREQ, VIDEOAUDIO.CODECA, VIDEOAUDIO.BITSPERSAMPLE, VIDEOAUDIO.DELAYMS, VIDEOAUDIO.MUXINGMODE" //VIDEOAUDIO
+			        + ", VIDEOAUDIO.LANG, VIDEOAUDIO.NRAUDIOCHANNELS, VIDEOAUDIO.SAMPLEFREQ, VIDEOAUDIO.CODECA, VIDEOAUDIO.BITSPERSAMPLE, VIDEOAUDIO.DELAYMS, VIDEOAUDIO.MUXINGMODE, VIDEOAUDIO.BITRATE" //VIDEOAUDIO
 			        + ", SUBTITLES.FILEPATH, SUBTITLES.LANG, SUBTITLES.TYPE" //SUBTITLES
 			        + ", FILETAGS.KEY, FILETAGS.VALUE" //TAGS
 			        + " FROM FILE, VIDEO" 
@@ -303,11 +303,12 @@ class DBVideoFileInfo extends DBFileInfo {
 						videoFile.setWidth(rs.getInt(pos++));
 						videoFile.setYear(rs.getInt(pos++));
 						videoFile.setMuxingMode(rs.getString(pos++));
+						videoFile.setFrameRateMode(rs.getString(pos++));
 
 						videos.put(videoFile.getId(), videoFile);
 					}else{
 						//skip the already imported fields if the video with this id is already contained in the list
-						pos = 43;
+						pos = 44;
 						
 						videoFile = videos.get(videoFile.getId());
 					}
@@ -324,12 +325,13 @@ class DBVideoFileInfo extends DBFileInfo {
 					// Audio track
 					DLNAMediaAudio audioTrack = new DLNAMediaAudio();
 					audioTrack.setLang(rs.getString(pos++));
-					audioTrack.setNrAudioChannels(rs.getInt(pos++));
+					audioTrack.getAudioProperties().setNumberOfChannels(rs.getInt(pos++));
 					audioTrack.setSampleFrequency(rs.getString(pos++));
 					audioTrack.setCodecA(rs.getString(pos++));
 					audioTrack.setBitsperSample(rs.getInt(pos++));
-					audioTrack.setDelay(rs.getInt(pos++));
+					audioTrack.getAudioProperties().setAudioDelay(rs.getInt(pos++));
 					audioTrack.setMuxingModeAudio(rs.getString(pos++));
+					audioTrack.setBitRate(rs.getInt(pos++));
 
 					boolean doInsertAudioTrack = true;
 					for (DLNAMediaAudio currTrack : videoFile.getAudioCodes()) {
@@ -425,6 +427,9 @@ class DBVideoFileInfo extends DBFileInfo {
 						case VIDEO_SORTNAME:
 							s1 = o1.getSortName();
 							s2 = o2.getSortName();
+							break;
+						default:
+							log.warn(String.format("Unhandled sort field reveived (%s). This should never happen", sortField));
 							break;
 						}
 						
@@ -747,17 +752,18 @@ class DBVideoFileInfo extends DBFileInfo {
 		// Insert audio tracks for video
 		for (DLNAMediaAudio media : videoFileInfo.getAudioCodes()) {
 			try {
-				stmt = conn.prepareStatement("INSERT INTO VIDEOAUDIO(FILEID, LANG, NRAUDIOCHANNELS, SAMPLEFREQ, CODECA, BITSPERSAMPLE, DELAYMS, MUXINGMODE)"
-				        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+				stmt = conn.prepareStatement("INSERT INTO VIDEOAUDIO(FILEID, LANG, NRAUDIOCHANNELS, SAMPLEFREQ, CODECA, BITSPERSAMPLE, DELAYMS, MUXINGMODE, BITRATE)"
+				        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 				stmt.clearParameters();
 				stmt.setInt(1, videoFileInfo.getId());
 				stmt.setString(2, media.getLang());
-				stmt.setInt(3, media.getNrAudioChannels());
+				stmt.setInt(3, media.getAudioProperties().getNumberOfChannels());
 				stmt.setString(4, media.getSampleFrequency());
 				stmt.setString(5, media.getCodecA());
 				stmt.setInt(6, media.getBitsperSample());
-				stmt.setInt(7, media.getDelay());
+				stmt.setInt(7, media.getAudioProperties().getAudioDelay());
 				stmt.setString(8, media.getMuxingModeAudio());
+				stmt.setInt(9, media.getBitRate());
 				stmt.executeUpdate();
 			} catch (Exception e) {
 				throw new StorageException("Failed to insert audio file with lang=" + media.getLang() + " for file " + videoFileInfo.getFileName(false), e);

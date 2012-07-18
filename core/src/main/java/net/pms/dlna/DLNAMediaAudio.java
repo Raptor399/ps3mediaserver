@@ -18,6 +18,7 @@
  */
 package net.pms.dlna;
 
+import net.pms.formats.v2.AudioProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DLNAMediaAudio.class);
+	private AudioProperties audioProperties = new AudioProperties();
 
 	/**
 	 * @deprecated Use standard getter and setter to access this variable.
@@ -344,19 +346,24 @@ public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 	 * 
 	 * @return The number of channels
 	 * @since 1.50
+	 * @deprecated Use getAudioProperties().getNumberOfChannels() instead
 	 */
+	@Deprecated
 	public int getNrAudioChannels() {
-		return nrAudioChannels;
+		return audioProperties.getNumberOfChannels();
 	}
 
 	/**
 	 * Sets the number of channels for the audio.
 	 * 
-	 * @param nrAudioChannels The number of channels to set.
+	 * @param numberOfChannels The number of channels to set.
 	 * @since 1.50
+	 * @deprecated Use getAudioProperties().setNumberOfChannels(int numberOfChannels) instead
 	 */
-	public void setNrAudioChannels(int nrAudioChannels) {
-		this.nrAudioChannels = nrAudioChannels;
+	@Deprecated
+	public void setNrAudioChannels(int numberOfChannels) {
+		this.nrAudioChannels = numberOfChannels;
+		audioProperties.setNumberOfChannels(numberOfChannels);
 	}
 
 	/**
@@ -504,19 +511,24 @@ public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 	 * 
 	 * @return The delay.
 	 * @since 1.50
+	 * @deprecated Use getAudioProperties().getAudioDelay() instead
 	 */
+	@Deprecated
 	public int getDelay() {
-		return delay;
+		return audioProperties.getAudioDelay();
 	}
 
 	/**
 	 * Sets the delay for the audio.
 	 * 
-	 * @param delay The delay to set.
+	 * @param audioDelay The delay to set.
 	 * @since 1.50
+	 * @deprecated  Use getAudioProperties().setAudioDelay(int audioDelay) instead
 	 */
-	public void setDelay(int delay) {
-		this.delay = delay;
+	@Deprecated
+	public void setDelay(int audioDelay) {
+		this.delay = audioDelay;
+		audioProperties.setAudioDelay(audioDelay);
 	}
 
 	/**
@@ -559,43 +571,38 @@ public class DLNAMediaAudio extends DLNAMediaLang implements Cloneable {
 		this.muxingModeAudio = muxingModeAudio;
 	}
 
+	public AudioProperties getAudioProperties() {
+		return audioProperties;
+	}
+
+	public void setAudioProperties(AudioProperties audioProperties) {
+		if (audioProperties == null) {
+			throw new IllegalArgumentException("Can't set null AudioProperties.");
+		}
+		this.audioProperties = audioProperties;
+	}
+
 	@Override
 	public boolean equals(Object obj){
 		if(!(obj instanceof DLNAMediaAudio)){
 			return false;
 		}
 		
-		DLNAMediaAudio compObj = (DLNAMediaAudio)obj;
-		if(getBitsperSample() == compObj.getBitsperSample()
-				&& (getSampleFrequency() == compObj.getSampleFrequency() || getSampleFrequency().equals(compObj.getSampleFrequency()))
-				&& getNrAudioChannels() == compObj.getNrAudioChannels()
-				&& (getCodecA() == compObj.getCodecA() || getCodecA().equals(compObj.getCodecA()))
-				&& (getAlbum() == compObj.getAlbum() || getAlbum().equals(compObj.getAlbum()))
-				&& (getArtist() == compObj.getArtist() || getArtist().equals(compObj.getArtist()))
-				&& (getSongname() == compObj.getSongname() || getSongname().equals(compObj.getSongname()))
-				&& (getGenre() == compObj.getGenre() || getGenre().equals(compObj.getGenre()))
-				&& getYear() == compObj.getYear()
-				&& getTrack() == compObj.getTrack()
-				&& getDelay() == compObj.getDelay()){
-			return true;
-		}
-		
-		return false;
+		return hashCode() == obj.hashCode();
 	}
 	
 	@Override
 	public int hashCode(){
 		int hashCode = 24 + getBitsperSample();
 		hashCode *= 24 + (getSampleFrequency() == null ? 1 : getSampleFrequency().hashCode());
-		hashCode *= 24 + getNrAudioChannels();
-		hashCode *= 24 + (getCodecA() == null ? 1 : getCodecA().hashCode());
-		hashCode *= 24 + (getAlbum() == null ? 1 : getAlbum().hashCode());
-		hashCode *= 24 + (getArtist() == null ? 1 : getArtist().hashCode());
-		hashCode *= 24 + (getSongname() == null ? 1 : getSongname().hashCode());
-		hashCode *= 24 + (getGenre() == null ? 1 : getGenre().hashCode());
+		hashCode *= 24 + (getCodecA() == null ? 2 : getCodecA().hashCode());
+		hashCode *= 24 + (getAlbum() == null ? 3 : getAlbum().hashCode());
+		hashCode *= 24 + (getArtist() == null ? 4 : getArtist().hashCode());
+		hashCode *= 24 + (getSongname() == null ? 5 : getSongname().hashCode());
+		hashCode *= 24 + (getGenre() == null ? 6 : getGenre().hashCode());
 		hashCode *= 24 + getYear();
 		hashCode *= 24 + getTrack();
-		hashCode *= 24 + getDelay();
+		hashCode *= 24 + getAudioProperties().hashCode();
 		return hashCode;
 	}
 }
