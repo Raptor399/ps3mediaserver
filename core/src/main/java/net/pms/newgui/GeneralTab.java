@@ -18,29 +18,50 @@
  */
 package net.pms.newgui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.sun.jna.Platform;
+import java.awt.Component;
+import java.awt.ComponentOrientation;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import javax.inject.Inject;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
 import net.pms.configuration.Build;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.network.NetworkConfiguration;
 import net.pms.util.FormLayoutUtil;
 import net.pms.util.KeyedComboBoxModel;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.sun.jna.Platform;
 
 public class GeneralTab {
 	private static final Logger logger = LoggerFactory.getLogger(GeneralTab.class);
@@ -59,11 +80,12 @@ public class GeneralTab {
 	private JTextField ip_filter;
 	private JTextField maxbitrate;
 	private JComboBox renderers;
-	private final PmsConfiguration configuration;
 
-	GeneralTab(PmsConfiguration configuration) {
-		this.configuration = configuration;
-	}
+	@Inject
+	private PmsConfiguration configuration;
+
+	@Inject
+	private PmsCore pmsCore;
 
 	public JComponent build() {
 		// Apply the orientation for the locale
@@ -139,9 +161,9 @@ public class GeneralTab {
 		service.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (PMS.get().installWin32Service()) {
+				if (pmsCore.installWin32Service()) {
 					JOptionPane.showMessageDialog(
-						(JFrame) (SwingUtilities.getWindowAncestor((Component) PMS.get().getFrame())),
+						(JFrame) (SwingUtilities.getWindowAncestor((Component) pmsCore.getFrame())),
 						Messages.getString("NetworkTab.11") +
 						Messages.getString("NetworkTab.12"),
 						"Information",
@@ -149,7 +171,7 @@ public class GeneralTab {
 
 				} else {
 					JOptionPane.showMessageDialog(
-						(JFrame) (SwingUtilities.getWindowAncestor((Component) PMS.get().getFrame())),
+						(JFrame) (SwingUtilities.getWindowAncestor((Component) pmsCore.getFrame())),
 						Messages.getString("NetworkTab.14"),
 						"Error",
 						JOptionPane.ERROR_MESSAGE);
@@ -168,7 +190,7 @@ public class GeneralTab {
 		checkForUpdates.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LooksFrame frame = (LooksFrame) PMS.get().getFrame();
+				LooksFrame frame = (LooksFrame) pmsCore.getFrame();
 				frame.checkForUpdates();
 			}
 		});

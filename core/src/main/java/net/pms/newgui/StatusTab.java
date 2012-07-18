@@ -18,18 +18,8 @@
  */
 package net.pms.newgui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import net.pms.Messages;
-import net.pms.api.PmsConfiguration;
-import net.pms.util.FormLayoutUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.ComponentOrientation;
+import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,12 +28,34 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Locale;
 
+import javax.imageio.ImageIO;
+import javax.inject.Inject;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+
+import net.pms.Messages;
+import net.pms.api.PmsConfiguration;
+import net.pms.util.FormLayoutUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
 public class StatusTab {
 	private static final Logger LOGGER = LoggerFactory.getLogger(StatusTab.class);
 
 	private static final int MAX_RENDERERS = 10;
 	private ImagePanel imagePanel;
+
+	@Inject
 	private PmsConfiguration configuration;
+
 	private ImagePanel renderers[] = new ImagePanel[MAX_RENDERERS];
 	private JLabel rendererLabels[] = new JLabel[MAX_RENDERERS];
 	private int numRenderers;
@@ -53,10 +65,6 @@ public class StatusTab {
 	private long rc = 0;
 	private long peak;
 	private DecimalFormat formatter = new DecimalFormat("#,###");
-
-	StatusTab(PmsConfiguration configuration) {
-		this.configuration = configuration;
-	}
 
 	public JProgressBar getJpb() {
 		return jpb;

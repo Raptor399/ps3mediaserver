@@ -31,6 +31,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.imageio.ImageIO;
+import javax.inject.Inject;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -58,6 +59,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
 import net.pms.gui.IFrame;
 import net.pms.io.WindowsNamedPipe;
@@ -70,14 +72,21 @@ import net.pms.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Injector;
 import com.jgoodies.looks.Options;
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.sun.jna.Platform;
 
 public class LooksFrame extends JFrame implements IFrame, Observer {
 	private static final Logger logger = LoggerFactory.getLogger(LooksFrame.class);
-	private final AutoUpdater autoUpdater;
-	private final PmsConfiguration configuration;
+	private AutoUpdater autoUpdater;
+
+	@Inject
+	private PmsCore pmsCore;
+
+	@Inject
+	private PmsConfiguration configuration;
+
 	public static final String START_SERVICE = "start.service";
 	private static final long serialVersionUID = 8723727186288427690L;
 	private NavigationShareTab ft;
@@ -174,10 +183,11 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 	 * Constructs a <code>DemoFrame</code>, configures the UI,
 	 * and builds the content.
 	 */
-	public LooksFrame(AutoUpdater autoUpdater, PmsConfiguration configuration) {
+	public void initialize(AutoUpdater autoUpdater) {
 		this.autoUpdater = autoUpdater;
-		this.configuration = configuration;
-		assert this.configuration != null;
+
+		assert configuration != null;
+
 		Options.setDefaultIconSize(new Dimension(18, 18));
 		Options.setUseNarrowButtons(true);
 
@@ -302,7 +312,8 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 		if (!configuration.isMinimized() && System.getProperty(START_SERVICE) == null) {
 			setVisible(true);
 		}
-		PMS.get().getRegistry().addSystemTray(this);
+
+		pmsCore.getRegistry().addSystemTray(this);
 	}
 
 	protected static ImageIcon readImageIcon(String filename) {
@@ -320,7 +331,7 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 		AbstractButton save = createToolBarButton(Messages.getString("LooksFrame.9"), "filesave-48.png", Messages.getString("LooksFrame.9"));
 		save.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				PMS.get().save();
+				pmsCore.save();
 			}
 		});
 		toolBar.add(save);
@@ -328,7 +339,7 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 		reload = createToolBarButton(Messages.getString("LooksFrame.12"), "reload_page-48.png", Messages.getString("LooksFrame.12"));
 		reload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				PMS.get().reset();
+				pmsCore.reset();
 			}
 		});
 		toolBar.add(reload);
@@ -368,12 +379,14 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 	public JComponent buildMain() {
 		JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
 
-		st = new StatusTab(configuration);
-		tt = new TracesTab(configuration);
-		tr = new TranscodingTab(configuration);
-		nt = new GeneralTab(configuration);
-		ft = new NavigationShareTab(configuration);
-		InjectionHelper.injectMembers(ft);
+		Injector injector = InjectionHelper.getInjector();
+		
+		st = injector.getInstance(StatusTab.class);
+		tt = injector.getInstance(TracesTab.class);
+		tr = injector.getInstance(TranscodingTab.class);
+		nt = injector.getInstance(GeneralTab.class);
+		ft = injector.getInstance(NavigationShareTab.class);
+		AboutTab aboutTab = injector.getInstance(AboutTab.class);
 
 		tabbedPane.addTab(Messages.getString("LooksFrame.18"),/* readImageIcon("server-16.png"),*/ st.build());
 		tabbedPane.addTab(Messages.getString("LooksFrame.19"),/* readImageIcon("mail_new-16.png"),*/ tt.build());
@@ -383,7 +396,7 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 		tabbedPane.addTab(Messages.getString("LooksFrame.27"),/*  readImageIcon("mail_new-16.png"), */new PluginsTab());
 		tabbedPane.addTab(Messages.getString("LooksFrame.21"),/* readImageIcon("player_play-16.png"),*/ tr.build());
 		tabbedPane.addTab(Messages.getString("LooksFrame.24"), /* readImageIcon("mail_new-16.png"), */ new HelpTab().build());
-		tabbedPane.addTab(Messages.getString("LooksFrame.25"), /*readImageIcon("documentinfo-16.png"),*/ new AboutTab().build());
+		tabbedPane.addTab(Messages.getString("LooksFrame.25"), /*readImageIcon("documentinfo-16.png"),*/ aboutTab.build());
 
 		tabbedPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 

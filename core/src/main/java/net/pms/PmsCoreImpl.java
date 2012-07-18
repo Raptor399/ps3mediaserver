@@ -42,6 +42,7 @@ import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.Build;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaDatabase;
 import net.pms.dlna.virtual.MediaLibrary;
 import net.pms.encoders.PlayerFactory;
@@ -79,6 +80,7 @@ import org.apache.commons.configuration.event.ConfigurationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Injector;
 import com.sun.jna.Platform;
 
 /**
@@ -306,8 +308,11 @@ public class PmsCoreImpl implements PmsCore {
 
 		initMediaLibrary();
 
+		Injector injector = InjectionHelper.getInjector();
+
 		if (System.getProperty(CONSOLE) == null) {
-			frame = new LooksFrame(autoUpdater, configuration);
+			frame = injector.getInstance(LooksFrame.class);
+			((LooksFrame) frame).initialize(autoUpdater);
 		} else {
 			LOGGER.info("GUI environment not available");
 			LOGGER.info("Switching to console mode");

@@ -18,18 +18,10 @@
  */
 package net.pms.newgui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import net.pms.Messages;
-import net.pms.api.PmsConfiguration;
-import net.pms.logging.LoggingConfigFileLoader;
-import net.pms.util.FormLayoutUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.ComponentOrientation;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -39,8 +31,31 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 
+import javax.inject.Inject;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import net.pms.Messages;
+import net.pms.api.PmsConfiguration;
+import net.pms.logging.LoggingConfigFileLoader;
+import net.pms.util.FormLayoutUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
 public class TracesTab {
 	private static final Logger logger = LoggerFactory.getLogger(TracesTab.class);
+
+	@Inject
 	private PmsConfiguration configuration;
 
 	class PopupTriggerMouseListener extends MouseAdapter {
@@ -71,10 +86,6 @@ public class TracesTab {
 		}
 	}
 	private JTextArea jList;
-
-	TracesTab(PmsConfiguration configuration) {
-		this.configuration = configuration;
-	}
 
 	public JTextArea getList() {
 		return jList;

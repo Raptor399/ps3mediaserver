@@ -97,14 +97,13 @@ public class NavigationShareTab {
 	@Inject
 	private PmsCore pmsCore;
 
+	@Inject
+	private PmsConfiguration configuration;
+
 	public DefaultListModel getDf() {
 		return df;
 	}
-	private final PmsConfiguration configuration;
 
-	NavigationShareTab(PmsConfiguration configuration) {
-		this.configuration = configuration;
-	}
 
 	private void updateModel() {
 		if (df.size() == 1 && df.getElementAt(0).equals(ALL_DRIVES)) {
@@ -387,8 +386,8 @@ public class NavigationShareTab {
 			public void itemStateChanged(ItemEvent e) {
 				configuration.setUseCache((e.getStateChange() == ItemEvent.SELECTED));
 				cachereset.setEnabled(configuration.getUseCache());
-				if ((LooksFrame) PMS.get().getFrame() != null) {
-					((LooksFrame) PMS.get().getFrame()).getFt().setScanLibraryEnabled(configuration.getUseCache());
+				if ((LooksFrame) pmsCore.getFrame() != null) {
+					((LooksFrame) pmsCore.getFrame()).getFt().setScanLibraryEnabled(configuration.getUseCache());
 				}
 			}
 		});
@@ -397,12 +396,12 @@ public class NavigationShareTab {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int option = JOptionPane.showConfirmDialog(
-					(Component) PMS.get().getFrame(),
+					(Component) pmsCore.getFrame(),
 					Messages.getString("NetworkTab.13") + Messages.getString("NetworkTab.19"),
 					"Question",
 					JOptionPane.YES_NO_OPTION);
 				if (option == JOptionPane.YES_OPTION) {
-					PMS.get().getDatabase().init(true);
+					pmsCore.getDatabase().init(true);
 				}
 
 			}
@@ -625,12 +624,12 @@ public class NavigationShareTab {
 		but5.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (configuration.getUseCache()) {
-					DLNAMediaDatabase database = PMS.get().getDatabase();
+					DLNAMediaDatabase database = pmsCore.getDatabase();
 
 					if (database != null) {
 						if (!database.isScanLibraryRunning()) {
 							int option = JOptionPane.showConfirmDialog(
-								(Component) PMS.get().getFrame(),
+								(Component) pmsCore.getFrame(),
 								Messages.getString("FoldTab.3") + Messages.getString("FoldTab.4"),
 								"Question",
 								JOptionPane.YES_NO_OPTION);
@@ -640,12 +639,12 @@ public class NavigationShareTab {
 							}
 						} else {
 							int option = JOptionPane.showConfirmDialog(
-								(Component) PMS.get().getFrame(),
+								(Component) pmsCore.getFrame(),
 								Messages.getString("FoldTab.10"),
 								"Question",
 								JOptionPane.YES_NO_OPTION);
 							if (option == JOptionPane.YES_OPTION) {
-								PMS.get().getFrame().setStatusLine(null);
+								pmsCore.getFrame().setStatusLine(null);
 								but5.setIcon(LooksFrame.readImageIcon("search-32.png"));
 							}
 						}

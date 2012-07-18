@@ -23,11 +23,13 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import net.pms.Messages;
 import net.pms.PMS;
+import net.pms.api.PmsCore;
 import net.pms.util.PropertiesUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.inject.Inject;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -37,6 +39,9 @@ import java.io.IOException;
 
 public class AboutTab {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AboutTab.class);
+
+	@Inject
+	private PmsCore pmsCore;
 
 	private ImagePanel imagePanel;
 	private JLabel jl;
@@ -125,7 +130,7 @@ public class AboutTab {
 		return scrollPane;
 	}
 
-	private static class LinkMouseListener implements MouseListener {
+	private class LinkMouseListener implements MouseListener {
 		private final String name;
 		private final String link;
 
@@ -149,7 +154,7 @@ public class AboutTab {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			try {
-				PMS.get().getRegistry().browseURI(link);
+				pmsCore.getRegistry().browseURI(link);
 			} catch (Exception e1) {
 				LOGGER.debug("Caught exception", e1);
 			}

@@ -34,6 +34,7 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import javax.inject.Inject;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -82,15 +83,12 @@ public class TranscodingTab {
 	private static final String MAIN_COL_SPEC = "left:pref, pref, 7dlu, pref, pref, fill:10:grow";
 	private static final String MAIN_ROW_SPEC = "fill:10:grow";
 
-	private final PmsConfiguration configuration;
-	private ComponentOrientation orientation;
+	@Inject
+	private PmsCore pmsCore;
 
-	TranscodingTab(PmsConfiguration configuration) {
-		this.configuration = configuration;
-		// Apply the orientation for the locale
-		Locale locale = new Locale(configuration.getLanguage());
-		orientation = ComponentOrientation.getOrientation(locale);
-	}
+	@Inject
+	private PmsConfiguration configuration;
+
 	private JCheckBox disableSubs;
 
 	public JCheckBox getDisableSubs() {
@@ -143,6 +141,10 @@ public class TranscodingTab {
 	}
 
 	public JComponent build() {
+		// Apply the orientation for the locale
+		Locale locale = new Locale(configuration.getLanguage());
+		ComponentOrientation orientation = ComponentOrientation.getOrientation(locale);
+
 		String colSpec = FormLayoutUtil.getColSpec(MAIN_COL_SPEC, orientation);
 		FormLayout mainlayout = new FormLayout(colSpec, MAIN_ROW_SPEC);
 		PanelBuilder builder = new PanelBuilder(mainlayout);
@@ -172,6 +174,10 @@ public class TranscodingTab {
 	}
 
 	public JComponent buildLeft() {
+		// Apply the orientation for the locale
+		Locale locale = new Locale(configuration.getLanguage());
+		ComponentOrientation orientation = ComponentOrientation.getOrientation(locale);
+
 		String colSpec = FormLayoutUtil.getColSpec(LEFT_COL_SPEC, orientation);
 		FormLayout layout = new FormLayout(colSpec, LEFT_ROW_SPEC);
 		PanelBuilder builder = new PanelBuilder(layout);
@@ -352,6 +358,10 @@ public class TranscodingTab {
 	}
 
 	public JComponent buildEmpty() {
+		// Apply the orientation for the locale
+		Locale locale = new Locale(configuration.getLanguage());
+		ComponentOrientation orientation = ComponentOrientation.getOrientation(locale);
+
 		String colSpec = FormLayoutUtil.getColSpec(EMPTY_COL_SPEC, orientation);
 		FormLayout layout = new FormLayout(colSpec, EMPTY_ROW_SPEC);
 		PanelBuilder builder = new PanelBuilder(layout);
@@ -371,6 +381,10 @@ public class TranscodingTab {
 	}
 
 	public JComponent buildCommon() {
+		// Apply the orientation for the locale
+		Locale locale = new Locale(configuration.getLanguage());
+		ComponentOrientation orientation = ComponentOrientation.getOrientation(locale);
+
 		String colSpec = FormLayoutUtil.getColSpec(COMMON_COL_SPEC, orientation);
 		FormLayout layout = new FormLayout(colSpec, COMMON_ROW_SPEC);
 		PanelBuilder builder = new PanelBuilder(layout);
@@ -523,7 +537,7 @@ public class TranscodingTab {
                 configuration.setDTSEmbedInPCM(forceDTSinPCM.isSelected());
                 if (configuration.isDTSEmbedInPCM()) {
                     JOptionPane.showMessageDialog(
-                            (JFrame) (SwingUtilities.getWindowAncestor((Component) PMS.get().getFrame())),
+                            (JFrame) (SwingUtilities.getWindowAncestor((Component) pmsCore.getFrame())),
                             Messages.getString("TrTab2.10"),
                             "Information",
                             JOptionPane.INFORMATION_MESSAGE);

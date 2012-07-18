@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Locale;
 
+import javax.inject.Inject;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -46,6 +47,7 @@ import javax.swing.SwingUtilities;
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
 import net.pms.util.KeyedComboBoxModel;
 
 import org.apache.commons.lang.StringUtils;
@@ -69,11 +71,12 @@ public class NetworkTab {
 	private JComboBox langs;
 	private JComboBox networkinterfacesCBX;
 	private JTextField ip_filter;
-	private final PmsConfiguration configuration;
 
-	NetworkTab(PmsConfiguration configuration) {
-		this.configuration = configuration;
-	}
+	@Inject
+	private PmsCore pmsCore;
+
+	@Inject
+	private PmsConfiguration configuration;
 
 	public JComponent build() {
 		FormLayout layout = new FormLayout(
@@ -140,9 +143,9 @@ public class NetworkTab {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (PMS.get().installWin32Service()) {
+				if (pmsCore.installWin32Service()) {
 					JOptionPane.showMessageDialog(
-						(JFrame) (SwingUtilities.getWindowAncestor((Component) PMS.get().getFrame())),
+						(JFrame) (SwingUtilities.getWindowAncestor((Component) pmsCore.getFrame())),
 						Messages.getString("NetworkTab.11") +
 						Messages.getString("NetworkTab.12"),
 						"Information",
@@ -150,7 +153,7 @@ public class NetworkTab {
 
 				} else {
 					JOptionPane.showMessageDialog(
-						(JFrame) (SwingUtilities.getWindowAncestor((Component) PMS.get().getFrame())),
+						(JFrame) (SwingUtilities.getWindowAncestor((Component) pmsCore.getFrame())),
 						Messages.getString("NetworkTab.14"),
 						"Error",
 						JOptionPane.ERROR_MESSAGE);
@@ -179,7 +182,7 @@ public class NetworkTab {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				configuration.setHostname(host.getText());
-				PMS.get().getFrame().setReloadable(true);
+				pmsCore.getFrame().setReloadable(true);
 			}
 		});
 		// host.setEnabled( StringUtils.isBlank(configuration.getNetworkInterface())) ;
@@ -203,7 +206,7 @@ public class NetworkTab {
 					}
 					int ab = Integer.parseInt(p);
 					configuration.setServerPort(ab);
-					PMS.get().getFrame().setReloadable(true);
+					pmsCore.getFrame().setReloadable(true);
 				} catch (NumberFormatException nfe) {
 				}
 
@@ -247,7 +250,7 @@ public class NetworkTab {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					configuration.setNetworkInterface((String) networkInterfaces.getSelectedKey());
 					//host.setEnabled( StringUtils.isBlank(configuration.getNetworkInterface())) ;
-					PMS.get().getFrame().setReloadable(true);
+					pmsCore.getFrame().setReloadable(true);
 				}
 			}
 		});
@@ -266,7 +269,7 @@ public class NetworkTab {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				configuration.setIpFilter(ip_filter.getText());
-				PMS.get().getFrame().setReloadable(true);
+				pmsCore.getFrame().setReloadable(true);
 			}
 		});
 
