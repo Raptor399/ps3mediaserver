@@ -20,6 +20,8 @@ package net.pms.formats;
 
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 import net.pms.PMS;
 import net.pms.api.PmsCore;
 import net.pms.encoders.Player;
@@ -28,6 +30,7 @@ import net.pms.encoders.TsMuxerAudio;
 public class AudioAsVideo extends MKV {
 	private final PmsCore pmsCore;
 
+	@Inject
 	public AudioAsVideo(PmsCore pmsCore) {
 		this.pmsCore = pmsCore;
 	}
