@@ -23,12 +23,11 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.io.IOException;
 
-import javax.inject.Inject;
 import javax.swing.JOptionPane;
 
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.PmsConfigurationImpl;
-import net.pms.di.InjectionHelper;
 import net.pms.di.PmsGuice;
 import net.pms.logging.LoggingConfigFileLoader;
 import net.pms.newgui.ProfileChooser;
@@ -36,6 +35,8 @@ import net.pms.newgui.ProfileChooser;
 import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
 
 /**
  * This class takes care of initializing and starting up PMS. 
@@ -50,18 +51,11 @@ public class PMS extends PmsCoreImpl {
 	private static final String NOCONSOLE = "noconsole";
 	private static final String PROFILES = "profiles";
 
-	@Inject
-	private static PmsCore pmsCore;
-
 	/**
 	 * This class is not supposed to be instantiated.
 	 * Use {@link #get()} instead.
 	 */
 	private PMS() {
-		// Init the Injector
-		new PmsGuice();
-
-		InjectionHelper.injectMembers(this);
 	}
 
 	/**
@@ -75,6 +69,9 @@ public class PMS extends PmsCoreImpl {
 	public static void main(final String args[]) throws IOException, ConfigurationException {
 		boolean displayProfileChooser = false;
 		boolean headless = true;
+
+		// Initialize the Guice dependency injector
+		Injector injector = new PmsGuice().getInjector();
 
 		if (args.length > 0) {
 			for (int a = 0; a < args.length; a++) {
@@ -113,7 +110,8 @@ public class PMS extends PmsCoreImpl {
 		}
 
 		try {
-			setConfiguration(new PmsConfigurationImpl());
+			PmsConfiguration configuration = injector.getInstance(PmsConfigurationImpl.class);
+			setConfiguration(configuration);
 
 			assert getConfiguration() != null;
 
@@ -121,9 +119,9 @@ public class PMS extends PmsCoreImpl {
 			// as the logging starts immediately and some filters need the PmsConfiguration.
 			LoggingConfigFileLoader.load();
 
-			// create the PMS instance returned by get()
-			//createInstance();
 			try {
+				PmsCore pmsCore = injector.getInstance(PmsCore.class);
+
 				if (pmsCore.init()) {
 					LOGGER.info("The server should now appear on your renderer");
 				} else {

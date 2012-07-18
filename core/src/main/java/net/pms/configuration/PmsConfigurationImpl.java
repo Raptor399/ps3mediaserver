@@ -23,11 +23,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import net.pms.Messages;
 import net.pms.api.PmsConfiguration;
@@ -54,6 +56,7 @@ import com.sun.jna.Platform;
  * return a default value. Setters only store a value, they do not permanently save it to
  * file.
  */
+@Singleton
 public class PmsConfigurationImpl implements PmsConfiguration {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PmsConfigurationImpl.class);
 	private static final int DEFAULT_PROXY_SERVER_PORT = -1;
@@ -342,6 +345,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 * @throws org.apache.commons.configuration.ConfigurationException
 	 * @throws java.io.IOException
 	 */
+	@Inject
 	public PmsConfigurationImpl() throws ConfigurationException, IOException {
 		this(true);
 	}

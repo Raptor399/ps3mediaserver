@@ -18,25 +18,47 @@
  */
 package net.pms.newgui;
 
+import java.awt.Component;
+import java.awt.ComponentOrientation;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.File;
+import java.util.Locale;
+
+import javax.inject.Inject;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+
+import net.pms.Messages;
+import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
+import net.pms.dlna.DLNAMediaDatabase;
+import net.pms.util.FormLayoutUtil;
+import net.pms.util.KeyedComboBoxModel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.sun.jna.Platform;
-import net.pms.Messages;
-import net.pms.PMS;
-import net.pms.api.PmsConfiguration;
-import net.pms.dlna.DLNAMediaDatabase;
-import net.pms.util.FormLayoutUtil;
-import net.pms.util.KeyedComboBoxModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
-import java.util.Locale;
 
 public class NavigationShareTab {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NavigationShareTab.class);
@@ -71,6 +93,9 @@ public class NavigationShareTab {
 	private JCheckBox itunes;
 	private JButton select;
 	private JButton cachereset;
+
+	@Inject
+	private PmsCore pmsCore;
 
 	public DefaultListModel getDf() {
 		return df;
@@ -633,7 +658,7 @@ public class NavigationShareTab {
 		but5.setEnabled(configuration.getUseCache());
 
 		df = new DefaultListModel();
-		File[] folders = PMS.get().getFoldersConf(false);
+		File[] folders = pmsCore.getFoldersConf(false);
 		if (folders != null && folders.length > 0) {
 			for (File file : folders) {
 				df.addElement(file.getAbsolutePath());

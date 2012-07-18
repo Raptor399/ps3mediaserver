@@ -58,6 +58,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.gui.IFrame;
 import net.pms.io.WindowsNamedPipe;
 import net.pms.medialibrary.gui.tab.MediaLibraryTab;
@@ -372,6 +373,7 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 		tr = new TranscodingTab(configuration);
 		nt = new GeneralTab(configuration);
 		ft = new NavigationShareTab(configuration);
+		InjectionHelper.injectMembers(ft);
 
 		tabbedPane.addTab(Messages.getString("LooksFrame.18"),/* readImageIcon("server-16.png"),*/ st.build());
 		tabbedPane.addTab(Messages.getString("LooksFrame.19"),/* readImageIcon("mail_new-16.png"),*/ tt.build());
