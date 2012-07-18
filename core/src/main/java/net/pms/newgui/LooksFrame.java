@@ -80,8 +80,8 @@ import com.sun.jna.Platform;
 public class LooksFrame extends JFrame implements IFrame, Observer {
 	private static final Logger logger = LoggerFactory.getLogger(LooksFrame.class);
 	private AutoUpdater autoUpdater;
-	private PmsCore pmsCore;
-	private PmsConfiguration configuration;
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
 
 	public static final String START_SERVICE = "start.service";
 	private static final long serialVersionUID = 8723727186288427690L;

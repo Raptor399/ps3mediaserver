@@ -80,8 +80,8 @@ public class GeneralTab {
 	private JTextField ip_filter;
 	private JTextField maxbitrate;
 	private JComboBox renderers;
-	private PmsConfiguration configuration;
-	private PmsCore pmsCore;
+	private final PmsConfiguration configuration;
+	private final PmsCore pmsCore;
 
 	@Inject
 	public GeneralTab(PmsCore pmsCore, PmsConfiguration configuration) {

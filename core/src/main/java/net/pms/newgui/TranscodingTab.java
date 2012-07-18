@@ -83,8 +83,8 @@ public class TranscodingTab {
 	private static final String MAIN_COL_SPEC = "left:pref, pref, 7dlu, pref, pref, fill:10:grow";
 	private static final String MAIN_ROW_SPEC = "fill:10:grow";
 
-	private PmsCore pmsCore;
-	private PmsConfiguration configuration;
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
 
 	private JCheckBox disableSubs;
 

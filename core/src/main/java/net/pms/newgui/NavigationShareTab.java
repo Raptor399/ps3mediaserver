@@ -93,8 +93,8 @@ public class NavigationShareTab {
 	private JCheckBox itunes;
 	private JButton select;
 	private JButton cachereset;
-	private PmsCore pmsCore;
-	private PmsConfiguration configuration;
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
 
 	@Inject
 	NavigationShareTab(PmsCore pmsCore, PmsConfiguration configuration) {

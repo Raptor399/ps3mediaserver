@@ -81,6 +81,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 		"User-Agent"
 	};
 
+	// FIXME: Use construction injection instead of field injection
 	@Inject
 	private PmsCore pmsCore;
 

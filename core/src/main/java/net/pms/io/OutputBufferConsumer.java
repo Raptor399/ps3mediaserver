@@ -33,6 +33,7 @@ public class OutputBufferConsumer extends OutputConsumer {
 	private static final Logger logger = LoggerFactory.getLogger(OutputBufferConsumer.class);
 	private BufferedOutputFile outputBuffer;
 
+	// FIXME: Use constructor injection instead of field injection
 	@Inject
 	private BufferedOutputFileFactory bufferedOutputFileFactory;
 

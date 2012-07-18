@@ -53,8 +53,7 @@ import com.google.inject.assistedinject.Assisted;
 public class BufferedOutputFileImpl extends OutputStream implements BufferedOutputFile {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BufferedOutputFileImpl.class);
 
-	@Inject
-	private PmsCore pmsCore;
+	private final PmsCore pmsCore;
 
 	/**
 	 * Initial size for the buffer in bytes.
@@ -179,7 +178,8 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 	 * 				dimensions and behavior.
 	 */
 	@Inject
-	public BufferedOutputFileImpl(@Assisted OutputParams params) {
+	public BufferedOutputFileImpl(PmsCore core, @Assisted OutputParams params) {
+		this.pmsCore = core;
 		this.minMemorySize = (int) (1048576 * params.minBufferSize);
 		this.maxMemorySize = (int) (1048576 * params.maxBufferSize);
 

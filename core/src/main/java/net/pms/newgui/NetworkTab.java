@@ -71,8 +71,8 @@ public class NetworkTab {
 	private JComboBox langs;
 	private JComboBox networkinterfacesCBX;
 	private JTextField ip_filter;
-	private PmsCore pmsCore;
-	private PmsConfiguration configuration;
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
 
 	@Inject
 	public NetworkTab(PmsCore pmsCore, PmsConfiguration configuration) {

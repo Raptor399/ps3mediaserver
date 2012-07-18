@@ -40,7 +40,7 @@ import java.io.IOException;
 public class AboutTab {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AboutTab.class);
 
-	private PmsCore pmsCore;
+	private final PmsCore pmsCore;
 	private ImagePanel imagePanel;
 	private JLabel jl;
 	private JProgressBar jpb;

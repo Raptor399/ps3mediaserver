@@ -38,6 +38,7 @@ import javax.inject.Inject;
 public class WindowsNamedPipe extends Thread implements ProcessWrapper {
 	private static final Logger logger = LoggerFactory.getLogger(WindowsNamedPipe.class);
 
+	// FIXME: Use constructor injection instead of field injection
 	@Inject
 	private BufferedOutputFileFactory bufferedOutputFileFactory;
 

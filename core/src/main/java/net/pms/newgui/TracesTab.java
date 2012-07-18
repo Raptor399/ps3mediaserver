@@ -55,7 +55,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class TracesTab {
 	private static final Logger logger = LoggerFactory.getLogger(TracesTab.class);
 
-	private PmsConfiguration configuration;
+	private final PmsConfiguration configuration;
 
 	@Inject
 	public TracesTab(PmsConfiguration configuration) {

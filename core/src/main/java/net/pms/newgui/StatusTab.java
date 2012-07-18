@@ -52,7 +52,7 @@ public class StatusTab {
 
 	private static final int MAX_RENDERERS = 10;
 	private ImagePanel imagePanel;
-	private PmsConfiguration configuration;
+	private final PmsConfiguration configuration;
 	private ImagePanel renderers[] = new ImagePanel[MAX_RENDERERS];
 	private JLabel rendererLabels[] = new JLabel[MAX_RENDERERS];
 	private int numRenderers;
