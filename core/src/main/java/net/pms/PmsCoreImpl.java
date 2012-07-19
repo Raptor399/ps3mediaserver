@@ -96,8 +96,7 @@ public class PmsCoreImpl implements PmsCore {
 	// (innot): The logger used for all logging.
 	private static final Logger LOGGER = LoggerFactory.getLogger(PmsCoreImpl.class);
 
-	// FIXME: Lose the "static" modifier and make this final.
-	private static PmsConfiguration configuration;
+	private final PmsConfiguration configuration;
 
 	/**
 	 * Default constructor.
