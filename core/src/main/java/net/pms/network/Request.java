@@ -357,7 +357,7 @@ public class Request extends HTTPResource {
 				byte b[] = new byte[inputStream.available()];
 				inputStream.read(b);
 				String s = new String(b);
-				s = s.replace("[uuid]", PMS.get().usn());//.substring(0, PMS.get().usn().length()-2));
+				s = s.replace("[uuid]", PMS.get().getUuid());//.substring(0, PMS.get().usn().length()-2));
 				s = s.replace("[host]", PMS.get().getServer().getHost());
 				s = s.replace("[port]", "" + PMS.get().getServer().getPort());
 				if (xbox) {
@@ -410,7 +410,7 @@ public class Request extends HTTPResource {
 			output(output, CONTENT_TYPE_UTF8);
 			output(output,"Content-Length: 0");
 			output(output,"Connection: close");
-			output(output,"SID: "+PMS.get().usn());
+			output(output,"SID: "+PMS.get().getUuid());
 			output(output,"Server: "+PMS.get().getServerName());
 			output(output,"Timeout: Second-1800");
 			output(output,"");
@@ -427,7 +427,7 @@ public class Request extends HTTPResource {
 				OutputStream out = sock.getOutputStream();
 
 				output(out,"NOTIFY /"+argument+" HTTP/1.1");
-				output(out,"SID: "+PMS.get().usn());
+				output(out,"SID: "+PMS.get().getUuid());
 				output(out,"SEQ: "+0);
 				output(out,"NT: upnp:event");
 				output(out,"NTS: upnp:propchange");

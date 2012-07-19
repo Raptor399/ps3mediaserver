@@ -93,13 +93,13 @@ import com.sun.jna.Platform;
 public class PmsCoreImpl implements PmsCore {
 	private static final String CONSOLE = "console";
 
-	// (innot): The logger used for all logging.
+	// The logger used for all logging.
 	private static final Logger LOGGER = LoggerFactory.getLogger(PmsCoreImpl.class);
 
 	private final PmsConfiguration configuration;
 
 	/**
-	 * Default constructor.
+	 * Default constructor that initializes the PMS core.
 	 */
 	@Inject
 	protected PmsCoreImpl(PmsConfiguration configuration) {
@@ -286,12 +286,14 @@ public class PmsCoreImpl implements PmsCore {
 		return database;
 	}
 
-	/**Initialisation procedure for PMS.
-	 * @return true if the server has been initialized correctly. false if the server could
-	 * not be set to listen on the UPnP port.
-	 * @throws Exception
+	/**
+	 * {@inheritDoc}
 	 */
-	public boolean init() throws Exception {
+	public void init() throws Exception {
+		// TODO: Instead of throwing a general exception to indicate that
+		// "something went wrong", handle each specific exception within this
+		// method and provide feedback about what exactly went wrong.
+
 		AutoUpdater autoUpdater = null;
 
 		if (Build.isUpdatable()) {
@@ -428,6 +430,9 @@ public class PmsCoreImpl implements PmsCore {
 		// wrap System.err
 		System.setErr(new PrintStream(new SystemErrWrapper(), true));
 
+		// Create the uuid for the UPnP server to use.
+		createUuid();
+
 		server = new HTTPServer(configuration.getServerPort());
 
 		// Initialize a player factory to register all players
@@ -443,8 +448,8 @@ public class PmsCoreImpl implements PmsCore {
 		try {
 			binding = server.start();
 		} catch (final BindException b) {
-			LOGGER.info("FATAL ERROR: Unable to bind on port: " + configuration.getServerPort() + ", because: " + b.getMessage());
-			LOGGER.info("Maybe another process is running or the hostname is wrong.");
+			LOGGER.error("FATAL ERROR: Unable to bind on port: " + configuration.getServerPort() + ", because: " + b.getMessage());
+			LOGGER.error("Maybe another process is running or the hostname is wrong.");
 		}
 
 		new Thread("Connection Checker") {
@@ -463,7 +468,8 @@ public class PmsCoreImpl implements PmsCore {
 		}.start();
 
 		if (!binding) {
-			return false;
+			LOGGER.error("A serious error occurred during PMS init");
+			return;
 		}
 
 		if (proxy > 0) {
@@ -520,7 +526,7 @@ public class PmsCoreImpl implements PmsCore {
 		Thread.sleep(250);
 		UPNPHelper.listen();
 
-		return true;
+		LOGGER.info("The server should now appear on your renderer");
 	}
 
 	private void initMediaLibrary() {
@@ -681,7 +687,18 @@ public class PmsCoreImpl implements PmsCore {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public String usn() {
+	public String getUuid() {
+		assert uuid != null;
+
+		return uuid;
+	}
+
+	/**
+	 * Creates a new {@link #uuid} for the UPnP server to use. Tries to follow
+	 * the RFCs for creating the UUID based on the link MAC address. Defaults to
+	 * a random one if that method is not available.
+	 */
+	private void createUuid() {
 		if (uuid == null) {
 			//retrieve UUID from configuration
 			uuid = getConfiguration().getUuid();
@@ -726,7 +743,6 @@ public class PmsCoreImpl implements PmsCore {
 
 			LOGGER.info("Using the following UUID configured in PMS.conf: " + uuid);
 		}
-		return "uuid:" + uuid;
 	}
 
 	/**

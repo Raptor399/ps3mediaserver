@@ -72,7 +72,7 @@ public class UPNPHelper {
 	 * @throws IOException
 	 */
 	private static void sendDiscover(String host, int port, String st) throws IOException {
-		String usn = PMS.get().usn();
+		String usn = PMS.get().getUuid();
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 
 		if (st.equals(usn)) {
@@ -114,7 +114,7 @@ public class UPNPHelper {
 
 		MulticastSocket ssdpSocket = getNewMulticastSocket();
 		sendMessage(ssdpSocket, "upnp:rootdevice", ALIVE);
-		sendMessage(ssdpSocket, PMS.get().usn(), ALIVE);
+		sendMessage(ssdpSocket, PMS.get().getUuid(), ALIVE);
 		sendMessage(ssdpSocket, "urn:schemas-upnp-org:device:MediaServer:1", ALIVE);
 		sendMessage(ssdpSocket, "urn:schemas-upnp-org:service:ContentDirectory:1", ALIVE);
 		sendMessage(ssdpSocket, "urn:schemas-upnp-org:service:ConnectionManager:1", ALIVE);
@@ -258,8 +258,8 @@ public class UPNPHelper {
 										sendDiscover(remoteAddr, remotePort, "urn:schemas-upnp-org:device:MediaServer:1");
 									}
 
-									if (StringUtils.indexOf(s, PMS.get().usn()) > 0) {
-										sendDiscover(remoteAddr, remotePort, PMS.get().usn());
+									if (StringUtils.indexOf(s, PMS.get().getUuid()) > 0) {
+										sendDiscover(remoteAddr, remotePort, PMS.get().getUuid());
 									}
 								}
 							} else if (s.startsWith("NOTIFY")) {
@@ -306,8 +306,8 @@ public class UPNPHelper {
 		if (message.equals(ALIVE)) {
 			sb.append("LOCATION: http://").append(PMS.get().getServer().getHost()).append(":").append(PMS.get().getServer().getPort()).append("/description/fetch" + CRLF);
 		}
-		sb.append("USN: ").append(PMS.get().usn());
-		if (!nt.equals(PMS.get().usn())) {
+		sb.append("USN: ").append(PMS.get().getUuid());
+		if (!nt.equals(PMS.get().getUuid())) {
 			sb.append("::").append(nt);
 		}
 		sb.append(CRLF);

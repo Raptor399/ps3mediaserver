@@ -36,7 +36,7 @@ public class CoreModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		// This is here to help with the transition to DI
-		requestStaticInjection(PMS.class);
+		//requestStaticInjection(PMS.class);
 
 		bind(PmsCore.class).to(PmsCoreImpl.class);
 

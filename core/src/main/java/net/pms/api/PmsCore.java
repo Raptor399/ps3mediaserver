@@ -135,13 +135,14 @@ public interface PmsCore {
 	public void reset();
 
 	/**
-	 * Creates a new {@link #uuid} for the UPnP server to use. Tries to follow
-	 * the RFCs for creating the UUID based on the link MAC address. Defaults to
-	 * a random one if that method is not available.
+	 * Returns a universally unique identifier for the UPnP server to use. This
+	 * helps to distinguish PMS from other UPnP devices. The uuid tries to
+	 * follow the RFCs for creating the UUID based on the link MAC address.
+	 * Defaults to a random one if that method is not available.
 	 * 
 	 * @return {@link String} with an Universally Unique Identifier.
 	 */
-	public String usn();
+	public String getUuid();
 
 	/**
 	 * Returns the user friendly name of the UPnP server.
@@ -165,8 +166,16 @@ public interface PmsCore {
 	 */
 	public ArrayList<Process> getCurrentProcesses(); 
 
-	public boolean init() throws Exception;
-
+	/**
+	 * Start up and initialize everything that PMS needs to run. This ranges
+	 * from loading the renderer configurations, via initializing plugins
+	 * and players, to firing up the HTTP server that is responsible for
+	 * handling all network traffic.
+	 * 
+	 * @throws Exception Something went wrong.
+	 */
+	public void init() throws Exception;
+	
 	/**
 	 * Returns the build version number of PMS.
 	 *

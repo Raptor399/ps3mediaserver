@@ -52,8 +52,8 @@ public class PMS {
 	/** The logger */
 	private static final Logger LOGGER = LoggerFactory.getLogger(PMS.class);
 
-	@Inject
-	public static PmsCore pmsCore;
+	private static PmsConfiguration configuration;
+	private static PmsCore pmsCore;
 
 	private static final String SCROLLBARS = "scrollbars";
 	private static final String NATIVELOOK = "nativelook";
@@ -120,7 +120,7 @@ public class PMS {
 		}
 
 		try {
-			PmsConfiguration configuration = injector.getInstance(PmsConfigurationImpl.class);
+			configuration = injector.getInstance(PmsConfigurationImpl.class);
 
 			assert getConfiguration() != null;
 
@@ -128,17 +128,16 @@ public class PMS {
 			// as the logging starts immediately and some filters need the PmsConfiguration.
 			LoggingConfigFileLoader.load();
 
-			try {
-				PmsCore pmsCore = injector.getInstance(PmsCore.class);
+			// Instantiate the PMS core, which is a singleton
+			pmsCore = injector.getInstance(PmsCore.class);
 
-				if (pmsCore.init()) {
-					LOGGER.info("The server should now appear on your renderer");
-				} else {
-					LOGGER.error("A serious error occurred during PMS init");
-				}
+			try {
+				// Initialize the PMS core
+				pmsCore.init();
 			} catch (final Exception e) {
 				LOGGER.error("A serious error occurred during PMS init", e);
 			}
+
 		} catch (final Throwable t) {
 			System.err.println("Configuration error: " + t.getMessage());
 			LOGGER.error("Configuration error", t);
@@ -161,7 +160,7 @@ public class PMS {
 	 * @return The configuration instance.
 	 */
 	public static PmsConfiguration getConfiguration() {
-		return pmsCore.getConfiguration();
+		return configuration;
 	}
 
 	/**

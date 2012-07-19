@@ -457,7 +457,7 @@ public class RequestV2 extends HTTPResource {
 				byte b[] = new byte[inputStream.available()];
 				inputStream.read(b);
 				String s = new String(b);
-				s = s.replace("[uuid]", PMS.get().usn());//.substring(0, PMS.get().usn().length()-2));
+				s = s.replace("[uuid]", PMS.get().getUuid());//.substring(0, PMS.get().usn().length()-2));
 				String profileName = PMS.getConfiguration().getProfileName();
 				if (PMS.get().getServer().getHost() != null) {
 					s = s.replace("[host]", PMS.get().getServer().getHost());
@@ -700,7 +700,7 @@ public class RequestV2 extends HTTPResource {
 				// LOGGER.trace(response.toString());
 			}
 		} else if (method.equals("SUBSCRIBE")) {
-			output.setHeader("SID", PMS.get().usn());
+			output.setHeader("SID", PMS.get().getUuid());
 			output.setHeader("TIMEOUT", "Second-1800");
 			String cb = soapaction.replace("<", "").replace(">", "");
 
@@ -713,7 +713,7 @@ public class RequestV2 extends HTTPResource {
 
 				out.write(("NOTIFY /" + argument + " HTTP/1.1").getBytes());
 				out.write(CRLF.getBytes());
-				out.write(("SID: " + PMS.get().usn()).getBytes());
+				out.write(("SID: " + PMS.get().getUuid()).getBytes());
 				out.write(CRLF.getBytes());
 				out.write(("SEQ: " + 0).getBytes());
 				out.write(CRLF.getBytes());
@@ -746,7 +746,7 @@ public class RequestV2 extends HTTPResource {
 			output.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/xml");
 			output.setHeader("NT", "upnp:event");
 			output.setHeader("NTS", "upnp:propchange");
-			output.setHeader("SID", PMS.get().usn());
+			output.setHeader("SID", PMS.get().getUuid());
 			output.setHeader("SEQ", "0");
 			response.append("<e:propertyset xmlns:e=\"urn:schemas-upnp-org:event-1-0\">");
 			response.append("<e:property>");
