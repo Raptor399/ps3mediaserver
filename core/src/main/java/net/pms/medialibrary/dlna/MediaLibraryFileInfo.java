@@ -29,13 +29,15 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.pms.PMS;
+import net.pms.api.io.ProcessWrapperFactory;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.virtual.VirtualFolder;
 import net.pms.io.OutputParams;
-import net.pms.io.ProcessWrapperImpl;
+import net.pms.io.ProcessWrapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * If showing a file as a folder, this class can be added
@@ -46,6 +48,7 @@ import net.pms.io.ProcessWrapperImpl;
 public class MediaLibraryFileInfo extends VirtualFolder {
 	private static final Logger log = LoggerFactory.getLogger(MediaLibraryFileInfo.class);
 	private final String GEN_MOVIE_NAME = "tmp_vid.mpg";
+	private final ProcessWrapperFactory processWrapperFactory;
 
 	/**
 	 * Instantiates a new media library file info.
@@ -55,6 +58,7 @@ public class MediaLibraryFileInfo extends VirtualFolder {
 	 */
 	public MediaLibraryFileInfo(String displayName, String thumbnailIcon) {
 		super(displayName, thumbnailIcon);
+		processWrapperFactory = InjectionHelper.getInjector().getInstance(ProcessWrapperFactory.class);
 	}
 	
 	/* (non-Javadoc)
@@ -173,7 +177,7 @@ public class MediaLibraryFileInfo extends VirtualFolder {
 		params.workDir = PMS.getConfiguration().getTempFolder();
 		params.maxBufferSize = 1;
 		params.noexitcheck = true;
-		final ProcessWrapperImpl pw = new ProcessWrapperImpl(args.toArray(new String[args.size()]), params);
+		final ProcessWrapper pw = processWrapperFactory.create(args.toArray(new String[args.size()]), params);
 		// failsafe
 		Runnable r = new Runnable() {
 			public void run() {

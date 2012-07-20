@@ -18,18 +18,29 @@
  */
 package net.pms.network;
 
-import net.pms.PMS;
-import net.pms.io.OutputParams;
-import net.pms.io.ProcessWrapperImpl;
-import net.pms.io.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import net.pms.PMS;
+import net.pms.api.io.ProcessWrapperFactory;
+import net.pms.di.InjectionHelper;
+import net.pms.io.OutputParams;
+import net.pms.io.ProcessWrapper;
+import net.pms.io.SystemUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
 
 /**
  * Network speed tester class. This can be used in an asynchronous way, as it returns Future objects.
@@ -44,6 +55,13 @@ import java.util.concurrent.*;
 public class SpeedStats {
 	private static SpeedStats instance = new SpeedStats();
 	private static ExecutorService executor = Executors.newCachedThreadPool();
+	private final ProcessWrapperFactory processWrapperFactory;
+
+	SpeedStats() {
+		Injector injector = InjectionHelper.getInjector();
+		processWrapperFactory = injector.getInstance(ProcessWrapperFactory.class);
+	}
+
 	public static SpeedStats getInstance() {
 		return instance;
 	}
@@ -124,7 +142,7 @@ public class SpeedStats {
 			op.log = true;
 			op.maxBufferSize = 1;
 			SystemUtils sysUtil = PMS.get().getRegistry();
-			final ProcessWrapperImpl pw = new ProcessWrapperImpl(sysUtil.getPingCommand(addr.getHostAddress(), 3, 64000), op,
+			final ProcessWrapper pw = processWrapperFactory.create(sysUtil.getPingCommand(addr.getHostAddress(), 3, 64000), op,
 					true, false);
 			Runnable r = new Runnable() {
 				public void run() {

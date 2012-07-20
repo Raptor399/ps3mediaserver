@@ -18,24 +18,42 @@
  */
 package net.pms.encoders;
 
+import java.io.IOException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.swing.JComponent;
+
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.OutputParams;
 import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
-import net.pms.io.ProcessWrapperImpl;
 import net.pms.network.HTTPResource;
 
-import javax.swing.*;
-import java.io.IOException;
-
+@Singleton
 public class MPlayerWebVideoDump extends MPlayerAudio {
-	public MPlayerWebVideoDump(PmsConfiguration configuration) {
-		super(configuration);
+
+	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeProcessFactory pipeProcessFactory;
+
+	@Inject
+	public MPlayerWebVideoDump(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			PipeProcessFactory pipeProcessFactory) {
+		super(configuration, processWrapperFactory, pipeProcessFactory);
+	
+		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeProcessFactory = pipeProcessFactory;
 	}
+
 	public static final String ID = "mplayervideodump";
 
 	@Override
@@ -60,7 +78,7 @@ public class MPlayerWebVideoDump extends MPlayerAudio {
 		params.secondread_minsize = 100000;
 		params.waitbeforestart = 6000;
 		params.maxBufferSize = PMS.getConfiguration().getMaxAudioBuffer();
-		PipeProcess audioP = new PipeProcess("mplayer_webvid" + System.currentTimeMillis());
+		PipeProcess audioP = pipeProcessFactory.create("mplayer_webvid" + System.currentTimeMillis());
 
 		String mPlayerdefaultAudioArgs[] = new String[]{PMS.getConfiguration().getMplayerPath(), fileName, "-nocache", "-dumpstream", "-quiet", "-dumpfile", audioP.getInputPipe()};
 		params.input_pipes[0] = audioP;
@@ -76,7 +94,7 @@ public class MPlayerWebVideoDump extends MPlayerAudio {
 			mPlayerdefaultAudioArgs
 		);
 
-		ProcessWrapperImpl pw = new ProcessWrapperImpl(mPlayerdefaultAudioArgs, params);
+		ProcessWrapper pw = processWrapperFactory.create(mPlayerdefaultAudioArgs, params);
 		pw.attachProcess(mkfifo_process);
 		mkfifo_process.runInNewThread();
 		try {
@@ -117,22 +135,8 @@ public class MPlayerWebVideoDump extends MPlayerAudio {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean isCompatible(DLNAMediaInfo mediaInfo) {
-		if (mediaInfo != null) {
-			// TODO: Determine compatibility based on mediaInfo
-			return false;
-		} else {
-			// No information available
-			return false;
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public boolean isCompatible(Format format) {
-		if (format != null && format.getType() == Format.VIDEO) {
+		if (format != null) {
 			Format.Identifier id = format.getIdentifier();
 
 			if (id.equals(Format.Identifier.WEB)) {

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.formats.Format;
 import net.pms.formats.FormatFactory;
@@ -32,6 +33,7 @@ import net.pms.io.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Injector;
 import com.sun.jna.Platform;
 
 /**
@@ -87,33 +89,34 @@ public final class PlayerFactory {
 	 *            PMS configuration settings.
 	 */
 	private static void registerPlayers(final PmsConfiguration configuration) {
+		Injector injector = InjectionHelper.getInjector();
 
 		if (Platform.isWindows()) {
-			registerPlayer(new FFMpegAviSynthVideo());
+			registerPlayer(injector.getInstance(FFMpegAviSynthVideo.class));
 		}
 
-		registerPlayer(new FFMpegAudio(configuration));
-		registerPlayer(new MEncoderVideo(configuration));
+		registerPlayer(injector.getInstance(FFMpegAudio.class));
+		registerPlayer(injector.getInstance(MEncoderVideo.class));
 
 		if (Platform.isWindows()) {
-			registerPlayer(new MEncoderAviSynth(configuration));
+			registerPlayer(injector.getInstance(MEncoderAviSynth.class));
 		}
 
-		registerPlayer(new FFMpegVideo());
-		registerPlayer(new MPlayerAudio(configuration));
-		registerPlayer(new MEncoderWebVideo(configuration));
-		registerPlayer(new MPlayerWebVideoDump(configuration));
-		registerPlayer(new MPlayerWebAudio(configuration));
-		registerPlayer(new TSMuxerVideo(configuration));
-		registerPlayer(new TsMuxerAudio(configuration));
-		registerPlayer(new VideoLanAudioStreaming(configuration));
-		registerPlayer(new VideoLanVideoStreaming(configuration));
+		registerPlayer(injector.getInstance(FFMpegVideo.class));
+		registerPlayer(injector.getInstance(MPlayerAudio.class));
+		registerPlayer(injector.getInstance(MEncoderWebVideo.class));
+		registerPlayer(injector.getInstance(MPlayerWebVideoDump.class));
+		registerPlayer(injector.getInstance(MPlayerWebAudio.class));
+		registerPlayer(injector.getInstance(TSMuxerVideo.class));
+		registerPlayer(injector.getInstance(TsMuxerAudio.class));
+		registerPlayer(injector.getInstance(VideoLanAudioStreaming.class));
+		registerPlayer(injector.getInstance(VideoLanVideoStreaming.class));
 
 		if (Platform.isWindows()) {
-			registerPlayer(new FFMpegDVRMSRemux());
+			registerPlayer(injector.getInstance(FFMpegDVRMSRemux.class));
 		}
 
-		registerPlayer(new RAWThumbnailer());
+		registerPlayer(injector.getInstance(RAWThumbnailer.class));
 	}
 
 	/**

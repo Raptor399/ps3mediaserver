@@ -3,20 +3,25 @@ package net.pms.formats;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import net.pms.PMS;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.InputFile;
 import net.pms.encoders.Player;
 import net.pms.encoders.RAWThumbnailer;
 import net.pms.io.OutputParams;
-import net.pms.io.ProcessWrapperImpl;
+import net.pms.io.ProcessWrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RAW extends JPG {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RAW.class);
+	private final ProcessWrapperFactory processWrapperFactory;
 
 	/**
 	 * {@inheritDoc} 
@@ -24,6 +29,19 @@ public class RAW extends JPG {
 	@Override
 	public Identifier getIdentifier() {
 		return Identifier.RAW;
+	}
+
+	/**
+	 * TODO: Remove this and rewrite old code.
+	 */
+	public RAW() {
+		this(InjectionHelper.getInjector().getInstance(ProcessWrapperFactory.class));
+	}
+
+	@Inject
+	public RAW(ProcessWrapperFactory processWrapperFactory) {
+		this.processWrapperFactory = processWrapperFactory;
+		type = IMAGE;
 	}
 
 	/**
@@ -85,7 +103,7 @@ public class RAW extends JPG {
 			}
 
 			params.log = true;
-			ProcessWrapperImpl pw = new ProcessWrapperImpl(cmdArray, params, true, false);
+			ProcessWrapper pw = processWrapperFactory.create(cmdArray, params, true, false);
 			pw.runInSameThread();
 
 			List<String> list = pw.getOtherResults();

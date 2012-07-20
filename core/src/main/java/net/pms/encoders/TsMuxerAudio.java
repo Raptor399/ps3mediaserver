@@ -18,21 +18,41 @@
  */
 package net.pms.encoders;
 
+import java.io.IOException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.swing.JComponent;
+
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeIPCProcessFactory;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.OutputParams;
 import net.pms.io.ProcessWrapper;
 
-import javax.swing.*;
-import java.io.IOException;
-
+@Singleton
 public class TsMuxerAudio extends TSMuxerVideo {
 	public static final String ID = "tsmuxeraudio";
 
-	public TsMuxerAudio(PmsConfiguration configuration) {
-		super(configuration);
+	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeProcessFactory pipeProcessFactory;
+	private final PipeIPCProcessFactory pipeIPCProcessFactory;
+
+	@Inject
+	public TsMuxerAudio(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			PipeProcessFactory pipeProcessFactory,
+			PipeIPCProcessFactory pipeIPCProcessFactory) {
+		super(configuration, processWrapperFactory, pipeProcessFactory, pipeIPCProcessFactory);
+		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeProcessFactory = pipeProcessFactory;
+		this.pipeIPCProcessFactory = pipeIPCProcessFactory;
 	}
 
 	@Override

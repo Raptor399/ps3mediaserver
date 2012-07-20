@@ -18,15 +18,31 @@
  */
 package net.pms.encoders;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.formats.Format;
 
+@Singleton
 public class VideoLanAudioStreaming extends VideoLanVideoStreaming {
 	public static final String ID = "vlcaudio";
 
-	public VideoLanAudioStreaming(PmsConfiguration configuration) {
-		super(configuration);
+	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeProcessFactory pipeProcessFactory;
+
+	@Inject
+	public VideoLanAudioStreaming(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			PipeProcessFactory pipeProcessFactory) {
+		super(configuration, processWrapperFactory, pipeProcessFactory);
+		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeProcessFactory = pipeProcessFactory;
 	}
 
 	@Override

@@ -18,35 +18,49 @@
  */
 package net.pms.encoders;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
+import java.awt.Font;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.IOException;
+import java.util.Arrays;
+
+import javax.inject.Inject;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.OutputParams;
 import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
-import net.pms.io.ProcessWrapperImpl;
 import net.pms.network.HTTPResource;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.io.IOException;
-import java.util.Arrays;
+import com.google.inject.Injector;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 public class MPlayerAudio extends Player {
 	public static final String ID = "mplayeraudio";
 	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeProcessFactory pipeProcessFactory;
 
-	public MPlayerAudio(PmsConfiguration configuration) {
+	@Inject
+	public MPlayerAudio(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			PipeProcessFactory pipeProcessFactory) {
 		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeProcessFactory = pipeProcessFactory;
 	}
 
 	@Override
@@ -82,12 +96,15 @@ public class MPlayerAudio extends Player {
 		params.manageFastStart();
 
 		if (params.mediaRenderer.isTranscodeToMP3()) {
-			FFMpegAudio audio = new FFMpegAudio(configuration);
-			return audio.launchTranscode(fileName, dlna, media, params);
+			// FFmpeg handles audio transcoding to MP3.
+			Injector injector = InjectionHelper.getInjector();
+			FFMpegAudio player = injector.getInstance(FFMpegAudio.class);
+			return player.launchTranscode(fileName, dlna, media, params);
 		}
 
 		params.maxBufferSize = PMS.getConfiguration().getMaxAudioBuffer();
-		PipeProcess audioP = new PipeProcess("mplayer_aud" + System.currentTimeMillis());
+		
+		PipeProcess audioP = pipeProcessFactory.create("mplayer_aud" + System.currentTimeMillis());
 
 		String mPlayerdefaultAudioArgs[] = new String[]{PMS.getConfiguration().getMplayerPath(), fileName, "-prefer-ipv4", "-nocache", "-af", "channels=2", "-srate", "48000", "-vo", "null", "-ao", "pcm:nowaveheader:fast:file=" + audioP.getInputPipe(), "-quiet", "-format", "s16be"};
 		if (params.mediaRenderer.isTranscodeToWAV()) {
@@ -126,7 +143,7 @@ public class MPlayerAudio extends Player {
 			media,
 			params,
 			mPlayerdefaultAudioArgs);
-		ProcessWrapperImpl pw = new ProcessWrapperImpl(mPlayerdefaultAudioArgs, params);
+		ProcessWrapper pw = processWrapperFactory.create(mPlayerdefaultAudioArgs, params);
 		pw.attachProcess(mkfifo_process);
 		mkfifo_process.runInNewThread();
 		try {

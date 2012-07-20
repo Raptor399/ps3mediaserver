@@ -1,22 +1,33 @@
 package net.pms.encoders;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.swing.JComponent;
+
 import net.pms.PMS;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.InternalJavaProcessImpl;
 import net.pms.io.OutputParams;
 import net.pms.io.ProcessWrapper;
-import net.pms.io.ProcessWrapperImpl;
 
-import javax.swing.*;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
+@Singleton
 public class RAWThumbnailer extends Player {
 	public final static String ID = "rawthumbs";
+
+	private static ProcessWrapperFactory processWrapperFactory;
+
+	@Inject
+	RAWThumbnailer(ProcessWrapperFactory processWrapperFactory) {
+		this.processWrapperFactory = processWrapperFactory;
+	}
 
 	protected String[] getDefaultArgs() {
 		return new String[]{"-e", "-c"};
@@ -100,7 +111,7 @@ public class RAWThumbnailer extends Player {
 		cmdArray[1] = "-e";
 		cmdArray[2] = "-c";
 		cmdArray[3] = fileName;
-		ProcessWrapperImpl pw = new ProcessWrapperImpl(cmdArray, params);
+		ProcessWrapper pw = processWrapperFactory.create(cmdArray, params);
 		pw.runInSameThread();
 
 

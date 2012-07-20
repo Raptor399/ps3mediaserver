@@ -18,18 +18,38 @@
  */
 package net.pms.dlna;
 
-import net.pms.PMS;
-import net.pms.dlna.virtual.VirtualFolder;
-import net.pms.formats.Format;
-import net.pms.io.OutputParams;
-import net.pms.io.ProcessWrapperImpl;
-import net.pms.util.ProcessUtil;
-
 import java.io.File;
 import java.util.List;
 
+import net.pms.PMS;
+import net.pms.api.io.ProcessWrapperFactory;
+import net.pms.di.InjectionHelper;
+import net.pms.dlna.virtual.VirtualFolder;
+import net.pms.formats.Format;
+import net.pms.io.OutputParams;
+import net.pms.io.ProcessWrapper;
+import net.pms.util.ProcessUtil;
+
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+
 public class DVDISOFile extends VirtualFolder {
 	public static final String PREFIX = "[DVD ISO] ";
+	private final File f;
+	private final ProcessWrapperFactory processWrapperFactory;
+
+	public DVDISOFile(File f) {
+		// TODO: Not certain this works?
+		this(InjectionHelper.getInjector().getInstance(ProcessWrapperFactory.class), f);
+	}
+	
+	@AssistedInject
+	public DVDISOFile(ProcessWrapperFactory processWrapperFactory, @Assisted File f) {
+		super(PREFIX + (f.isFile() ? f.getName() : "VIDEO_TS"), null);
+		this.processWrapperFactory = processWrapperFactory;
+		this.f = f;
+		setLastmodified(f.lastModified());
+	}
 
 	@Override
 	public void resolve() {
@@ -38,7 +58,7 @@ public class DVDISOFile extends VirtualFolder {
 		OutputParams params = new OutputParams(PMS.getConfiguration());
 		params.maxBufferSize = 1;
 		params.log = true;
-		final ProcessWrapperImpl pw = new ProcessWrapperImpl(cmd, params, true, false);
+		final ProcessWrapper pw = processWrapperFactory.create(cmd, params, true, false);
 		Runnable r = new Runnable() {
 			public void run() {
 				try {
@@ -70,7 +90,7 @@ public class DVDISOFile extends VirtualFolder {
 			// The "maybe wrong" title is taken into account only if his length is smaller than 1 hour.
 			// Common sense is a single video track on a DVD is usually greater than 1h
 			if (titles[i] > 10 && (titles[i] != oldduration || oldduration < 3600)) {
-				DVDISOTitle dvd = new DVDISOTitle(f, i);
+				DVDISOTitle dvd = new DVDISOTitle(processWrapperFactory, f, i);
 				addChild(dvd);
 				oldduration = titles[i];
 			}
@@ -80,13 +100,6 @@ public class DVDISOFile extends VirtualFolder {
 			PMS.get().storeFileInCache(f, Format.ISO);
 		}
 
-	}
-	private File f;
-
-	public DVDISOFile(File f) {
-		super(PREFIX + (f.isFile() ? f.getName() : "VIDEO_TS"), null);
-		this.f = f;
-		setLastmodified(f.lastModified());
 	}
 
 	@Override

@@ -27,6 +27,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Injector;
+
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.FileTranscodeVirtualFolder;
@@ -37,7 +40,8 @@ public class DLNAHelper {
 	private static final Logger log = LoggerFactory.getLogger(DLNAHelper.class);
 
 	public static DLNAMediaInfo getMedia(DOVideoFileInfo video) {		
-		DLNAMediaInfo dbMedia = new DLNAMediaInfo();
+		Injector injector = InjectionHelper.getInjector();
+		DLNAMediaInfo dbMedia = injector.getInstance(DLNAMediaInfo.class);
 		dbMedia.setDuration(video.getDurationSec());
 		dbMedia.setBitrate(video.getBitrate());
 		dbMedia.setWidth(video.getWidth());

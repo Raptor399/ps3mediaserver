@@ -25,18 +25,21 @@ import java.io.File;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 
 import net.pms.Messages;
-import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeIPCProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.OutputParams;
 import net.pms.io.PipeIPCProcess;
 import net.pms.io.ProcessWrapper;
-import net.pms.io.ProcessWrapperImpl;
 import net.pms.network.HTTPResource;
 
 import org.slf4j.Logger;
@@ -50,6 +53,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Pure FFmpeg video player. 
  */
+@Singleton
 public class FFMpegVideo extends Player {
 	private static final Logger logger = LoggerFactory.getLogger(FFMpegVideo.class);
 	public static final String ID      = "ffmpegvideo";
@@ -75,9 +79,18 @@ public class FFMpegVideo extends Player {
 	}
 	private String overriddenArgs[];
 
-	public FFMpegVideo() {
-		if (PMS.getConfiguration().getFfmpegSettings() != null) {
-			StringTokenizer st = new StringTokenizer(PMS.getConfiguration().getFfmpegSettings() + " -ab " + PMS.getConfiguration().getAudioBitrate() + "k -threads " + PMS.getConfiguration().getNumberOfCpuCores(), " ");
+	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeIPCProcessFactory pipeIPCProcessFactory;
+
+	@Inject
+	public FFMpegVideo(PmsConfiguration configuration, ProcessWrapperFactory processWrapperFactory, PipeIPCProcessFactory pipeIPCProcessFactory) {
+		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeIPCProcessFactory = pipeIPCProcessFactory;
+
+		if (configuration.getFfmpegSettings() != null) {
+			StringTokenizer st = new StringTokenizer(configuration.getFfmpegSettings() + " -ab " + configuration.getAudioBitrate() + "k -threads " + configuration.getNumberOfCpuCores(), " ");
 			overriddenArgs = new String[st.countTokens()];
 			int i = 0;
 			while (st.hasMoreTokens()) {
@@ -137,31 +150,26 @@ public class FFMpegVideo extends Player {
 
 	@Override
 	public String executable() {
-		return PMS.getConfiguration().getFfmpegPath();
+		return configuration.getFfmpegPath();
 	}
 
 	@Override
-	public ProcessWrapper launchTranscode(
-		String fileName,
-		DLNAResource dlna,
-		DLNAMediaInfo media,
-		OutputParams params) throws IOException {
+	public ProcessWrapper launchTranscode(String fileName, DLNAResource dlna,
+			DLNAMediaInfo media, OutputParams params) throws IOException {
 		return getFFMpegTranscode(fileName, dlna, media, params, args());
 	}
 
-	protected ProcessWrapperImpl getFFMpegTranscode(
-		String fileName,
-		DLNAResource dlna,
-		DLNAMediaInfo media,
-		OutputParams params,
-		String args[]) throws IOException {
-		setAudioAndSubs(fileName, media, params, PMS.getConfiguration());
+	protected ProcessWrapper getFFMpegTranscode(String fileName,
+			DLNAResource dlna, DLNAMediaInfo media, OutputParams params,
+			String args[]) throws IOException {
+		setAudioAndSubs(fileName, media, params, configuration);
 
 		PipeIPCProcess videoP = null;
 		PipeIPCProcess audioP = null;
+
 		if (mplayer()) {
-			videoP = new PipeIPCProcess("mplayer_vid1" + System.currentTimeMillis(), "mplayer_vid2" + System.currentTimeMillis(), false, false);
-			audioP = new PipeIPCProcess("mplayer_aud1" + System.currentTimeMillis(), "mplayer_aud2" + System.currentTimeMillis(), false, false);
+			videoP = pipeIPCProcessFactory.create("mplayer_vid1" + System.currentTimeMillis(), "mplayer_vid2" + System.currentTimeMillis(), false, false);
+			audioP = pipeIPCProcessFactory.create("mplayer_aud1" + System.currentTimeMillis(), "mplayer_aud2" + System.currentTimeMillis(), false, false);
 		}
 
 		String cmdArray[] = new String[14 + args.length];
@@ -213,8 +221,8 @@ public class FFMpegVideo extends Player {
 		cmdArray[cmdArray.length - 3] = "-muxpreload";
 		cmdArray[cmdArray.length - 2] = "0";
 
-		if (PMS.getConfiguration().isFileBuffer()) {
-			File m = new File(PMS.getConfiguration().getTempFolder(), "pms-transcode.tmp");
+		if (configuration.isFileBuffer()) {
+			File m = new File(configuration.getTempFolder(), "pms-transcode.tmp");
 			if (m.exists() && !m.delete()) {
 				logger.info("Temp file currently used.. Waiting 3 seconds");
 				try {
@@ -242,7 +250,7 @@ public class FFMpegVideo extends Player {
 			cmdArray
 		);
 
-		ProcessWrapperImpl pw = new ProcessWrapperImpl(cmdArray, params);
+		ProcessWrapper pw = processWrapperFactory.create(cmdArray, params);
 
 		if (type() != Format.AUDIO && (mplayer())) {
 			ProcessWrapper mkfifo_vid_process = videoP.getPipeProcess();
@@ -261,14 +269,14 @@ public class FFMpegVideo extends Player {
 
 
 			String mPlayerdefaultVideoArgs[] = new String[]{fileName, seek_param, seek_value, "-vo", "yuv4mpeg:file=" + videoP.getInputPipe(), "-ao", "pcm:waveheader:file=" + audioP.getInputPipe(), "-benchmark", "-noframedrop", "-speed", "100"/*, "-quiet"*/};
-			OutputParams mplayer_vid_params = new OutputParams(PMS.getConfiguration());
+			OutputParams mplayer_vid_params = new OutputParams(configuration);
 			mplayer_vid_params.maxBufferSize = 1;
 
 			String videoArgs[] = new String[1 + overiddenMPlayerArgs.length + mPlayerdefaultVideoArgs.length];
-			videoArgs[0] = PMS.getConfiguration().getMplayerPath();
+			videoArgs[0] = configuration.getMplayerPath();
 			System.arraycopy(overiddenMPlayerArgs, 0, videoArgs, 1, overiddenMPlayerArgs.length);
 			System.arraycopy(mPlayerdefaultVideoArgs, 0, videoArgs, 1 + overiddenMPlayerArgs.length, mPlayerdefaultVideoArgs.length);
-			ProcessWrapperImpl mplayer_vid_process = new ProcessWrapperImpl(videoArgs, mplayer_vid_params);
+			ProcessWrapper mplayer_vid_process = processWrapperFactory.create(videoArgs, mplayer_vid_params);
 
 			if (type() == Format.VIDEO) {
 				pw.attachProcess(mkfifo_vid_process);
@@ -326,7 +334,7 @@ public class FFMpegVideo extends Player {
 		cmp = (JComponent) cmp.getComponent(0);
 		cmp.setFont(cmp.getFont().deriveFont(Font.BOLD));
 
-		ffmpeg = new JTextField(PMS.getConfiguration().getFfmpegSettings());
+		ffmpeg = new JTextField(configuration.getFfmpegSettings());
 		ffmpeg.addKeyListener(new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -338,7 +346,7 @@ public class FFMpegVideo extends Player {
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				PMS.getConfiguration().setFfmpegSettings(ffmpeg.getText());
+				configuration.setFfmpegSettings(ffmpeg.getText());
 			}
 		});
 		builder.add(ffmpeg, cc.xy(2, 3));

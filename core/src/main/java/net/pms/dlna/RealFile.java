@@ -18,23 +18,33 @@
  */
 package net.pms.dlna;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
 import net.pms.PMS;
-import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.formats.Format;
 import net.pms.formats.FormatFactory;
 import net.pms.util.FileUtil;
 import net.pms.util.ProcessUtil;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.ArrayList;
+import com.google.inject.Injector;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 public class RealFile extends MapFile {
 	private static final Logger logger = LoggerFactory.getLogger(RealFile.class);
 
-	public RealFile(File file) {
+	@AssistedInject
+	public RealFile(@Assisted File file) {
 		getConf().getFiles().add(file);
 		setLastmodified(file.lastModified());
 	}
@@ -170,7 +180,9 @@ public class RealFile extends MapFile {
 
 			if (!found) {
 				if (getMedia() == null) {
-					setMedia(new DLNAMediaInfo());
+					Injector injector = InjectionHelper.getInjector();
+					DLNAMediaInfo mediaInfo = injector.getInstance(DLNAMediaInfo.class);
+					setMedia(mediaInfo);
 				}
 				found = !getMedia().isMediaparsed() && !getMedia().isParsing();
 				if (getFormat() != null) {

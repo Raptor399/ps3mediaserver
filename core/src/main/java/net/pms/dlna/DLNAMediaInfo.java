@@ -18,16 +18,44 @@
  */
 package net.pms.dlna;
 
-import com.sun.jna.Platform;
-import net.pms.PMS;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
+
+import javax.imageio.ImageIO;
+import javax.inject.Inject;
+
+import net.pms.api.PmsConfiguration;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.formats.AudioAsVideo;
 import net.pms.formats.Format;
 import net.pms.formats.v2.SubtitleType;
 import net.pms.io.OutputParams;
-import net.pms.io.ProcessWrapperImpl;
+import net.pms.io.ProcessWrapper;
 import net.pms.network.HTTPResource;
-import net.pms.util.*;
+import net.pms.util.AVCHeader;
+import net.pms.util.CoverUtil;
+import net.pms.util.FileUtil;
+import net.pms.util.MpegUtil;
+import net.pms.util.ProcessUtil;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.sanselan.ImageInfo;
 import org.apache.sanselan.Sanselan;
@@ -43,12 +71,8 @@ import org.jaudiotagger.tag.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.util.*;
-import java.util.List;
+import com.google.inject.Injector;
+import com.sun.jna.Platform;
 
 /**
  * This class keeps track of scanned MediaInfo library information.
@@ -66,6 +90,9 @@ public class DLNAMediaInfo implements Cloneable {
 
 	// Stored in database
 	private Double durationSec;
+
+	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
 
 	/**
 	 * @deprecated Use standard getter and setter to access this variable.
@@ -284,23 +311,28 @@ public class DLNAMediaInfo implements Cloneable {
 		}
 	}
 
-	public DLNAMediaInfo() {
+	@Inject
+	public DLNAMediaInfo(PmsConfiguration configuration, ProcessWrapperFactory processWrapperFactory) {
+		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+
 		setThumbready(true); // this class manages thumbnails by default with the parser_v1 method
 	}
 
 	public void generateThumbnail(InputFile input, Format ext, int type) {
-		DLNAMediaInfo forThumbnail = new DLNAMediaInfo();
+		Injector injector = InjectionHelper.getInjector();
+		DLNAMediaInfo forThumbnail = injector.getInstance(DLNAMediaInfo.class);
 		forThumbnail.durationSec = durationSec;
 		forThumbnail.parse(input, ext, type, true);
 		setThumb(forThumbnail.getThumb());
 	}
 
-	private ProcessWrapperImpl getFFMpegThumbnail(InputFile media) {
+	private ProcessWrapper getFFMpegThumbnail(InputFile media) {
 		String args[] = new String[14];
 		args[0] = getFfmpegPath();
 		boolean dvrms = media.getFile() != null && media.getFile().getAbsolutePath().toLowerCase().endsWith("dvr-ms");
-		if (dvrms && StringUtils.isNotBlank(PMS.getConfiguration().getFfmpegAlternativePath())) {
-			args[0] = PMS.getConfiguration().getFfmpegAlternativePath();
+		if (dvrms && StringUtils.isNotBlank(configuration.getFfmpegAlternativePath())) {
+			args[0] = configuration.getFfmpegAlternativePath();
 		}
 		args[1] = "-ss";
 		args[2] = "" + getThumbnailSeekPos();
@@ -320,18 +352,20 @@ public class DLNAMediaInfo implements Cloneable {
 		args[12] = "image2";
 		args[13] = "pipe:";
 		// FIXME MPlayer should not be used if thumbnail generation is disabled (and it should be disabled in the GUI)
-		if (!PMS.getConfiguration().isThumbnailGenerationEnabled() || (PMS.getConfiguration().isUseMplayerForVideoThumbs() && !dvrms)) {
+		if (!configuration.isThumbnailGenerationEnabled() || (configuration.isUseMplayerForVideoThumbs() && !dvrms)) {
 			args[2] = "0";
 			for (int i = 5; i <= 13; i++) {
 				args[i] = "-an";
 			}
 		}
-		OutputParams params = new OutputParams(PMS.getConfiguration());
+		OutputParams params = new OutputParams(configuration);
 		params.maxBufferSize = 1;
 		params.stdin = media.getPush();
 		params.noexitcheck = true; // not serious if anything happens during the thumbnailer
 		// true: consume stderr on behalf of the caller i.e. parse()
-		final ProcessWrapperImpl pw = new ProcessWrapperImpl(args, params, false, true);
+		
+		final ProcessWrapper pw = processWrapperFactory.create(args, params, false, true);
+
 		// FAILSAFE
 		setParsing(true);
 		Runnable r = new Runnable() {
@@ -352,9 +386,9 @@ public class DLNAMediaInfo implements Cloneable {
 		return pw;
 	}
 
-	private ProcessWrapperImpl getMplayerThumbnail(InputFile media) throws IOException {
+	private ProcessWrapper getMplayerThumbnail(InputFile media) throws IOException {
 		String args[] = new String[14];
-		args[0] = PMS.getConfiguration().getMplayerPath();
+		args[0] = configuration.getMplayerPath();
 		args[1] = "-ss";
 		int th = getThumbnailSeekPos();
 		boolean toolong = getDurationInSeconds() < th;
@@ -377,13 +411,15 @@ public class DLNAMediaInfo implements Cloneable {
 		frameName = frameName.replace(',', '_');
 		args[12] = "jpeg:outdir=" + frameName;
 		args[13] = "-nosound";
-		OutputParams params = new OutputParams(PMS.getConfiguration());
-		params.workDir = PMS.getConfiguration().getTempFolder();
+		OutputParams params = new OutputParams(configuration);
+		params.workDir = configuration.getTempFolder();
 		params.maxBufferSize = 1;
 		params.stdin = media.getPush();
 		params.log = true;
 		params.noexitcheck = true; // not serious if anything happens during the thumbnailer
-		final ProcessWrapperImpl pw = new ProcessWrapperImpl(args, params);
+
+		final ProcessWrapper pw = processWrapperFactory.create(args, params, false, false);
+
 		// FAILSAFE
 		setParsing(true);
 		Runnable r = new Runnable() {
@@ -405,10 +441,10 @@ public class DLNAMediaInfo implements Cloneable {
 		return pw;
 	}
 
-	private ProcessWrapperImpl getImageMagickThumbnail(InputFile media) throws IOException {
+	private ProcessWrapper getImageMagickThumbnail(InputFile media) throws IOException {
 	// convert -size 320x180  hatching_orig.jpg  -auto-orient -thumbnail 160x90   -unsharp 0x.5  thumbnail.gif
 		String args [] = new String[10];
-		args[0] = PMS.getConfiguration().getIMConvertPath();
+		args[0] = configuration.getIMConvertPath();
 		args[1] = "-size";
 		args[2] = "320x180";
 		if (media.getFile() != null)
@@ -420,9 +456,9 @@ public class DLNAMediaInfo implements Cloneable {
 		args[6] = "160x90";
 		args[7] = "-unsharp";
 		args[8] = "-0x.5";
-		args[9] = PMS.getConfiguration().getTempFolder() + "/imagemagick_thumbs/" + media.getFile().getName() + ".jpg";
-		OutputParams params = new OutputParams(PMS.getConfiguration());
-		params.workDir = new File(PMS.getConfiguration().getTempFolder().getAbsolutePath() + "/imagemagick_thumbs/");
+		args[9] = configuration.getTempFolder() + "/imagemagick_thumbs/" + media.getFile().getName() + ".jpg";
+		OutputParams params = new OutputParams(configuration);
+		params.workDir = new File(configuration.getTempFolder().getAbsolutePath() + "/imagemagick_thumbs/");
 
 		if (!params.workDir.exists() && !params.workDir.mkdirs()) {
 			logger.debug("Could not create directory \"" + params.workDir.getAbsolutePath() + "\"");
@@ -432,8 +468,10 @@ public class DLNAMediaInfo implements Cloneable {
 		params.stdin = media.getPush();
 		params.log = true;
 		params.noexitcheck = true; // not serious if anything happens during the thumbnailer
-		final ProcessWrapperImpl pw = new ProcessWrapperImpl(args, params);
-			// FAILSAFE
+
+		final ProcessWrapper pw = processWrapperFactory.create(args, params, false, false);
+
+		// FAILSAFE
 		setParsing(true);
 		Runnable r = new Runnable() {
 			public void run() {
@@ -453,7 +491,7 @@ public class DLNAMediaInfo implements Cloneable {
 	}
 
 	private String getFfmpegPath() {
-		String value = PMS.getConfiguration().getFfmpegPath();
+		String value = configuration.getFfmpegPath();
 		if (value == null) {
 			logger.info("No ffmpeg - unable to thumbnail");
 			throw new RuntimeException("No ffmpeg - unable to thumbnail");
@@ -487,7 +525,7 @@ public class DLNAMediaInfo implements Cloneable {
 			} else {
 				setSize(f.getSize());
 			}
-			ProcessWrapperImpl pw = null;
+			ProcessWrapper pw = null;
 			boolean ffmpeg_parsing = true;
 			if (type == Format.AUDIO || ext instanceof AudioAsVideo) {
 				ffmpeg_parsing = false;
@@ -523,8 +561,8 @@ public class DLNAMediaInfo implements Cloneable {
 							if (t.getArtworkList().size() > 0) {
 								setThumb(t.getArtworkList().get(0).getBinaryData());
 							} else {
-								if (PMS.getConfiguration().getAudioThumbnailMethod() > 0) {
-									setThumb(CoverUtil.get().getThumbnailFromArtistAlbum(PMS.getConfiguration().getAudioThumbnailMethod() == 1 ? CoverUtil.AUDIO_AMAZON : CoverUtil.AUDIO_DISCOGS, audio.getArtist(), audio.getAlbum()));
+								if (configuration.getAudioThumbnailMethod() > 0) {
+									setThumb(CoverUtil.get().getThumbnailFromArtistAlbum(configuration.getAudioThumbnailMethod() == 1 ? CoverUtil.AUDIO_AMAZON : CoverUtil.AUDIO_DISCOGS, audio.getArtist(), audio.getAlbum()));
 								}
 							}
 							if (!thumbOnly) {
@@ -603,9 +641,9 @@ public class DLNAMediaInfo implements Cloneable {
 					logger.info("Error parsing image with Sanselan... switching to FFmpeg: " + e.getMessage());
 				}
 				try {
-					if(PMS.getConfiguration().getImageThumbnailsEnabled()) {
+					if(configuration.getImageThumbnailsEnabled()) {
 						getImageMagickThumbnail(f);
-						String frameName = PMS.getConfiguration().getTempFolder() + "/imagemagick_thumbs/" + f.getFile().getName() + ".jpg";
+						String frameName = configuration.getTempFolder() + "/imagemagick_thumbs/" + f.getFile().getName() + ".jpg";
 						File jpg = new File(frameName);
 						if (jpg.exists()) {
 							InputStream is = new FileInputStream(jpg);
@@ -625,7 +663,7 @@ public class DLNAMediaInfo implements Cloneable {
 				}
 			}
 			if (ffmpeg_parsing) {
-				if (!thumbOnly || !PMS.getConfiguration().isUseMplayerForVideoThumbs()) {
+				if (!thumbOnly || !configuration.isUseMplayerForVideoThumbs()) {
 					pw = getFFMpegThumbnail(f);
 				}
 				String input = "-";
@@ -848,11 +886,11 @@ public class DLNAMediaInfo implements Cloneable {
 					}
 				}
 
-				if (PMS.getConfiguration().isUseMplayerForVideoThumbs() && type == Format.VIDEO && !dvrms) {
+				if (configuration.isUseMplayerForVideoThumbs() && type == Format.VIDEO && !dvrms) {
 					try {
 						getMplayerThumbnail(f);
 						String frameName = "" + f.hashCode();
-						frameName = PMS.getConfiguration().getTempFolder() + "/mplayer_thumbs/" + frameName + "00000001/00000001.jpg";
+						frameName = configuration.getTempFolder() + "/mplayer_thumbs/" + frameName + "00000001/00000001.jpg";
 						frameName = frameName.replace(',', '_');
 						File jpg = new File(frameName);
 						if (jpg.exists()) {
@@ -1011,7 +1049,7 @@ public class DLNAMediaInfo implements Cloneable {
 		}
 
 		// Check for external subs here
-		if (f.getFile() != null && type == Format.VIDEO && PMS.getConfiguration().getUseSubtitles()) {
+		if (f.getFile() != null && type == Format.VIDEO && configuration.getUseSubtitles()) {
 			FileUtil.doesSubtitlesExists(f.getFile(), this);
 		}
 	}
@@ -1174,7 +1212,7 @@ public class DLNAMediaInfo implements Cloneable {
 
 	public byte[][] getAnnexBFrameHeader(InputFile f) {
 		String cmdArray[] = new String[14];
-		cmdArray[0] = PMS.getConfiguration().getFfmpegPath();
+		cmdArray[0] = configuration.getFfmpegPath();
 		cmdArray[1] = "-i";
 		if (f.getPush() == null && f.getFilename() != null) {
 			cmdArray[2] = f.getFilename();
@@ -1195,11 +1233,11 @@ public class DLNAMediaInfo implements Cloneable {
 
 		byte returnData[][] = new byte[2][];
 
-		OutputParams params = new OutputParams(PMS.getConfiguration());
+		OutputParams params = new OutputParams(configuration);
 		params.maxBufferSize = 1;
 		params.stdin = f.getPush();
 
-		final ProcessWrapperImpl pw = new ProcessWrapperImpl(cmdArray, params);
+		final ProcessWrapper pw = processWrapperFactory.create(cmdArray, params, false, false);
 
 		Runnable r = new Runnable() {
 
@@ -1267,7 +1305,7 @@ public class DLNAMediaInfo implements Cloneable {
 	}
 	
 	int getThumbnailSeekPos() {
-	    return thumbnailSeekPos >= 0 ? thumbnailSeekPos : PMS.getConfiguration().getThumbnailSeekPos();	    
+	    return thumbnailSeekPos >= 0 ? thumbnailSeekPos : configuration.getThumbnailSeekPos();	    
 	}
 	
 	public void setThumbnailSeekPos(int thumbnailSeekPos) {

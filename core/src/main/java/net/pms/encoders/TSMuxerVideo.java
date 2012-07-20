@@ -18,27 +18,12 @@
  */
 package net.pms.encoders;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import net.pms.Messages;
-import net.pms.PMS;
-import net.pms.api.PmsConfiguration;
-import net.pms.configuration.RendererConfiguration;
-import net.pms.dlna.DLNAMediaAudio;
-import net.pms.dlna.DLNAMediaInfo;
-import net.pms.dlna.DLNAResource;
-import net.pms.dlna.InputFile;
-import net.pms.formats.Format;
-import net.pms.io.*;
-import net.pms.util.CodecUtil;
-import net.pms.util.FormLayoutUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static net.pms.configuration.RendererConfiguration.RENDERER_ID_PLAYSTATION3;
+import static net.pms.formats.v2.AudioUtils.getLPCMChannelMappingForMencoder;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.ComponentOrientation;
+import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -46,20 +31,62 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Locale;
 
-import static net.pms.configuration.RendererConfiguration.RENDERER_ID_PLAYSTATION3;
-import static net.pms.formats.v2.AudioUtils.getLPCMChannelMappingForMencoder;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
+import net.pms.Messages;
+import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeIPCProcessFactory;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
+import net.pms.configuration.RendererConfiguration;
+import net.pms.dlna.DLNAMediaAudio;
+import net.pms.dlna.DLNAMediaInfo;
+import net.pms.dlna.DLNAResource;
+import net.pms.dlna.InputFile;
+import net.pms.formats.Format;
+import net.pms.io.OutputParams;
+import net.pms.io.PipeIPCProcess;
+import net.pms.io.PipeProcess;
+import net.pms.io.ProcessWrapper;
+import net.pms.io.ProcessWrapperImpl;
+import net.pms.io.StreamModifier;
+import net.pms.util.CodecUtil;
+import net.pms.util.FormLayoutUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+@Singleton
 public class TSMuxerVideo extends Player {
 	private static final Logger logger = LoggerFactory.getLogger(TSMuxerVideo.class);
 	private static final String COL_SPEC = "left:pref, 0:grow";
 	private static final String ROW_SPEC = "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, 0:grow";
 
 	public static final String ID = "tsmuxer";
-	private PmsConfiguration configuration;
 
-	public TSMuxerVideo(PmsConfiguration configuration) {
+	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeProcessFactory pipeProcessFactory;
+	private final PipeIPCProcessFactory pipeIPCProcessFactory;
+
+	@Inject
+	public TSMuxerVideo(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			PipeProcessFactory pipeProcessFactory,
+			PipeIPCProcessFactory pipeIPCProcessFactory) {
 		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeProcessFactory = pipeProcessFactory;
+		this.pipeIPCProcessFactory = pipeIPCProcessFactory;
 	}
 
 	public boolean excludeFormat(Format extension) {
@@ -102,10 +129,10 @@ public class TSMuxerVideo extends Player {
 		setAudioAndSubs(fileName, media, params, configuration);
 
 		PipeIPCProcess ffVideoPipe = null;
-		ProcessWrapperImpl ffVideo = null;
+		ProcessWrapper ffVideo = null;
 
 		PipeIPCProcess ffAudioPipe[] = null;
-		ProcessWrapperImpl ffAudio[] = null;
+		ProcessWrapper ffAudio[] = null;
 
 		String fps = media.getValidFps(false);
 		String videoType = "V_MPEG4/ISO/AVC";
@@ -114,7 +141,7 @@ public class TSMuxerVideo extends Player {
 		}
 
 		if (this instanceof TsMuxerAudio && media.getFirstAudioTrack() != null) {
-			ffVideoPipe = new PipeIPCProcess(System.currentTimeMillis() + "fakevideo", System.currentTimeMillis() + "videoout", false, true);
+			ffVideoPipe = pipeIPCProcessFactory.create(System.currentTimeMillis() + "fakevideo", System.currentTimeMillis() + "videoout", false, true);
 			String ffmpegLPCMextract[] = new String[]{configuration.getFfmpegPath(), "-t", "" + params.timeend, "-loop_input", "-i", "resources/images/fake.jpg", "-qcomp", "0.6", "-qmin", "10", "-qmax", "51", "-qdiff", "4", "-me_range", "4", "-f", "h264", "-vcodec", "libx264", "-an", "-y", ffVideoPipe.getInputPipe()};
 			//videoType = "V_MPEG-2";
 			videoType = "V_MPEG4/ISO/AVC";
@@ -123,22 +150,22 @@ public class TSMuxerVideo extends Player {
 				ffmpegLPCMextract[2] = "dummy";
 			}
 
-			OutputParams ffparams = new OutputParams(PMS.getConfiguration());
+			OutputParams ffparams = new OutputParams(configuration);
 			ffparams.maxBufferSize = 1;
-			ffVideo = new ProcessWrapperImpl(ffmpegLPCMextract, ffparams);
+			ffVideo = processWrapperFactory.create(ffmpegLPCMextract, ffparams);
 
 			if (fileName.toLowerCase().endsWith(".flac") && media != null && media.getFirstAudioTrack().getBitsperSample() >= 24 && media.getFirstAudioTrack().getSampleRate() % 48000 == 0) {
 				ffAudioPipe = new PipeIPCProcess[1];
-				ffAudioPipe[0] = new PipeIPCProcess(System.currentTimeMillis() + "flacaudio", System.currentTimeMillis() + "audioout", false, true);
+				ffAudioPipe[0] = pipeIPCProcessFactory.create(System.currentTimeMillis() + "flacaudio", System.currentTimeMillis() + "audioout", false, true);
 				String flacCmd[] = new String[]{configuration.getFlacPath(), "--output-name=" + ffAudioPipe[0].getInputPipe(), "-d", "-f", "-F", fileName};
 
-				ffparams = new OutputParams(PMS.getConfiguration());
+				ffparams = new OutputParams(configuration);
 				ffparams.maxBufferSize = 1;
-				ffAudio = new ProcessWrapperImpl[1];
-				ffAudio[0] = new ProcessWrapperImpl(flacCmd, ffparams);
+				ffAudio = new ProcessWrapper[1];
+				ffAudio[0] = processWrapperFactory.create(flacCmd, ffparams);
 			} else {
 				ffAudioPipe = new PipeIPCProcess[1];
-				ffAudioPipe[0] = new PipeIPCProcess(System.currentTimeMillis() + "mlpaudio", System.currentTimeMillis() + "audioout", false, true);
+				ffAudioPipe[0] = pipeIPCProcessFactory.create(System.currentTimeMillis() + "mlpaudio", System.currentTimeMillis() + "audioout", false, true);
 				String depth = "pcm_s16le";
 				String rate = "48000";
 				if (media != null && media.getFirstAudioTrack().getBitsperSample() >= 24) {
@@ -149,10 +176,10 @@ public class TSMuxerVideo extends Player {
 				}
 				String flacCmd[] = new String[]{configuration.getFfmpegPath(), "-ar", rate, "-i", fileName, "-f", "wav", "-acodec", depth, "-y", ffAudioPipe[0].getInputPipe()};
 
-				ffparams = new OutputParams(PMS.getConfiguration());
+				ffparams = new OutputParams(configuration);
 				ffparams.maxBufferSize = 1;
-				ffAudio = new ProcessWrapperImpl[1];
-				ffAudio[0] = new ProcessWrapperImpl(flacCmd, ffparams);
+				ffAudio = new ProcessWrapper[1];
+				ffAudio[0] = processWrapperFactory.create(flacCmd, ffparams);
 			}
 		} else {
 			params.waitbeforestart = 5000;
@@ -160,7 +187,7 @@ public class TSMuxerVideo extends Player {
 
 			String mencoderPath = configuration.getMencoderPath();
 
-			ffVideoPipe = new PipeIPCProcess(System.currentTimeMillis() + "ffmpegvideo", System.currentTimeMillis() + "videoout", false, true);
+			ffVideoPipe = pipeIPCProcessFactory.create(System.currentTimeMillis() + "ffmpegvideo", System.currentTimeMillis() + "videoout", false, true);
 			String ffmpegLPCMextract[] = new String[]{
 				mencoderPath,
 				"-ss", "0",
@@ -206,10 +233,10 @@ public class TSMuxerVideo extends Player {
 				ffmpegLPCMextract[2] = "" + params.timeseek;
 			}
 
-			OutputParams ffparams = new OutputParams(PMS.getConfiguration());
+			OutputParams ffparams = new OutputParams(configuration);
 			ffparams.maxBufferSize = 1;
 			ffparams.stdin = params.stdin;
-			ffVideo = new ProcessWrapperImpl(ffmpegLPCMextract, ffparams);
+			ffVideo = processWrapperFactory.create(ffmpegLPCMextract, ffparams);
 
 			int numAudioTracks = 1;
 
@@ -227,7 +254,7 @@ public class TSMuxerVideo extends Player {
 				boolean mp4_with_non_h264 = (media.getContainer().equals("mp4") && !media.getCodecV().equals("h264"));
 				if (numAudioTracks <= 1) {
 					ffAudioPipe = new PipeIPCProcess[numAudioTracks];
-					ffAudioPipe[0] = new PipeIPCProcess(System.currentTimeMillis() + "ffmpegaudio01", System.currentTimeMillis() + "audioout", false, true);
+					ffAudioPipe[0] = pipeIPCProcessFactory.create(System.currentTimeMillis() + "ffmpegaudio01", System.currentTimeMillis() + "audioout", false, true);
                     // disable AC3 remux for stereo tracks with 384 kbits bitrate and PS3 renderer (PS3 FW bug?)
                     boolean ps3_and_stereo_and_384_kbits = (params.mediaRenderer.getRendererUniqueID().equalsIgnoreCase(RENDERER_ID_PLAYSTATION3) && params.aid.getAudioProperties().getNumberOfChannels() == 2) && (params.aid.getBitRate() > 370000 && params.aid.getBitRate() < 400000);
 					ac3Remux = (params.aid.isAC3() && !ps3_and_stereo_and_384_kbits && configuration.isRemuxAC3());
@@ -335,17 +362,17 @@ public class TSMuxerVideo extends Player {
 						ffmpegLPCMextract[2] = "" + params.timeseek;
 					}
 
-					ffparams = new OutputParams(PMS.getConfiguration());
+					ffparams = new OutputParams(configuration);
 					ffparams.maxBufferSize = 1;
 					ffparams.stdin = params.stdin;
-					ffAudio = new ProcessWrapperImpl[numAudioTracks];
-					ffAudio[0] = new ProcessWrapperImpl(ffmpegLPCMextract, ffparams);
+					ffAudio = new ProcessWrapper[numAudioTracks];
+					ffAudio[0] = processWrapperFactory.create(ffmpegLPCMextract, ffparams);
 				} else {
 					ffAudioPipe = new PipeIPCProcess[numAudioTracks];
-					ffAudio = new ProcessWrapperImpl[numAudioTracks];
+					ffAudio = new ProcessWrapper[numAudioTracks];
 					for (int i = 0; i < media.getAudioTracksList().size(); i++) {
 						DLNAMediaAudio audio = media.getAudioTracksList().get(i);
-						ffAudioPipe[i] = new PipeIPCProcess(System.currentTimeMillis() + "ffmpeg" + i, System.currentTimeMillis() + "audioout" + i, false, true);
+						ffAudioPipe[i] = pipeIPCProcessFactory.create(System.currentTimeMillis() + "ffmpeg" + i, System.currentTimeMillis() + "audioout" + i, false, true);
                         // disable AC3 remux for stereo tracks with 384 kbits bitrate and PS3 renderer (PS3 FW bug?)
                         boolean ps3_and_stereo_and_384_kbits = (params.mediaRenderer.getRendererUniqueID().equalsIgnoreCase(RENDERER_ID_PLAYSTATION3) && audio.getAudioProperties().getNumberOfChannels() == 2) && (audio.getBitRate() > 370000 && audio.getBitRate() < 400000);
                         ac3Remux = audio.isAC3() && !ps3_and_stereo_and_384_kbits && configuration.isRemuxAC3();
@@ -450,10 +477,10 @@ public class TSMuxerVideo extends Player {
 						if (params.timeseek > 0) {
 							ffmpegLPCMextract[2] = "" + params.timeseek;
 						}
-						ffparams = new OutputParams(PMS.getConfiguration());
+						ffparams = new OutputParams(configuration);
 						ffparams.maxBufferSize = 1;
 						ffparams.stdin = params.stdin;
-						ffAudio[i] = new ProcessWrapperImpl(ffmpegLPCMextract, ffparams);
+						ffAudio[i] = processWrapperFactory.create(ffmpegLPCMextract, ffparams);
 					}
 				}
 			}
@@ -582,7 +609,7 @@ public class TSMuxerVideo extends Player {
 		}
 		pw.close();
 
-		PipeProcess tsPipe = new PipeProcess(System.currentTimeMillis() + "tsmuxerout.ts");
+		PipeProcess tsPipe = pipeProcessFactory.create(System.currentTimeMillis() + "tsmuxerout.ts");
 		String[] cmdArray = new String[]{executable(), f.getAbsolutePath(), tsPipe.getInputPipe()};
 
 		cmdArray = finalizeTranscoderArgs(
@@ -594,7 +621,7 @@ public class TSMuxerVideo extends Player {
 			cmdArray
 		);
 
-		ProcessWrapperImpl p = new ProcessWrapperImpl(cmdArray, params);
+		ProcessWrapper p = processWrapperFactory.create(cmdArray, params);
 		params.maxBufferSize = 100;
 		params.input_pipes[0] = tsPipe;
 		params.stdin = null;

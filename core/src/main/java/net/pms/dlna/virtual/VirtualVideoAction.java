@@ -18,15 +18,18 @@
  */
 package net.pms.dlna.virtual;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.FormatFactory;
 import net.pms.network.HTTPResource;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
+import com.google.inject.Injector;
 
 /**
  * Implements a container that when browsed, an action will be performed.
@@ -62,7 +65,8 @@ public abstract class VirtualVideoAction extends DLNAResource {
 
 		// Create correct mediaInfo for the embedded .mpg videos
 		// This is needed by Format.isCompatible()
-		DLNAMediaInfo mediaInfo = new DLNAMediaInfo();
+		Injector injector = InjectionHelper.getInjector();
+		DLNAMediaInfo mediaInfo = injector.getInstance(DLNAMediaInfo.class);
 		mediaInfo.setContainer("mpegps");
 		ArrayList<DLNAMediaAudio> audioCodes = new ArrayList<DLNAMediaAudio>();
 		mediaInfo.setAudioTracksList(audioCodes);

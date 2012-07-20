@@ -26,6 +26,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.StringTokenizer;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -34,6 +36,8 @@ import javax.swing.JTextArea;
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.formats.Format;
 
@@ -42,11 +46,15 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+@Singleton
 public class MEncoderAviSynth extends MEncoderVideo {
 	private static final String AVS_SEPARATOR = "\1";
 
-	public MEncoderAviSynth(PmsConfiguration configuration) {
-		super(configuration);
+	@Inject
+	public MEncoderAviSynth(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			PipeProcessFactory pipeProcessFactory) {
+		super(configuration, processWrapperFactory, pipeProcessFactory);
 	}
 
 	private JTextArea textArea;

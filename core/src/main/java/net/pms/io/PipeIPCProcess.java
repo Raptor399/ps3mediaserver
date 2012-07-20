@@ -18,17 +18,23 @@
  */
 package net.pms.io;
 
-import com.sun.jna.Platform;
-import net.pms.util.DTSAudioOutputStream;
-import net.pms.util.H264AnnexBInputStream;
-import net.pms.util.PCMAudioOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
+
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.util.DTSAudioOutputStream;
+import net.pms.util.H264AnnexBInputStream;
+import net.pms.util.PCMAudioOutputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+import com.sun.jna.Platform;
 
 public class PipeIPCProcess extends Thread implements ProcessWrapper {
 	private static final Logger logger = LoggerFactory.getLogger(PipeIPCProcess.class);
@@ -44,9 +50,15 @@ public class PipeIPCProcess extends Thread implements ProcessWrapper {
 		this.modifier = modifier;
 	}
 
-	public PipeIPCProcess(String pipeName, String pipeNameOut, boolean forcereconnect1, boolean forcereconnect2) {
-		mkin = new PipeProcess(pipeName, forcereconnect1 ? "reconnect" : "dummy");
-		mkout = new PipeProcess(pipeNameOut, "out", forcereconnect2 ? "reconnect" : "dummy");
+	@AssistedInject
+	public PipeIPCProcess(PipeProcessFactory pipeProcessFactory,
+			@Assisted("pipeName") String pipeName,
+			@Assisted("pipeNameOut") String pipeNameOut,
+			@Assisted("forcereconnect1") boolean forcereconnect1,
+			@Assisted("forcereconnect2") boolean forcereconnect2) {
+
+		mkin = pipeProcessFactory.create(pipeName, forcereconnect1 ? "reconnect" : "dummy");
+		mkout = pipeProcessFactory.create(pipeNameOut, "out", forcereconnect2 ? "reconnect" : "dummy");
 	}
 
 	public void run() {
@@ -165,5 +177,24 @@ public class PipeIPCProcess extends Thread implements ProcessWrapper {
 		this.interrupt();
 		mkin.getPipeProcess().stopProcess();
 		mkout.getPipeProcess().stopProcess();
+	}
+
+	@Override
+	public void runInSameThread() {
+		this.run();
+	}
+
+	@Override
+	public boolean isSuccess() {
+		return true;
+	}
+
+	@Override
+	public void attachProcess(ProcessWrapper pipe_process) {
+	}
+
+	@Override
+	public List<String> getOtherResults() {
+		return null;
 	}
 }

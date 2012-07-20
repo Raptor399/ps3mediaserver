@@ -42,4 +42,26 @@ public class InternalJavaProcessImpl implements ProcessWrapper {
 	@Override
 	public void stopProcess() {
 	}
+
+	@Override
+	public void runInSameThread() {
+	}
+
+	@Override
+	public boolean isSuccess() {
+		return true;
+	}
+
+	@Override
+	public void attachProcess(ProcessWrapper pipe_process) {
+	}
+
+	@Override
+	public List<String> getOtherResults() {
+		return null;
+	}
+
+	@Override
+	public void run() {
+	}
 }

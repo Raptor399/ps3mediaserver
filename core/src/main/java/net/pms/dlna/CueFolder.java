@@ -1,20 +1,30 @@
 package net.pms.dlna;
 
-import jwbroek.cuelib.*;
-import net.pms.PMS;
-import net.pms.encoders.MEncoderVideo;
-import net.pms.encoders.MPlayerAudio;
-import net.pms.encoders.Player;
-import net.pms.formats.Format;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import jwbroek.cuelib.CueParser;
+import jwbroek.cuelib.CueSheet;
+import jwbroek.cuelib.FileData;
+import jwbroek.cuelib.Position;
+import jwbroek.cuelib.TrackData;
+import net.pms.PMS;
+import net.pms.di.InjectionHelper;
+import net.pms.encoders.MEncoderVideo;
+import net.pms.encoders.MPlayerAudio;
+import net.pms.encoders.Player;
+import net.pms.formats.Format;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 public class CueFolder extends DLNAResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CueFolder.class);
@@ -25,7 +35,8 @@ public class CueFolder extends DLNAResource {
 	}
 	private boolean valid = true;
 
-	public CueFolder(File f) {
+	@AssistedInject
+	public CueFolder(@Assisted File f) {
 		playlistfile = f;
 		setLastmodified(playlistfile.lastModified());
 	}
@@ -62,6 +73,8 @@ public class CueFolder extends DLNAResource {
 
 	@Override
 	public void resolve() {
+		Injector injector = InjectionHelper.getInjector();
+
 		if (playlistfile.length() < 10000000) {
 			CueSheet sheet = null;
 			try {
@@ -103,7 +116,8 @@ public class CueFolder extends DLNAResource {
 						addChild(r);
 						addedResources.add(r);
 						if (i > 0 && r.getMedia() == null) {
-							r.setMedia(new DLNAMediaInfo());
+							DLNAMediaInfo mediaInfo = injector.getInstance(DLNAMediaInfo.class);
+							r.setMedia(mediaInfo);
 							r.getMedia().setMediaparsed(true);
 						}
 						r.resolve();
@@ -117,17 +131,12 @@ public class CueFolder extends DLNAResource {
 							if (defaultPlayer == null) {
 								if (r.getFormat() == null) {
 									LOGGER.error("No file format known for file \"{}\", assuming it is a video for now.", r.getName());
-									// XXX aren't players supposed to be singletons?
-									// NOTE: needs new signature for getPlayer():
-									// PlayerFactory.getPlayer(MEncoderVideo.class)
-									defaultPlayer = new MEncoderVideo(PMS.getConfiguration());
+									defaultPlayer = injector.getInstance(MEncoderVideo.class);
 								} else {
 									if (r.getFormat().isAudio()) {
-										// XXX PlayerFactory.getPlayer(MPlayerAudio.class)
-										defaultPlayer = new MPlayerAudio(PMS.getConfiguration());
+										defaultPlayer = injector.getInstance(MPlayerAudio.class);
 									} else {
-										// XXX PlayerFactory.getPlayer(MEncoderVideo.class)
-										defaultPlayer = new MEncoderVideo(PMS.getConfiguration());
+										defaultPlayer = injector.getInstance(MEncoderVideo.class);
 									}
 								}
 							}

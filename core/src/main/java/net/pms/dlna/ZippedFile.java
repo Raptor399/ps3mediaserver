@@ -18,23 +18,32 @@
  */
 package net.pms.dlna;
 
-import net.pms.formats.Format;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import net.pms.formats.Format;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+
 public class ZippedFile extends DLNAResource {
 	private static final Logger logger = LoggerFactory.getLogger(ZippedFile.class);
 	private File z;
 	private ZipFile zip;
 
-	public ZippedFile(File z) {
+	@AssistedInject
+	public ZippedFile(@Assisted File z) {
 		this.z = z;
 		setLastmodified(z.lastModified());
 		try {

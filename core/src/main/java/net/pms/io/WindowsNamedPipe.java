@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -310,5 +311,24 @@ public class WindowsNamedPipe extends Thread implements ProcessWrapper {
 	 */
 	public static void setLoop(boolean value) {
 		loop = value;
+	}
+
+	@Override
+	public void runInSameThread() {
+		this.run();
+	}
+
+	@Override
+	public boolean isSuccess() {
+		return true;
+	}
+
+	@Override
+	public void attachProcess(ProcessWrapper pipe_process) {
+	}
+
+	@Override
+	public List<String> getOtherResults() {
+		return null;
 	}
 }

@@ -40,6 +40,7 @@ import javax.swing.JOptionPane;
 
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.Build;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.di.InjectionHelper;
@@ -52,7 +53,7 @@ import net.pms.io.BasicSystemUtils;
 import net.pms.io.MacSystemUtils;
 import net.pms.io.OutputParams;
 import net.pms.io.OutputTextConsumer;
-import net.pms.io.ProcessWrapperImpl;
+import net.pms.io.ProcessWrapper;
 import net.pms.io.SolarisUtils;
 import net.pms.io.SystemUtils;
 import net.pms.io.WinUtils;
@@ -97,13 +98,16 @@ public class PmsCoreImpl implements PmsCore {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PmsCoreImpl.class);
 
 	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
 
 	/**
 	 * Default constructor that initializes the PMS core.
 	 */
 	@Inject
-	protected PmsCoreImpl(PmsConfiguration configuration) {
+	protected PmsCoreImpl(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory) {
 		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
 	}
 
 	/**
@@ -587,10 +591,11 @@ public class PmsCoreImpl implements PmsCore {
 		String cmdArray[] = new String[]{"win32/service/wrapper.exe", "-r", "wrapper.conf"};
 		final OutputParams output = new OutputParams(configuration);
 		output.noexitcheck = true;
-		final ProcessWrapperImpl pwuninstall = new ProcessWrapperImpl(cmdArray, output);
+		final ProcessWrapper pwuninstall = processWrapperFactory.create(cmdArray, output, false, false);
 		pwuninstall.runInSameThread();
 		cmdArray = new String[]{"win32/service/wrapper.exe", "-i", "wrapper.conf"};
-		final ProcessWrapperImpl pwinstall = new ProcessWrapperImpl(cmdArray, new OutputParams(configuration));
+		final ProcessWrapper pwinstall = processWrapperFactory.create(cmdArray,
+				new OutputParams(configuration), false, false);
 		pwinstall.runInSameThread();
 		return pwinstall.isSuccess();
 	}

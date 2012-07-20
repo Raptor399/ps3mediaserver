@@ -18,21 +18,29 @@
  */
 package net.pms.encoders;
 
+import java.io.IOException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.swing.JComponent;
+
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.OutputParams;
 import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
-import net.pms.io.ProcessWrapperImpl;
 
-import javax.swing.*;
-import java.io.IOException;
-
+@Singleton
 public class MEncoderWebVideo extends Player {
 	public static final String ID = "mencoderwebvideo";
+
 	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeProcessFactory pipeProcessFactory;
 
 	@Override
 	public JComponent config() {
@@ -77,8 +85,13 @@ public class MEncoderWebVideo extends Player {
 			};
 	}
 
-	public MEncoderWebVideo(PmsConfiguration configuration) {
+	@Inject
+	public MEncoderWebVideo(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			PipeProcessFactory pipeProcessFactory) {
 		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeProcessFactory = pipeProcessFactory;
 	}
 
 	@Override
@@ -90,7 +103,7 @@ public class MEncoderWebVideo extends Player {
 		params.minBufferSize = params.minFileSize;
 		params.secondread_minsize = 100000;
 
-		PipeProcess pipe = new PipeProcess("mencoder" + System.currentTimeMillis());
+		PipeProcess pipe = pipeProcessFactory.create("mencoder" + System.currentTimeMillis());
 		params.input_pipes[0] = pipe;
 
 		String cmdArray[] = new String[args().length + 4];
@@ -112,7 +125,7 @@ public class MEncoderWebVideo extends Player {
 			params,
 			cmdArray);
 
-		ProcessWrapperImpl pw = new ProcessWrapperImpl(cmdArray, params);
+		ProcessWrapper pw = processWrapperFactory.create(cmdArray, params);
 		pw.attachProcess(mkfifo_process);
 		mkfifo_process.runInNewThread();
 		try {

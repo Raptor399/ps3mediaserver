@@ -18,20 +18,44 @@
  */
 package net.pms.io;
 
-import com.sun.jna.Platform;
-import net.pms.PMS;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
+
+import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
+import net.pms.api.io.ProcessWrapperFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+import com.sun.jna.Platform;
 
 public class PipeProcess {
 	private static final Logger logger = LoggerFactory.getLogger(PipeProcess.class);
 	private String linuxPipeName;
 	private WindowsNamedPipe mk;
 	private boolean forcereconnect;
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	
 
-	public PipeProcess(String pipeName, OutputParams params, String... extras) {
+	@AssistedInject
+	public PipeProcess(PmsCore pmsCore, PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			@Assisted String pipeName, @Assisted OutputParams params,
+			@Assisted String... extras) {
+
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
 		forcereconnect = false;
 		boolean in = true;
 
@@ -47,20 +71,23 @@ public class PipeProcess {
 			}
 		}
 
-		if (PMS.get().isWindows()) {
+		if (pmsCore.isWindows()) {
 			mk = new WindowsNamedPipe(pipeName, forcereconnect, in, params);
 		} else {
 			linuxPipeName = getPipeName(pipeName);
 		}
 	}
 
-	public PipeProcess(String pipeName, String... extras) {
-		this(pipeName, null, extras);
+	@AssistedInject
+	public PipeProcess(PmsCore pmsCore, PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			@Assisted String pipeName, @Assisted String... extras) {
+		this(pmsCore, configuration, processWrapperFactory, pipeName, null, extras);
 	}
 
-	private static String getPipeName(String pipeName) {
+	private String getPipeName(String pipeName) {
 		try {
-			return PMS.getConfiguration().getTempFolder() + "/" + pipeName;
+			return configuration.getTempFolder() + "/" + pipeName;
 		} catch (IOException e) {
 			logger.error("Pipe may not be in temporary directory", e);
 			return pipeName;
@@ -68,22 +95,22 @@ public class PipeProcess {
 	}
 
 	public String getInputPipe() {
-		if (!PMS.get().isWindows()) {
+		if (!pmsCore.isWindows()) {
 			return linuxPipeName;
 		}
 		return mk.getPipeName();
 	}
 
 	public String getOutputPipe() {
-		if (!PMS.get().isWindows()) {
+		if (!pmsCore.isWindows()) {
 			return linuxPipeName;
 		}
 		return mk.getPipeName();
 	}
 
 	public ProcessWrapper getPipeProcess() {
-		if (!PMS.get().isWindows()) {
-			OutputParams mkfifo_vid_params = new OutputParams(PMS.getConfiguration());
+		if (!pmsCore.isWindows()) {
+			OutputParams mkfifo_vid_params = new OutputParams(configuration);
 			mkfifo_vid_params.maxBufferSize = 0.1;
 			mkfifo_vid_params.log = true;
 			String cmdArray[];
@@ -94,28 +121,29 @@ public class PipeProcess {
 				cmdArray = new String[] {"mkfifo", "--mode=777", linuxPipeName};
 			}
 
-			ProcessWrapperImpl mkfifo_vid_process = new ProcessWrapperImpl(cmdArray, mkfifo_vid_params);
+			ProcessWrapper mkfifo_vid_process = processWrapperFactory.create(
+					cmdArray, mkfifo_vid_params, false, false);
 			return mkfifo_vid_process;
 		}
 		return mk;
 	}
 
 	public void deleteLater() {
-		if (!PMS.get().isWindows()) {
+		if (!pmsCore.isWindows()) {
 			File f = new File(linuxPipeName);
 			f.deleteOnExit();
 		}
 	}
 
 	public BufferedOutputFile getDirectBuffer() throws IOException {
-		if (!PMS.get().isWindows()) {
+		if (!pmsCore.isWindows()) {
 			return null;
 		}
 		return mk.getDirectBuffer();
 	}
 
 	public InputStream getInputStream() throws IOException {
-		if (!PMS.get().isWindows()) {
+		if (!pmsCore.isWindows()) {
 			logger.trace("Opening file " + linuxPipeName + " for reading...");
 			RandomAccessFile raf = new RandomAccessFile(linuxPipeName, "r");
 			return new FileInputStream(raf.getFD());
@@ -124,7 +152,7 @@ public class PipeProcess {
 	}
 
 	public OutputStream getOutputStream() throws IOException {
-		if (!PMS.get().isWindows()) {
+		if (!pmsCore.isWindows()) {
 			logger.trace("Opening file " + linuxPipeName + " for writing...");
 			RandomAccessFile raf = new RandomAccessFile(linuxPipeName, "rw");
 			FileOutputStream fout = new FileOutputStream(raf.getFD());

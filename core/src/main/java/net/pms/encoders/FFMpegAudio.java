@@ -18,13 +18,21 @@
  */
 package net.pms.encoders;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
+import java.awt.Font;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.IOException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeIPCProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
@@ -32,19 +40,28 @@ import net.pms.io.OutputParams;
 import net.pms.io.ProcessWrapper;
 import net.pms.network.HTTPResource;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.io.IOException;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
+@Singleton
 public class FFMpegAudio extends FFMpegVideo {
 	public static final String ID = "ffmpegaudio";
-	private final PmsConfiguration configuration;
 
-	public FFMpegAudio(PmsConfiguration configuration) {
+	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeIPCProcessFactory pipeIPCProcessFactory;
+
+	@Inject
+	public FFMpegAudio(PmsConfiguration configuration, ProcessWrapperFactory processWrapperFactory, PipeIPCProcessFactory pipeIPCProcessFactory) {
+		super(configuration, processWrapperFactory, pipeIPCProcessFactory);
+
 		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeIPCProcessFactory = pipeIPCProcessFactory;
 	}
+
 	JCheckBox noresample;
 
 	@Override

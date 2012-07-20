@@ -23,6 +23,7 @@ import net.pms.util.ProcessUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ProcessWrapperLiteImpl implements ProcessWrapper {
 	private Process p;
@@ -62,5 +63,27 @@ public class ProcessWrapperLiteImpl implements ProcessWrapper {
 	@Override
 	public void stopProcess() {
 		ProcessUtil.destroy(p);
+	}
+
+	@Override
+	public void runInSameThread() {
+	}
+
+	@Override
+	public boolean isSuccess() {
+		return true;
+	}
+
+	@Override
+	public void attachProcess(ProcessWrapper pipe_process) {
+	}
+
+	@Override
+	public List<String> getOtherResults() {
+		return null;
+	}
+
+	@Override
+	public void run() {
 	}
 }

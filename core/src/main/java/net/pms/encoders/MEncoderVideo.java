@@ -44,6 +44,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
@@ -61,8 +63,11 @@ import javax.swing.SwingUtilities;
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.FormatConfiguration;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
@@ -74,7 +79,6 @@ import net.pms.io.OutputParams;
 import net.pms.io.PipeIPCProcess;
 import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
-import net.pms.io.ProcessWrapperImpl;
 import net.pms.io.StreamModifier;
 import net.pms.network.HTTPResource;
 import net.pms.newgui.FontFileFilter;
@@ -91,12 +95,14 @@ import org.slf4j.LoggerFactory;
 import bsh.EvalError;
 import bsh.Interpreter;
 
+import com.google.inject.Injector;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.sun.jna.Platform;
 
+@Singleton
 public class MEncoderVideo extends Player {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MEncoderVideo.class);
 	private static final String COL_SPEC = "left:pref, 3dlu, p:grow, 3dlu, right:p:grow, 3dlu, p:grow, 3dlu, right:p:grow,3dlu, p:grow, 3dlu, right:p:grow,3dlu, pref:grow";
@@ -138,7 +144,11 @@ public class MEncoderVideo extends Player {
 	private JTextField och;
 	private JCheckBox subs;
 	private JCheckBox fribidi;
+
 	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeProcessFactory pipeProcessFactory;
+	private final Injector injector;
 
 	private static final String[] INVALID_CUSTOM_OPTIONS = {
 		"-of",
@@ -208,8 +218,14 @@ public class MEncoderVideo extends Player {
 		return subs;
 	}
 
-	public MEncoderVideo(PmsConfiguration configuration) {
+	@Inject
+	public MEncoderVideo(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			PipeProcessFactory pipeProcessFactory) {
 		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeProcessFactory = pipeProcessFactory;
+		injector = InjectionHelper.getInjector();
 	}
 
 	@Override
@@ -324,7 +340,8 @@ public class MEncoderVideo extends Player {
 				while (JOptionPane.showOptionDialog(SwingUtilities.getWindowAncestor((Component) PMS.get().getFrame()),
 					codecPanel, Messages.getString("MEncoderVideo.34"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null) == JOptionPane.OK_OPTION) {
 					String newCodecparam = textArea.getText();
-					DLNAMediaInfo fakemedia = new DLNAMediaInfo();
+					
+					DLNAMediaInfo fakemedia = injector.getInstance(DLNAMediaInfo.class);
 					DLNAMediaAudio audio = new DLNAMediaAudio();
 					audio.setCodecA("ac3");
 					fakemedia.setCodecV("mpeg4");
@@ -1318,7 +1335,7 @@ public class MEncoderVideo extends Player {
 			}
 
 			if (!nomux) {
-				TSMuxerVideo tv = new TSMuxerVideo(configuration);
+				TSMuxerVideo tv = injector.getInstance(TSMuxerVideo.class);
 				params.forceFps = media.getValidFps(false);
 
 				if (media.getCodecV().equals("h264")) {
@@ -2177,7 +2194,7 @@ public class MEncoderVideo extends Player {
 
 		cmdArray[cmdArray.length - 2] = "-o";
 
-		ProcessWrapperImpl pw = null;
+		ProcessWrapper pw = null;
 
 		if (pcm || dtsRemux || ac3Remux) {
 			boolean channels_filter_present = false;
@@ -2190,7 +2207,7 @@ public class MEncoderVideo extends Player {
 			}
 
 			if (params.avidemux) {
-				pipe = new PipeProcess("mencoder" + System.currentTimeMillis(), (pcm || dtsRemux || ac3Remux) ? null : params);
+				pipe = pipeProcessFactory.create("mencoder" + System.currentTimeMillis(), (pcm || dtsRemux || ac3Remux) ? null : params);
 				params.input_pipes[0] = pipe;
 				cmdArray[cmdArray.length - 1] = pipe.getInputPipe();
 
@@ -2203,10 +2220,10 @@ public class MEncoderVideo extends Player {
 					}
 				}
 
-				pw = new ProcessWrapperImpl(cmdArray, params);
+				pw = processWrapperFactory.create(cmdArray, params);
 
-				PipeProcess videoPipe = new PipeProcess("videoPipe" + System.currentTimeMillis(), "out", "reconnect");
-				PipeProcess audioPipe = new PipeProcess("audioPipe" + System.currentTimeMillis(), "out", "reconnect");
+				PipeProcess videoPipe = pipeProcessFactory.create("videoPipe" + System.currentTimeMillis(), "out", "reconnect");
+				PipeProcess audioPipe = pipeProcessFactory.create("audioPipe" + System.currentTimeMillis(), "out", "reconnect");
 
 				ProcessWrapper videoPipeProcess = videoPipe.getPipeProcess();
 				ProcessWrapper audioPipeProcess = audioPipe.getPipeProcess();
@@ -2235,21 +2252,21 @@ public class MEncoderVideo extends Player {
 					}
 				}
 
-				pipe = new PipeProcess(System.currentTimeMillis() + "tsmuxerout.ts");
+				pipe = pipeProcessFactory.create(System.currentTimeMillis() + "tsmuxerout.ts");
 
-				TSMuxerVideo ts = new TSMuxerVideo(configuration);
+				TSMuxerVideo ts = injector.getInstance(TSMuxerVideo.class);
 				File f = new File(configuration.getTempFolder(), "pms-tsmuxer.meta");
 				String cmd[] = new String[]{ts.executable(), f.getAbsolutePath(), pipe.getInputPipe()};
-				pw = new ProcessWrapperImpl(cmd, params);
+				pw = processWrapperFactory.create(cmd, params);
 
-				PipeIPCProcess ffVideoPipe = new PipeIPCProcess(System.currentTimeMillis() + "ffmpegvideo", System.currentTimeMillis() + "videoout", false, true);
+				PipeIPCProcess ffVideoPipe = new PipeIPCProcess(pipeProcessFactory, System.currentTimeMillis() + "ffmpegvideo", System.currentTimeMillis() + "videoout", false, true);
 
 				cmdArray[cmdArray.length - 1] = ffVideoPipe.getInputPipe();
 
 				OutputParams ffparams = new OutputParams(configuration);
 				ffparams.maxBufferSize = 1;
 				ffparams.stdin = params.stdin;
-				ProcessWrapperImpl ffVideo = new ProcessWrapperImpl(cmdArray, ffparams);
+				ProcessWrapper ffVideo = processWrapperFactory.create(cmdArray, ffparams);
 
 				ProcessWrapper ff_video_pipe_process = ffVideoPipe.getPipeProcess();
 				pw.attachProcess(ff_video_pipe_process);
@@ -2271,7 +2288,7 @@ public class MEncoderVideo extends Player {
 					}
 				}
 
-				PipeIPCProcess ffAudioPipe = new PipeIPCProcess(System.currentTimeMillis() + "ffmpegaudio01", System.currentTimeMillis() + "audioout", false, true);
+				PipeIPCProcess ffAudioPipe = new PipeIPCProcess(pipeProcessFactory, System.currentTimeMillis() + "ffmpegaudio01", System.currentTimeMillis() + "audioout", false, true);
 				StreamModifier sm = new StreamModifier();
 				sm.setPcm(pcm);
 				sm.setDtsembed(dtsRemux);
@@ -2329,7 +2346,7 @@ public class MEncoderVideo extends Player {
 				OutputParams ffaudioparams = new OutputParams(configuration);
 				ffaudioparams.maxBufferSize = 1;
 				ffaudioparams.stdin = params.stdin;
-				ProcessWrapperImpl ffAudio = new ProcessWrapperImpl(ffmpegLPCMextract, ffaudioparams);
+				ProcessWrapper ffAudio = processWrapperFactory.create(ffmpegLPCMextract, ffaudioparams);
 
 				params.stdin = null;
 
@@ -2410,7 +2427,7 @@ public class MEncoderVideo extends Player {
 				cmdArray[cmdArray.length - 4] = "-";
 				params.input_pipes = new PipeProcess[2];
 			} else {
-				pipe = new PipeProcess("mencoder" + System.currentTimeMillis(), (pcm || dtsRemux || ac3Remux) ? null : params);
+				pipe = pipeProcessFactory.create("mencoder" + System.currentTimeMillis(), (pcm || dtsRemux || ac3Remux) ? null : params);
 				params.input_pipes[0] = pipe;
 				cmdArray[cmdArray.length - 1] = pipe.getInputPipe();
 			}
@@ -2424,7 +2441,7 @@ public class MEncoderVideo extends Player {
 				cmdArray
 			);
 
-			pw = new ProcessWrapperImpl(cmdArray, params);
+			pw = processWrapperFactory.create(cmdArray, params);
 
 			if (!directpipe) {
 				ProcessWrapper mkfifo_process = pipe.getPipeProcess();

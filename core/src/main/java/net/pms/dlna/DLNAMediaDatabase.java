@@ -18,10 +18,12 @@
  */
 package net.pms.dlna;
 
+import com.google.inject.Injector;
 import com.sun.jna.Platform;
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.configuration.FormatConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.formats.v2.SubtitleType;
 import org.apache.commons.lang.StringUtils;
 import org.h2.jdbcx.JdbcConnectionPool;
@@ -293,7 +295,8 @@ public class DLNAMediaDatabase implements Runnable {
 			stmt.setTimestamp(2, new Timestamp(modified));
 			rs = stmt.executeQuery();
 			while (rs.next()) {
-				DLNAMediaInfo media = new DLNAMediaInfo();
+				Injector injector = InjectionHelper.getInjector();
+				DLNAMediaInfo media = injector.getInstance(DLNAMediaInfo.class);
 				int id = rs.getInt("ID");
 				media.setDuration(toDouble(rs,"DURATION"));
 				media.setBitrate(rs.getInt("BITRATE"));

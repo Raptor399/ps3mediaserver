@@ -18,17 +18,22 @@
  */
 package net.pms.dlna;
 
-import de.innosystec.unrar.Archive;
-import de.innosystec.unrar.rarfile.FileHeader;
-import net.pms.formats.Format;
-import net.pms.util.FileUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import net.pms.di.InjectionHelper;
+import net.pms.formats.Format;
+import net.pms.util.FileUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
+
+import de.innosystec.unrar.Archive;
+import de.innosystec.unrar.rarfile.FileHeader;
 
 public class RarredEntry extends DLNAResource implements IPushOutput {
 	private static final Logger logger = LoggerFactory.getLogger(RarredEntry.class);
@@ -135,7 +140,9 @@ public class RarredEntry extends DLNAResource implements IPushOutput {
 		boolean found = false;
 		if (!found) {
 			if (getMedia() == null) {
-				setMedia(new DLNAMediaInfo());
+				Injector injector = InjectionHelper.getInjector();
+				DLNAMediaInfo mediaInfo = injector.getInstance(DLNAMediaInfo.class);
+				setMedia(mediaInfo);
 			}
 			found = !getMedia().isMediaparsed() && !getMedia().isParsing();
 			if (getFormat() != null) {

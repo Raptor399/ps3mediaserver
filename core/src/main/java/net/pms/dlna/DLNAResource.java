@@ -21,6 +21,7 @@ package net.pms.dlna;
 import net.pms.PMS;
 import net.pms.configuration.FormatConfiguration;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.virtual.TranscodeVirtualFolder;
 import net.pms.dlna.virtual.VirtualFolder;
 import net.pms.encoders.*;
@@ -40,6 +41,8 @@ import net.pms.util.MpegUtil;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -476,7 +479,9 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 				if (child.getFormat() != null && (child.getFormat().transcodable() || parserV2) && (child.getMedia() == null || parserV2)) {
 					if (!parserV2) {
-						child.setMedia(new DLNAMediaInfo());
+						Injector injector = InjectionHelper.getInjector();
+						DLNAMediaInfo mediaInfo = injector.getInstance(DLNAMediaInfo.class);
+						child.setMedia(mediaInfo);
 					}
 
 					// Try to determine a player to use for transcoding.

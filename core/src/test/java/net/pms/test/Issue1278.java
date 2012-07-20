@@ -21,25 +21,31 @@ package net.pms.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Injector;
+
 import ch.qos.logback.classic.LoggerContext;
 
 public class Issue1278 {
+	private Injector injector;
+
 	@Before
     public void setUp() {
         // Silence all log messages from the PMS code that is being tested
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        context.reset(); 
+        context.reset();
+		injector = InjectionHelper.getInjector();
 	}
 
 	@Test
 	public void dlnaMediaInfoDoubleParseWithDot() {
-		DLNAMediaInfo info = new DLNAMediaInfo();
+		DLNAMediaInfo info = injector.getInstance(DLNAMediaInfo.class);
 		info.setFrameRate("23.976");
 		String validFps = info.getValidFps(true);
 		assertNotNull("validFps", validFps);
@@ -52,7 +58,7 @@ public class Issue1278 {
 
 	@Test
 	public void dlnaMediaInfoDoubleParseWithComma() {
-		DLNAMediaInfo info = new DLNAMediaInfo();
+		DLNAMediaInfo info = injector.getInstance(DLNAMediaInfo.class);
 		info.setFrameRate("23,976");
 		String validFps = info.getValidFps(true);
 		assertNotNull("validFps", validFps);
@@ -64,7 +70,7 @@ public class Issue1278 {
 
 	@Test
 	public void testNullFrameRate() {
-		DLNAMediaInfo info = new DLNAMediaInfo();
+		DLNAMediaInfo info = injector.getInstance(DLNAMediaInfo.class);
 		assertNull("valid fps", info.getValidFps(true));
 	}
 

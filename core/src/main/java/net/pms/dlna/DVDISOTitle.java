@@ -18,18 +18,6 @@
  */
 package net.pms.dlna;
 
-import net.pms.PMS;
-import net.pms.configuration.RendererConfiguration;
-import net.pms.formats.FormatFactory;
-import net.pms.formats.v2.SubtitleType;
-import net.pms.io.OutputParams;
-import net.pms.io.ProcessWrapperImpl;
-import net.pms.util.FileUtil;
-import net.pms.util.ProcessUtil;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,11 +25,28 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import net.pms.PMS;
+import net.pms.api.io.ProcessWrapperFactory;
+import net.pms.configuration.RendererConfiguration;
+import net.pms.formats.FormatFactory;
+import net.pms.formats.v2.SubtitleType;
+import net.pms.io.OutputParams;
+import net.pms.io.ProcessWrapper;
+import net.pms.util.FileUtil;
+import net.pms.util.ProcessUtil;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DVDISOTitle extends DLNAResource {
 	private static final Logger logger = LoggerFactory.getLogger(DVDISOTitle.class);
 	private File f;
 	private int title;
 	private long length;
+	private final ProcessWrapperFactory processWrapperFactory;
 
 	@Override
 	public void resolve() {
@@ -64,7 +69,7 @@ public class DVDISOTitle extends DLNAResource {
 			cmd[10] = "jpeg:outdir=" + frameName;
 		}
 		params.log = true;
-		final ProcessWrapperImpl pw = new ProcessWrapperImpl(cmd, params, true, false);
+		final ProcessWrapper pw = processWrapperFactory.create(cmd, params, true, false);
 		Runnable r = new Runnable() {
 
 			public void run() {
@@ -220,7 +225,9 @@ public class DVDISOTitle extends DLNAResource {
 		return length;
 	}
 
-	public DVDISOTitle(File f, int title) {
+	@Inject
+	public DVDISOTitle(ProcessWrapperFactory processWrapperFactory, File f, int title) {
+		this.processWrapperFactory = processWrapperFactory;
 		this.f = f;
 		this.title = title;
 		setLastmodified(f.lastModified());

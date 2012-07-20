@@ -18,17 +18,37 @@
  */
 package net.pms.encoders;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+
+import javax.inject.Singleton;
+
 import net.pms.PMS;
-import net.pms.io.*;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.di.InjectionHelper;
+import net.pms.io.Gob;
+import net.pms.io.OutputParams;
+import net.pms.io.PipeProcess;
+import net.pms.io.ProcessWrapper;
+import net.pms.io.ProcessWrapperLiteImpl;
 import net.pms.util.H264AnnexBInputStream;
 import net.pms.util.PCMAudioOutputStream;
 import net.pms.util.ProcessUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.ArrayList;
+import com.google.inject.Injector;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
+@Singleton
 public class AviDemuxerInputStream extends InputStream {
 	private static final Logger logger = LoggerFactory.getLogger(AviDemuxerInputStream.class);
 
@@ -52,13 +72,18 @@ public class AviDemuxerInputStream extends InputStream {
 	private long videosize;
 	private InputStream realIS;
 	private Thread parsing;
-	private OutputParams params;
+	private final OutputParams params;
+	private final PipeProcessFactory pipeProcessFactory;
 
-	public AviDemuxerInputStream(InputStream fin, final OutputParams params, ArrayList<ProcessWrapper> at) throws IOException {
+	@AssistedInject
+	public AviDemuxerInputStream(PipeProcessFactory ppf, @Assisted InputStream fin,
+			@Assisted OutputParams outputParams,
+			@Assisted ArrayList<ProcessWrapper> at) throws IOException {
+		this.pipeProcessFactory = ppf;
+		this.params = outputParams;
 		stream = fin;
 		logger.trace("Opening AVI Stream");
 		this.attachedProcesses = at;
-		this.params = params;
 
 		aOut = params.output_pipes[1].getOutputStream();
 		if (params.no_videoencode && params.forceType != null && params.forceType.equals("V_MPEG4/ISO/AVC") && params.header != null) {
@@ -90,7 +115,8 @@ public class AviDemuxerInputStream extends InputStream {
 			public void run() {
 				try {
 					// TODO(tcox): Is this used anymore?
-					TSMuxerVideo ts = new TSMuxerVideo(PMS.getConfiguration());
+					Injector injector = InjectionHelper.getInjector();
+					TSMuxerVideo ts = injector.getInstance(TSMuxerVideo.class);
 					File f = new File(PMS.getConfiguration().getTempFolder(), "pms-tsmuxer.meta");
 					PrintWriter pw = new PrintWriter(f);
 					pw.println("MUXOPT --no-pcr-on-video-pid --no-asyncio --new-audio-pes --vbr --vbv-len=500");
@@ -110,7 +136,7 @@ public class AviDemuxerInputStream extends InputStream {
 					pw.println(audioType + ", \"" + params.output_pipes[1].getOutputPipe() + "\", track=2");
 					pw.close();
 
-					PipeProcess tsPipe = new PipeProcess(System.currentTimeMillis() + "tsmuxerout.ts");
+					PipeProcess tsPipe = pipeProcessFactory.create(System.currentTimeMillis() + "tsmuxerout.ts");
 					ProcessWrapper pipe_process = tsPipe.getPipeProcess();
 					attachedProcesses.add(pipe_process);
 					pipe_process.runInNewThread();

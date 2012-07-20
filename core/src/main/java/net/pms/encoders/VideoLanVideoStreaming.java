@@ -18,28 +18,41 @@
  */
 package net.pms.encoders;
 
-import com.sun.jna.Platform;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.swing.JComponent;
 
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.OutputParams;
 import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
-import net.pms.io.ProcessWrapperImpl;
 
-import javax.swing.*;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.sun.jna.Platform;
 
+@Singleton
 public class VideoLanVideoStreaming extends Player {
 	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeProcessFactory pipeProcessFactory;
+
 	public static final String ID = "vlcvideo";
 
-	public VideoLanVideoStreaming(PmsConfiguration configuration) {
+	@Inject
+	public VideoLanVideoStreaming(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			PipeProcessFactory pipeProcessFactory) {
 		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeProcessFactory = pipeProcessFactory;
 	}
 
 	@Override
@@ -112,7 +125,7 @@ public class VideoLanVideoStreaming extends Player {
 		DLNAMediaInfo media,
 		OutputParams params) throws IOException {
 		boolean isWindows = Platform.isWindows();
-		PipeProcess tsPipe = new PipeProcess("VLC" + System.currentTimeMillis() + "." + getMux());
+		PipeProcess tsPipe = pipeProcessFactory.create("VLC" + System.currentTimeMillis() + "." + getMux());
 		ProcessWrapper pipe_process = tsPipe.getPipeProcess();
 
 		// XXX it can take a long time for Windows to create a named pipe
@@ -178,7 +191,7 @@ public class VideoLanVideoStreaming extends Player {
 			params,
 			cmdArray);
 
-		ProcessWrapperImpl pw = new ProcessWrapperImpl(cmdArray, params);
+		ProcessWrapper pw = processWrapperFactory.create(cmdArray, params);
 		pw.attachProcess(pipe_process);
 
 		try {

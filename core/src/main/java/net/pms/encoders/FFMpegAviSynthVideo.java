@@ -25,9 +25,14 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.swing.JComponent;
 
 import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeIPCProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAMediaSubtitle;
 import net.pms.formats.Format;
@@ -40,10 +45,24 @@ import org.slf4j.LoggerFactory;
 /**
  * This class handles the Windows specific AviSynth/FFmpeg player combination. 
  */
+@Singleton
 public class FFMpegAviSynthVideo extends FFMpegVideo {
 	private static final String AVS_SEPARATOR = "\1";
 	private static final Logger logger = LoggerFactory.getLogger(FFMpegAviSynthVideo.class);
 	public static final String ID      = "avsffmpeg";
+
+	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeIPCProcessFactory pipeIPCProcessFactory;
+
+	@Inject
+	public FFMpegAviSynthVideo(PmsConfiguration configuration, ProcessWrapperFactory processWrapperFactory, PipeIPCProcessFactory pipeIPCProcessFactory) {
+		super(configuration, processWrapperFactory, pipeIPCProcessFactory);
+
+		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeIPCProcessFactory = pipeIPCProcessFactory;
+	}
 
 	@Override
 	public String id() {

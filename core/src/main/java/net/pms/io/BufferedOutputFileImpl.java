@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.inject.Inject;
-
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsCore;
@@ -37,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 /**
  * Circular memory buffer that can be used as {@link java.io.OutputStream OutputStream} and
@@ -177,7 +176,7 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 	 * @param params {@link net.pms.io.OutputParams} object that contains preferences for the buffers
 	 * 				dimensions and behavior.
 	 */
-	@Inject
+	@AssistedInject
 	public BufferedOutputFileImpl(PmsCore core, @Assisted OutputParams params) {
 		this.pmsCore = core;
 		this.minMemorySize = (int) (1048576 * params.minBufferSize);

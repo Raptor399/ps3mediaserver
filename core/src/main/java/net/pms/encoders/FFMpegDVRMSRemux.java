@@ -18,13 +18,22 @@
  */
 package net.pms.encoders;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
+import java.awt.Font;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.swing.JComponent;
+import javax.swing.JTextField;
+
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
@@ -32,18 +41,18 @@ import net.pms.formats.Format;
 import net.pms.io.OutputParams;
 import net.pms.io.ProcessWrapper;
 import net.pms.io.ProcessWrapperImpl;
+
 import org.apache.commons.lang.StringUtils;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
+@Singleton
 public class FFMpegDVRMSRemux extends Player {
 	private JTextField altffpath;
+	private final ProcessWrapperFactory processWrapperFactory;
 	public static final String ID = "ffmpegdvrmsremux";
 
 	@Override
@@ -66,7 +75,9 @@ public class FFMpegDVRMSRemux extends Player {
 		return false;
 	}
 
-	public FFMpegDVRMSRemux() {
+	@Inject
+	public FFMpegDVRMSRemux(ProcessWrapperFactory processWrapperFactory) {
+		this.processWrapperFactory = processWrapperFactory;
 	}
 
 	@Override
@@ -108,7 +119,7 @@ public class FFMpegDVRMSRemux extends Player {
 		return getFFMpegTranscode(fileName, dlna, media, params);
 	}
 
-	protected ProcessWrapperImpl getFFMpegTranscode(
+	protected ProcessWrapper getFFMpegTranscode(
 		String fileName,
 		DLNAResource dlna,
 		DLNAMediaInfo media,
@@ -160,7 +171,7 @@ public class FFMpegDVRMSRemux extends Player {
 			cmdArray
 		);
 
-		ProcessWrapperImpl pw = new ProcessWrapperImpl(cmdArray, params);
+		ProcessWrapper pw = processWrapperFactory.create(cmdArray, params);
 		pw.runInNewThread();
 
 		return pw;

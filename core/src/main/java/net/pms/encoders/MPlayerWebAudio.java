@@ -18,21 +18,38 @@
  */
 package net.pms.encoders;
 
+import java.io.IOException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.swing.JComponent;
+
 import net.pms.api.PmsConfiguration;
+import net.pms.api.io.PipeProcessFactory;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.OutputParams;
 import net.pms.io.ProcessWrapper;
 
-import javax.swing.*;
-import java.io.IOException;
-
+@Singleton
 public class MPlayerWebAudio extends MPlayerAudio {
 	public static final String ID = "mplayerwebaudio";
 
-	public MPlayerWebAudio(PmsConfiguration configuration) {
-		super(configuration);
+	private final PmsConfiguration configuration;
+	private final ProcessWrapperFactory processWrapperFactory;
+	private final PipeProcessFactory pipeProcessFactory;
+
+	@Inject
+	public MPlayerWebAudio(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory,
+			PipeProcessFactory pipeProcessFactory) {
+		super(configuration, processWrapperFactory, pipeProcessFactory);
+	
+		this.configuration = configuration;
+		this.processWrapperFactory = processWrapperFactory;
+		this.pipeProcessFactory = pipeProcessFactory;
 	}
 
 	@Override
