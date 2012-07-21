@@ -27,7 +27,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.StringTokenizer;
 
-import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.plugins.StartStopListenerDelegate;
 
@@ -43,7 +44,9 @@ public class RequestHandler implements Runnable {
 	private Socket socket;
 	private OutputStream output;
 	private BufferedReader br;
-	
+
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
 	private final Request.Factory requestFactory;
 
 	// Used to filter out known headers when the renderer is not recognized
@@ -73,7 +76,11 @@ public class RequestHandler implements Runnable {
 	}
 
 	@AssistedInject
-	public RequestHandler(Request.Factory requestFactory, @Assisted Socket socket) throws IOException {
+	public RequestHandler(PmsCore pmsCore, PmsConfiguration configuration,
+			Request.Factory requestFactory, @Assisted Socket socket)
+			throws IOException {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
 		this.requestFactory = requestFactory;
 		this.socket = socket;
 		this.output = socket.getOutputStream();
@@ -102,7 +109,7 @@ public class RequestHandler implements Runnable {
 			}
 
 			LOGGER.trace("Opened request handler on socket " + socket);
-			PMS.get().getRegistry().disableGoToSleep();
+			pmsCore.getRegistry().disableGoToSleep();
 
 			while (headerLine != null && headerLine.length() > 0) {
 				LOGGER.trace("Received on socket: " + headerLine);
@@ -118,7 +125,7 @@ public class RequestHandler implements Runnable {
 					renderer = RendererConfiguration.getRendererConfigurationBySocketAddress(ia);
 
 					if (renderer != null) {
-						PMS.get().setRendererfound(renderer);
+						pmsCore.setRendererfound(renderer);
 						request.setMediaRenderer(renderer);
 						LOGGER.trace("Matched media renderer \"" + renderer.getRendererName() + "\" based on address " + ia);
 					}
@@ -133,7 +140,7 @@ public class RequestHandler implements Runnable {
 					renderer = RendererConfiguration.getRendererConfigurationByUA(userAgentString);
 
 					if (renderer != null) {
-						PMS.get().setRendererfound(renderer);
+						pmsCore.setRendererfound(renderer);
 						request.setMediaRenderer(renderer);
 						renderer.associateIP(ia);	// Associate IP address for later requests
 						LOGGER.trace("Matched media renderer \"" + renderer.getRendererName() + "\" based on header \"" + headerLine + "\"");
@@ -144,7 +151,7 @@ public class RequestHandler implements Runnable {
 					renderer = RendererConfiguration.getRendererConfigurationByUAAHH(headerLine);
 
 					if (renderer != null) {
-						PMS.get().setRendererfound(renderer);
+						pmsCore.setRendererfound(renderer);
 						request.setMediaRenderer(renderer);
 						renderer.associateIP(ia);	// Associate IP address for later requests
 						LOGGER.trace("Matched media renderer \"" + renderer.getRendererName() + "\" based on header \"" + headerLine + "\"");
@@ -236,7 +243,7 @@ public class RequestHandler implements Runnable {
 						// We have found an unknown renderer
 						LOGGER.info("Media renderer was not recognized. Possible identifying HTTP headers: User-Agent: "	+ userAgentString
 								+ ("".equals(unknownHeaders.toString()) ? "" : ", " + unknownHeaders.toString()));
-						PMS.get().setRendererfound(request.getMediaRenderer());
+						pmsCore.setRendererfound(request.getMediaRenderer());
 					}
 				} else {
 					if (userAgentString != null) {
@@ -278,7 +285,7 @@ public class RequestHandler implements Runnable {
 			}
 		} finally {
 			try {
-				PMS.get().getRegistry().reenableGoToSleep();
+				pmsCore.getRegistry().reenableGoToSleep();
 				output.close();
 				br.close();
 				socket.close();
@@ -299,6 +306,6 @@ public class RequestHandler implements Runnable {
 	 * @return True when not allowed, false otherwise.
 	 */
 	private boolean filterIp(InetAddress inetAddress) {
-		return !PMS.getConfiguration().getIpFiltering().allowed(inetAddress);
+		return !configuration.getIpFiltering().allowed(inetAddress);
 	}
 }
