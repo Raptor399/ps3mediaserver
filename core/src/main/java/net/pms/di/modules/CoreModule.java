@@ -43,8 +43,11 @@ import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
 import net.pms.io.ProcessWrapperImpl;
 import net.pms.network.HTTPServer;
+import net.pms.network.HttpServerPipelineFactory;
 import net.pms.network.Request;
 import net.pms.network.RequestHandler;
+import net.pms.network.RequestHandlerV2;
+import net.pms.network.RequestV2;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
@@ -109,8 +112,20 @@ public class CoreModule extends AbstractModule {
 				.build(Request.Factory.class));
 
 		install(new FactoryModuleBuilder()
+				.implement(RequestV2.class, RequestV2.class)
+				.build(RequestV2.Factory.class));
+
+		install(new FactoryModuleBuilder()
 				.implement(RequestHandler.class, RequestHandler.class)
 				.build(RequestHandler.Factory.class));
+
+		install(new FactoryModuleBuilder()
+				.implement(RequestHandlerV2.class, RequestHandlerV2.class)
+				.build(RequestHandlerV2.Factory.class));
+
+		install(new FactoryModuleBuilder()
+				.implement(HttpServerPipelineFactory.class, HttpServerPipelineFactory.class)
+				.build(HttpServerPipelineFactory.Factory.class));
 
 		install(new FactoryModuleBuilder()
 			.implement(HTTPServer.class, HTTPServer.class)

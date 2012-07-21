@@ -59,6 +59,7 @@ public class HTTPServer implements Runnable {
 	private ChannelGroup group;
 
 	private final RequestHandler.Factory requestHandlerFactory;
+	private final HttpServerPipelineFactory.Factory httpServerPipelineFactoryFactory;
 
 	public InetAddress getIafinal() {
 		return iafinal;
@@ -78,8 +79,11 @@ public class HTTPServer implements Runnable {
 	}
 
 	@AssistedInject
-	public HTTPServer(RequestHandler.Factory requestHandlerFactory, @Assisted int port) {
+	public HTTPServer(RequestHandler.Factory requestHandlerFactory,
+			HttpServerPipelineFactory.Factory httpServerPipelineFactoryFactory,
+			@Assisted int port) {
 		this.requestHandlerFactory = requestHandlerFactory;
+		this.httpServerPipelineFactoryFactory = httpServerPipelineFactoryFactory;
 		this.port = port;
 	}
 
@@ -128,7 +132,7 @@ public class HTTPServer implements Runnable {
 				Executors.newCachedThreadPool()
 			);
 			ServerBootstrap bootstrap = new ServerBootstrap(factory);
-			HttpServerPipelineFactory pipeline = new HttpServerPipelineFactory(group);
+			HttpServerPipelineFactory pipeline = httpServerPipelineFactoryFactory.create(group);
 			bootstrap.setPipelineFactory(pipeline);
 			bootstrap.setOption("child.tcpNoDelay", true);
 			bootstrap.setOption("child.keepAlive", true);
