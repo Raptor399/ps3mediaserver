@@ -12,6 +12,7 @@ import jwbroek.cuelib.FileData;
 import jwbroek.cuelib.Position;
 import jwbroek.cuelib.TrackData;
 import net.pms.PMS;
+import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
 import net.pms.encoders.MEncoderVideo;
 import net.pms.encoders.MPlayerAudio;
@@ -29,14 +30,25 @@ import com.google.inject.assistedinject.AssistedInject;
 public class CueFolder extends DLNAResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CueFolder.class);
 	private File playlistfile;
+	private final PmsCore pmsCore;
 
 	public File getPlaylistfile() {
 		return playlistfile;
 	}
 	private boolean valid = true;
 
+	/**
+	 * Constructor for backwards compatibility with plugins.
+	 *
+	 * @param f
+	 */
+	public CueFolder(File f) {
+		this(InjectionHelper.getInjector().getInstance(PmsCore.class), f);
+	}
+
 	@AssistedInject
-	public CueFolder(@Assisted File f) {
+	public CueFolder(PmsCore pmsCore, @Assisted File f) {
+		this.pmsCore = pmsCore;
 		playlistfile = f;
 		setLastmodified(playlistfile.lastModified());
 	}
@@ -181,7 +193,7 @@ public class CueFolder extends DLNAResource {
 						LOGGER.debug("Track #" + childrenNumber() + " split range: " + prec.getSplitRange().getStartOrZero() + " - " + prec.getSplitRange().getDuration());
 					}
 
-					PMS.get().storeFileInCache(playlistfile, Format.PLAYLIST);
+					pmsCore.storeFileInCache(playlistfile, Format.PLAYLIST);
 
 				}
 			}
