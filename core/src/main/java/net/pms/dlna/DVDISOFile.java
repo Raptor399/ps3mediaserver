@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.List;
 
 import net.pms.PMS;
+import net.pms.api.PmsCore;
 import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.di.InjectionHelper;
 import net.pms.dlna.virtual.VirtualFolder;
@@ -37,15 +38,22 @@ public class DVDISOFile extends VirtualFolder {
 	public static final String PREFIX = "[DVD ISO] ";
 	private final File f;
 	private final ProcessWrapperFactory processWrapperFactory;
+	private final PmsCore pmsCore;
 
+	/**
+	 * Temporary constructor to help with transition to DI.
+	 * @deprecated Use {@link #DVDISOFile(PmsCore, ProcessWrapperFactory, File)} instead.
+	 */
+	@Deprecated
 	public DVDISOFile(File f) {
-		// TODO: Not certain this works?
-		this(InjectionHelper.getInjector().getInstance(ProcessWrapperFactory.class), f);
+		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
+				InjectionHelper.getInjector().getInstance(ProcessWrapperFactory.class), f);
 	}
 	
 	@AssistedInject
-	public DVDISOFile(ProcessWrapperFactory processWrapperFactory, @Assisted File f) {
+	public DVDISOFile(PmsCore pmsCore, ProcessWrapperFactory processWrapperFactory, @Assisted File f) {
 		super(PREFIX + (f.isFile() ? f.getName() : "VIDEO_TS"), null);
+		this.pmsCore = pmsCore;
 		this.processWrapperFactory = processWrapperFactory;
 		this.f = f;
 		setLastmodified(f.lastModified());
@@ -97,7 +105,7 @@ public class DVDISOFile extends VirtualFolder {
 		}
 
 		if (childrenNumber() > 0) {
-			PMS.get().storeFileInCache(f, Format.ISO);
+			pmsCore.storeFileInCache(f, Format.ISO);
 		}
 
 	}

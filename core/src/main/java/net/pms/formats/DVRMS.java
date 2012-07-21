@@ -18,16 +18,25 @@
  */
 package net.pms.formats;
 
+import java.io.File;
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.encoders.FFMpegDVRMSRemux;
 import net.pms.encoders.Player;
 
 public class DVRMS extends Format {
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
+
 	/**
 	 * {@inheritDoc} 
 	 */
@@ -39,8 +48,7 @@ public class DVRMS extends Format {
 	@Override
 	public ArrayList<Class<? extends Player>> getProfiles() {
 		ArrayList<Class<? extends Player>> a = new ArrayList<Class<? extends Player>>();
-		PmsCore r = PMS.get();
-		for (String engine : PMS.getConfiguration().getEnginesAsList(r.getRegistry())) {
+		for (String engine : configuration.getEnginesAsList(pmsCore.getRegistry())) {
 			/*if (engine.equals(MEncoderVideo.ID))
 			a.add(MEncoderVideo.class);*/
 			if (engine.equals(FFMpegDVRMSRemux.ID)) {
@@ -55,7 +63,20 @@ public class DVRMS extends Format {
 		return true;
 	}
 
+	/**
+	 * Temporary constructor to help with transition to DI.
+	 * @deprecated Use {@link #DVRMS(PmsCore, PmsConfiguration)} instead.
+	 */
+	@Deprecated
 	public DVRMS() {
+		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
+				InjectionHelper.getInjector().getInstance(PmsConfiguration.class));
+	}
+
+	@Inject
+	public DVRMS(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
 		type = VIDEO;
 	}
 

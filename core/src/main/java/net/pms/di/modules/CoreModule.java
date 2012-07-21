@@ -43,6 +43,8 @@ import net.pms.io.PipeIPCProcess;
 import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
 import net.pms.io.ProcessWrapperImpl;
+import net.pms.medialibrary.gui.tab.libraryview.FileDisplayTable;
+import net.pms.medialibrary.gui.tab.libraryview.FileDisplayer;
 import net.pms.network.HTTPServer;
 import net.pms.network.HttpServerPipelineFactory;
 import net.pms.network.Request;
@@ -114,6 +116,14 @@ public class CoreModule extends AbstractModule {
 		install(new FactoryModuleBuilder()
 				.implement(DLNAMediaDatabase.class, DLNAMediaDatabase.class)
 				.build(DLNAMediaDatabase.Factory.class));
+
+		install(new FactoryModuleBuilder()
+				.implement(FileDisplayer.class, FileDisplayer.class)
+				.build(FileDisplayer.Factory.class));
+
+		install(new FactoryModuleBuilder()
+				.implement(FileDisplayTable.class, FileDisplayTable.class)
+				.build(FileDisplayTable.Factory.class));
 
 		install(new FactoryModuleBuilder()
 				.implement(Request.class, Request.class)

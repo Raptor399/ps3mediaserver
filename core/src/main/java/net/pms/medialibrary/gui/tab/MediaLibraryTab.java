@@ -22,9 +22,7 @@ import java.util.EventObject;
 
 import javax.swing.JComponent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import net.pms.di.InjectionHelper;
 import net.pms.medialibrary.commons.dataobjects.DOFilter;
 import net.pms.medialibrary.commons.enumarations.FileType;
 import net.pms.medialibrary.commons.enumarations.OptionType;
@@ -34,6 +32,10 @@ import net.pms.medialibrary.commons.events.SelectionChangeListener;
 import net.pms.medialibrary.gui.tab.dlnaview.DLNAViewPanel;
 import net.pms.medialibrary.gui.tab.libraryview.LibraryViewPanel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -44,7 +46,7 @@ public class MediaLibraryTab {
 	private DLNAViewPanel dlnaViewPanel;
 	private GeneralOptionsView generalOptionsPanel;
 	private LibraryViewPanel libraryManagerView;
-	
+
 	public MediaLibraryTab(){
 		init();
 		optionChooser.setOptionType(OptionType.GENERAL);
@@ -87,7 +89,8 @@ public class MediaLibraryTab {
 			}
 		});
         generalOptionsPanel = new GeneralOptionsView();
-        libraryManagerView = new LibraryViewPanel();
+        Injector injector = InjectionHelper.getInjector();
+        libraryManagerView = injector.getInstance(LibraryViewPanel.class);
         
         setOptionTypeSelected(OptionType.GENERAL);
 	}
