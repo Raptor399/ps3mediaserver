@@ -42,6 +42,7 @@ import net.pms.io.PipeIPCProcess;
 import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
 import net.pms.io.ProcessWrapperImpl;
+import net.pms.network.Request;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
@@ -100,5 +101,9 @@ public class CoreModule extends AbstractModule {
 		install(new FactoryModuleBuilder()
 				.implement(new TypeLiteral<ZippedFile>() {}, ZippedFile.class)
 				.build(new TypeLiteral<DLNAResourceFileFactory<ZippedFile>>() {}));
+
+		install(new FactoryModuleBuilder()
+				.implement(Request.class, Request.class)
+				.build(Request.Factory.class));
 	}
 }
