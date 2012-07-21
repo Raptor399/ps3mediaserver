@@ -48,6 +48,7 @@ import net.pms.network.Request;
 import net.pms.network.RequestHandler;
 import net.pms.network.RequestHandlerV2;
 import net.pms.network.RequestV2;
+import net.pms.network.UPNPHelper;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
@@ -57,7 +58,7 @@ public class CoreModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		// This is here to help with the transition to DI
-		//requestStaticInjection(PMS.class);
+		requestStaticInjection(UPNPHelper.class);
 
 		bind(PmsCore.class).to(PmsCoreImpl.class);
 
