@@ -99,15 +99,18 @@ public class PmsCoreImpl implements PmsCore {
 
 	private final PmsConfiguration configuration;
 	private final ProcessWrapperFactory processWrapperFactory;
+	private final HTTPServer.Factory httpServerFactory;
 
 	/**
 	 * Default constructor that initializes the PMS core.
 	 */
 	@Inject
 	protected PmsCoreImpl(PmsConfiguration configuration,
-			ProcessWrapperFactory processWrapperFactory) {
+			ProcessWrapperFactory processWrapperFactory,
+			HTTPServer.Factory httpServerFactory) {
 		this.configuration = configuration;
 		this.processWrapperFactory = processWrapperFactory;
+		this.httpServerFactory = httpServerFactory;
 	}
 
 	/**
@@ -437,7 +440,7 @@ public class PmsCoreImpl implements PmsCore {
 		// Create the uuid for the UPnP server to use.
 		createUuid();
 
-		server = new HTTPServer(configuration.getServerPort());
+		server = httpServerFactory.create(configuration.getServerPort());
 
 		// Initialize a player factory to register all players
 		PlayerFactory.initialize(configuration);
@@ -669,7 +672,7 @@ public class PmsCoreImpl implements PmsCore {
 					} catch (final InterruptedException e) {
 						LOGGER.trace("Caught exception", e);
 					}
-					server = new HTTPServer(configuration.getServerPort());
+					server = httpServerFactory.create(configuration.getServerPort());
 					server.start();
 					UPNPHelper.sendAlive();
 					frame.setReloadable(false);
