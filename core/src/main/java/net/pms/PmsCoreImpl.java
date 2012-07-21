@@ -446,7 +446,7 @@ public class PmsCoreImpl implements PmsCore {
 		server = httpServerFactory.create(configuration.getServerPort());
 
 		// Initialize a player factory to register all players
-		PlayerFactory.initialize(configuration);
+		PlayerFactory.initialize();
 
 		// Add registered player engines
 		frame.addEngines();

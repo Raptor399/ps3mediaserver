@@ -92,7 +92,7 @@ public class FormatTest {
 		assertEquals("M4A matches \"test.wma\"", true, new M4A().match("test.wma"));
 		assertEquals("MKV matches \"test.mkv\"", true, new MKV().match("test.mkv"));
 		assertEquals("MP3 matches \"test.mp3\"", true, new MP3().match("test.mp3"));
-		assertEquals("MPG matches \"test.mpg\"", true, new MPG().match("test.mpg"));
+		assertEquals("MPG matches \"test.mpg\"", true, injector.getInstance(MPG.class).match("test.mpg"));
 		assertEquals("OGG matches \"test.ogg\"", true, new OGG().match("test.ogg"));
 		assertEquals("PNG matches \"test.png\"", true, new PNG().match("test.png"));
 		assertEquals("RAW matches \"test.arw\"", true, new RAW().match("test.arw"));

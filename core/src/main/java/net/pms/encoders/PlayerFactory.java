@@ -24,6 +24,7 @@ import java.util.ArrayList;
 
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.formats.Format;
@@ -46,8 +47,7 @@ public final class PlayerFactory {
 	/**
 	 * Logger used for all logging.
 	 */
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(FormatFactory.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(FormatFactory.class);
 
 	/**
 	 * List of registered and approved {@link Player} objects.
@@ -65,6 +65,9 @@ public final class PlayerFactory {
 	 */
 	private static SystemUtils utils;
 
+	private static PmsCore pmsCore;
+	private static PmsConfiguration configuration;
+
 	/**
 	 * This class is not meant to be instantiated.
 	 */
@@ -77,8 +80,8 @@ public final class PlayerFactory {
 	 * 
 	 * @param configuration The PMS configuration.
 	 */
-	public static void initialize(final PmsConfiguration configuration) {
-		utils = PMS.get().getRegistry();
+	public static void initialize() {
+		utils = pmsCore.getRegistry();
 		registerPlayers(configuration);
 	}
 

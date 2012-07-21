@@ -63,6 +63,7 @@ import javax.swing.SwingUtilities;
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
 import net.pms.api.io.PipeProcessFactory;
 import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.FormatConfiguration;
@@ -145,6 +146,7 @@ public class MEncoderVideo extends Player {
 	private JCheckBox subs;
 	private JCheckBox fribidi;
 
+	private final PmsCore pmsCore;
 	private final PmsConfiguration configuration;
 	private final ProcessWrapperFactory processWrapperFactory;
 	private final PipeProcessFactory pipeProcessFactory;
@@ -219,9 +221,10 @@ public class MEncoderVideo extends Player {
 	}
 
 	@Inject
-	public MEncoderVideo(PmsConfiguration configuration,
+	public MEncoderVideo(PmsCore pmsCore, PmsConfiguration configuration,
 			ProcessWrapperFactory processWrapperFactory,
 			PipeProcessFactory pipeProcessFactory) {
+		this.pmsCore = pmsCore;
 		this.configuration = configuration;
 		this.processWrapperFactory = processWrapperFactory;
 		this.pipeProcessFactory = pipeProcessFactory;
@@ -337,7 +340,7 @@ public class MEncoderVideo extends Player {
 				codecPanel.add(scrollPaneDefault, BorderLayout.CENTER);
 				codecPanel.add(customPanel, BorderLayout.SOUTH);
 
-				while (JOptionPane.showOptionDialog(SwingUtilities.getWindowAncestor((Component) PMS.get().getFrame()),
+				while (JOptionPane.showOptionDialog(SwingUtilities.getWindowAncestor((Component) pmsCore.getFrame()),
 					codecPanel, Messages.getString("MEncoderVideo.34"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null) == JOptionPane.OK_OPTION) {
 					String newCodecparam = textArea.getText();
 					
@@ -357,7 +360,7 @@ public class MEncoderVideo extends Player {
 
 					if (result.length > 0 && result[0].startsWith("@@")) {
 						String errorMessage = result[0].substring(2);
-						JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor((Component) PMS.get().getFrame()), errorMessage);
+						JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor((Component) pmsCore.getFrame()), errorMessage);
 
 					} else {
 						configuration.setCodecSpecificConfig(newCodecparam);
@@ -1013,7 +1016,7 @@ public class MEncoderVideo extends Player {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Color newColor = JColorChooser.showDialog(
-						SwingUtilities.getWindowAncestor((Component) PMS.get().getFrame()),
+						SwingUtilities.getWindowAncestor((Component) pmsCore.getFrame()),
 					Messages.getString("MEncoderVideo.125"),
 					subColor.getBackground()
 				);
@@ -1027,7 +1030,7 @@ public class MEncoderVideo extends Player {
 
 		builder.add(subColor, FormLayoutUtil.flip(cc.xyw(12, 37, 4), colSpec, orientation));
 
-		JCheckBox disableSubs = ((LooksFrame) PMS.get().getFrame()).getTr().getDisableSubs();
+		JCheckBox disableSubs = ((LooksFrame) pmsCore.getFrame()).getTr().getDisableSubs();
 		disableSubs.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				configuration.setMencoderDisableSubs(e.getStateChange() == ItemEvent.SELECTED);

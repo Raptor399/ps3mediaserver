@@ -20,9 +20,13 @@ package net.pms.formats;
 
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.encoders.FFMpegAviSynthVideo;
 import net.pms.encoders.FFMpegVideo;
@@ -32,6 +36,25 @@ import net.pms.encoders.Player;
 import net.pms.encoders.TSMuxerVideo;
 
 public class MPG extends Format {
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
+
+	/**
+	 * @deprecated Use {@link #MPG(PmsCore, PmsConfiguration)} instead.
+	 * This constructor helps during the transition to DI.
+	 */
+	public MPG() {
+		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
+				InjectionHelper.getInjector().getInstance(PmsConfiguration.class));
+	}
+
+	@Inject
+	public MPG(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+		type = VIDEO;
+	}
+
 	/**
 	 * {@inheritDoc} 
 	 */
@@ -42,25 +65,24 @@ public class MPG extends Format {
 
 	@Override
 	public ArrayList<Class<? extends Player>> getProfiles() {
-		PmsCore r = PMS.get();
-		PmsCore r1 = PMS.get();
-		PmsCore r2 = PMS.get();
-		if (PMS.getConfiguration().getEnginesAsList(r.getRegistry()) == null || PMS.getConfiguration().getEnginesAsList(r1.getRegistry()).isEmpty() || PMS.getConfiguration().getEnginesAsList(r2.getRegistry()).contains("none"))
-		{
+		if (configuration.getEnginesAsList(pmsCore.getRegistry()) == null
+				|| configuration.getEnginesAsList(pmsCore.getRegistry()).isEmpty()
+				|| configuration.getEnginesAsList(pmsCore.getRegistry()).contains("none")) {
 			return null;
 		}
+
 		ArrayList<Class<? extends Player>> a = new ArrayList<Class<? extends Player>>();
-		PmsCore r3 = PMS.get();
-		for (String engine : PMS.getConfiguration().getEnginesAsList(r3.getRegistry())) {
+
+		for (String engine : configuration.getEnginesAsList(pmsCore.getRegistry())) {
 			if (engine.equals(MEncoderVideo.ID)) {
 				a.add(MEncoderVideo.class);
-			} else if (engine.equals(MEncoderAviSynth.ID) && PMS.get().getRegistry().isAvis()) {
+			} else if (engine.equals(MEncoderAviSynth.ID) && pmsCore.getRegistry().isAvis()) {
 				a.add(MEncoderAviSynth.class);
 			} else if (engine.equals(FFMpegVideo.ID)) {
 				a.add(FFMpegVideo.class);
-			} else if (engine.equals(FFMpegAviSynthVideo.ID) && PMS.get().getRegistry().isAvis()) {
+			} else if (engine.equals(FFMpegAviSynthVideo.ID) && pmsCore.getRegistry().isAvis()) {
 				a.add(FFMpegAviSynthVideo.class);
-			} else if (engine.equals(TSMuxerVideo.ID)/* && PMS.get().isWindows()*/) {
+			} else if (engine.equals(TSMuxerVideo.ID)/* && pmsCore.isWindows()*/) {
 				a.add(TSMuxerVideo.class);
 			}
 		}
@@ -70,10 +92,6 @@ public class MPG extends Format {
 	@Override
 	public boolean transcodable() {
 		return true;
-	}
-
-	public MPG() {
-		type = VIDEO;
 	}
 
 	/**

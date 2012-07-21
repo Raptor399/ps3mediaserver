@@ -34,8 +34,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import net.pms.Messages;
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
 import net.pms.api.io.PipeProcessFactory;
 import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
@@ -49,12 +49,14 @@ import com.jgoodies.forms.layout.FormLayout;
 @Singleton
 public class MEncoderAviSynth extends MEncoderVideo {
 	private static final String AVS_SEPARATOR = "\1";
+	private final PmsConfiguration configuration;
 
 	@Inject
-	public MEncoderAviSynth(PmsConfiguration configuration,
+	public MEncoderAviSynth(PmsCore pmsCore, PmsConfiguration configuration,
 			ProcessWrapperFactory processWrapperFactory,
 			PipeProcessFactory pipeProcessFactory) {
-		super(configuration, processWrapperFactory, pipeProcessFactory);
+		super(pmsCore, configuration, processWrapperFactory, pipeProcessFactory);
+		this.configuration = configuration;
 	}
 
 	private JTextArea textArea;
@@ -78,17 +80,17 @@ public class MEncoderAviSynth extends MEncoderVideo {
 
 		convertfps = new JCheckBox(Messages.getString("MEncoderAviSynth.3"));
 		convertfps.setContentAreaFilled(false);
-		if (PMS.getConfiguration().getAvisynthConvertFps()) {
+		if (configuration.getAvisynthConvertFps()) {
 			convertfps.setSelected(true);
 		}
 		convertfps.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				PMS.getConfiguration().setAvisynthConvertFps((e.getStateChange() == ItemEvent.SELECTED));
+				configuration.setAvisynthConvertFps((e.getStateChange() == ItemEvent.SELECTED));
 			}
 		});
 		builder.add(convertfps, cc.xy(2, 3));
 
-		String clip = PMS.getConfiguration().getAvisynthScript();
+		String clip = configuration.getAvisynthScript();
 		if (clip == null) {
 			clip = "";
 		}
@@ -124,7 +126,7 @@ public class MEncoderAviSynth extends MEncoderVideo {
 					sb.append(st.nextToken());
 					i++;
 				}
-				PMS.getConfiguration().setAvisynthScript(sb.toString());
+				configuration.setAvisynthScript(sb.toString());
 			}
 		});
 

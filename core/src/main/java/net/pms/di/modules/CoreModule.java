@@ -37,6 +37,7 @@ import net.pms.dlna.RarredFile;
 import net.pms.dlna.RealFile;
 import net.pms.dlna.ZippedFile;
 import net.pms.encoders.AviDemuxerInputStream;
+import net.pms.encoders.PlayerFactory;
 import net.pms.io.BufferedOutputFile;
 import net.pms.io.BufferedOutputFileImpl;
 import net.pms.io.PipeIPCProcess;
@@ -64,6 +65,7 @@ public class CoreModule extends AbstractModule {
 		// This is here to help with the transition to DI
 		requestStaticInjection(UPNPHelper.class);
 		requestStaticInjection(CodecUtil.class);
+		requestStaticInjection(PlayerFactory.class);
 
 		bind(PmsCore.class).to(PmsCoreImpl.class);
 

@@ -169,7 +169,7 @@ public class FormatRecognitionTest {
 		ArrayList<DLNAMediaAudio> audioCodes = new ArrayList<DLNAMediaAudio>();
 		audioCodes.add(audio);
 		info.setAudioTracksList(audioCodes);
-		Format format = new MP3();
+		Format format = injector.getInstance(MP3.class);
 		format.match("test.mp3");
 		assertEquals("PS3 is compatible with MP3", true,
 				conf.isCompatible(info, format));
@@ -201,7 +201,7 @@ public class FormatRecognitionTest {
 		audioCodes.add(audio);
 		info.setAudioTracksList(audioCodes);
 		info.setCodecV("mp4");
-		Format format = new MPG();
+		Format format = injector.getInstance(MPG.class);
 		format.match("test.avi");
 		assertEquals("PS3 is compatible with MPG", true,
 				conf.isCompatible(info, format));
@@ -233,7 +233,7 @@ public class FormatRecognitionTest {
 		audioCodes.add(audio);
 		info.setAudioTracksList(audioCodes);
 		info.setCodecV("mp4");
-		Format format = new MPG();
+		Format format = injector.getInstance(MPG.class);
 		format.match("test.mkv");
 		assertEquals("PS3 is incompatible with MKV", false,
 				conf.isCompatible(info, format));
@@ -306,7 +306,7 @@ public class FormatRecognitionTest {
 		// MPG: true
 		info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("avi");
-		format = new MPG();
+		format = injector.getInstance(MPG.class);
 		format.match("test.mpg");
 		assertEquals("isCompatible() gives same outcome as ps3compatible() for MPG",
 				format.ps3compatible(),	conf.isCompatible(info, format));
@@ -394,7 +394,7 @@ public class FormatRecognitionTest {
 		info.setMimeType("video/mpeg");
 		info.setCodecV("mpeg2");
 		info.setMediaparsed(true);
-		Format format = new MPG();
+		Format format = injector.getInstance(MPG.class);
 		format.match("test.mpg");
 
 		// Test without rendererConfiguration, as can happen when plugins
