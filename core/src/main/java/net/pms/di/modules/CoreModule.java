@@ -30,6 +30,7 @@ import net.pms.api.io.PipeProcessFactory;
 import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.PmsConfigurationImpl;
 import net.pms.dlna.CueFolder;
+import net.pms.dlna.DLNAMediaDatabase;
 import net.pms.dlna.DVDISOFile;
 import net.pms.dlna.PlaylistFolder;
 import net.pms.dlna.RarredFile;
@@ -49,6 +50,7 @@ import net.pms.network.RequestHandler;
 import net.pms.network.RequestHandlerV2;
 import net.pms.network.RequestV2;
 import net.pms.network.UPNPHelper;
+import net.pms.util.CodecUtil;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
@@ -59,6 +61,7 @@ public class CoreModule extends AbstractModule {
 	protected void configure() {
 		// This is here to help with the transition to DI
 		requestStaticInjection(UPNPHelper.class);
+		requestStaticInjection(CodecUtil.class);
 
 		bind(PmsCore.class).to(PmsCoreImpl.class);
 
@@ -107,6 +110,10 @@ public class CoreModule extends AbstractModule {
 		install(new FactoryModuleBuilder()
 				.implement(new TypeLiteral<ZippedFile>() {}, ZippedFile.class)
 				.build(new TypeLiteral<DLNAResourceFileFactory<ZippedFile>>() {}));
+
+		install(new FactoryModuleBuilder()
+				.implement(DLNAMediaDatabase.class, DLNAMediaDatabase.class)
+				.build(DLNAMediaDatabase.Factory.class));
 
 		install(new FactoryModuleBuilder()
 				.implement(Request.class, Request.class)

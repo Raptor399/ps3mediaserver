@@ -19,19 +19,30 @@
  */
 package net.pms.util;
 
-import com.sun.jna.Platform;
-import net.pms.PMS;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
+import javax.inject.Inject;
+
 import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
 import net.pms.dlna.DLNAMediaAudio;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.ArrayList;
+import com.sun.jna.Platform;
 
 public class CodecUtil {
 	private static final Logger logger = LoggerFactory.getLogger(CodecUtil.class);
 	private static final ArrayList<String> codecs = new ArrayList<String>();
+
+	@Inject
+	private static PmsCore pmsCore;
 
 	static {
 		// Make sure the list of codecs is initialized before other threads start retrieving it
@@ -88,7 +99,7 @@ public class CodecUtil {
 		String font = null;
 		if (Platform.isWindows()) {
 			// get Windows Arial
-			String winDir = PMS.get().getRegistry().getWindowsDirectory();
+			String winDir = pmsCore.getRegistry().getWindowsDirectory();
 			if (winDir != null) {
 				File winDirFile = new File(winDir);
 				if (winDirFile.exists()) {

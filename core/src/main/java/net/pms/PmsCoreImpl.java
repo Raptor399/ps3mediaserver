@@ -100,6 +100,7 @@ public class PmsCoreImpl implements PmsCore {
 	private final PmsConfiguration configuration;
 	private final ProcessWrapperFactory processWrapperFactory;
 	private final HTTPServer.Factory httpServerFactory;
+	private final DLNAMediaDatabase.Factory dlnaMediaDatabaseFactory;
 
 	/**
 	 * Default constructor that initializes the PMS core.
@@ -107,10 +108,12 @@ public class PmsCoreImpl implements PmsCore {
 	@Inject
 	protected PmsCoreImpl(PmsConfiguration configuration,
 			ProcessWrapperFactory processWrapperFactory,
-			HTTPServer.Factory httpServerFactory) {
+			HTTPServer.Factory httpServerFactory,
+			DLNAMediaDatabase.Factory dlnaMediaDatabaseFactory) {
 		this.configuration = configuration;
 		this.processWrapperFactory = processWrapperFactory;
 		this.httpServerFactory = httpServerFactory;
+		this.dlnaMediaDatabaseFactory = dlnaMediaDatabaseFactory;
 	}
 
 	/**
@@ -281,7 +284,7 @@ public class PmsCoreImpl implements PmsCore {
 	private DLNAMediaDatabase database;
 
 	private void initializeDatabase() {
-		database = new DLNAMediaDatabase("medias");
+		database = dlnaMediaDatabaseFactory.create("medias");
 		database.init(false);
 	}
 
