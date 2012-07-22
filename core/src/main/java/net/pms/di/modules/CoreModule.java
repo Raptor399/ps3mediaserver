@@ -38,6 +38,7 @@ import net.pms.dlna.RarredFile;
 import net.pms.dlna.RealFile;
 import net.pms.dlna.ZippedFile;
 import net.pms.dlna.virtual.VirtualFolder;
+import net.pms.dlna.virtual.VirtualVideoAction;
 import net.pms.encoders.AviDemuxerInputStream;
 import net.pms.encoders.PlayerFactory;
 import net.pms.io.BufferedOutputFile;
@@ -159,6 +160,10 @@ public class CoreModule extends AbstractModule {
 		install(new FactoryModuleBuilder()
 				.implement(VirtualFolder.class, VirtualFolder.class)
 				.build(VirtualFolder.Factory.class));
+
+		install(new FactoryModuleBuilder()
+				.implement(VirtualVideoAction.class, VirtualVideoAction.class)
+				.build(VirtualVideoAction.Factory.class));
 
 		install(new FactoryModuleBuilder()
 				.implement(ZippedFile.class, ZippedFile.class)
