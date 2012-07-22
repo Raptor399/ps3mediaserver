@@ -57,7 +57,6 @@ import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import net.pms.Messages;
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;

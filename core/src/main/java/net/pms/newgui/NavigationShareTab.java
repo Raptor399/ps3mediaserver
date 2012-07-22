@@ -44,7 +44,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import net.pms.Messages;
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.dlna.DLNAMediaDatabase;

@@ -46,7 +46,6 @@ import java.util.concurrent.TimeUnit;
 
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
-import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.FormatConfiguration;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.di.InjectionHelper;

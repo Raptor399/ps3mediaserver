@@ -23,7 +23,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.io.IOException;
 
-import javax.inject.Inject;
 import javax.swing.JOptionPane;
 
 import net.pms.api.PmsConfiguration;
@@ -32,7 +31,6 @@ import net.pms.configuration.PmsConfigurationImpl;
 import net.pms.di.PmsGuice;
 import net.pms.logging.LoggingConfigFileLoader;
 import net.pms.newgui.ProfileChooser;
-import net.pms.util.PropertiesUtil;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;

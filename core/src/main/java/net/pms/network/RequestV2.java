@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;

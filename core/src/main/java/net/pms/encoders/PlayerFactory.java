@@ -22,7 +22,6 @@ package net.pms.encoders;
 import java.io.File;
 import java.util.ArrayList;
 
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;

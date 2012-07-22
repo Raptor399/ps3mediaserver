@@ -18,15 +18,12 @@
  */
 package net.pms.formats;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
 
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
-import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
