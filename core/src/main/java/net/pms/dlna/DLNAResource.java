@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
+import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.FormatConfiguration;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.di.InjectionHelper;
@@ -412,13 +413,27 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 		}
 	}
 
+	/**
+	 * Temporary constructor to help with transition to DI.
+	 * @deprecated Use {@link #DLNAResource(PmsCore, PmsConfiguration)} instead.
+	 */
+	@Deprecated
 	public DLNAResource() {
 		this(Format.UNKNOWN);
 	}
 
+	/**
+	 * Temporary constructor to help with transition to DI.
+	 * @deprecated Use {@link #DLNAResource(PmsCore, PmsConfiguration, int)} instead.
+	 */
+	@Deprecated
 	public DLNAResource(int specificType) {
 		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
 				InjectionHelper.getInjector().getInstance(PmsConfiguration.class), specificType);
+	}
+
+	public DLNAResource(PmsCore pmsCore, PmsConfiguration configuration) {
+		this(pmsCore, configuration, Format.UNKNOWN);
 	}
 
 	public DLNAResource(PmsCore pmsCore, PmsConfiguration configuration, int specificType) {

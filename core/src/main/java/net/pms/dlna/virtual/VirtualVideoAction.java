@@ -48,10 +48,17 @@ public abstract class VirtualVideoAction extends DLNAResource {
 	private String videoKo;
 	private long timer1;
 
-	/**Constructor for this class. Recommended instantation includes overriding the {@link #enable()} function (example shown in the link).
-	 * @param name Name that is shown via the UPNP ContentBrowser service. This field cannot be changed after the instantiation.
-	 * @param enabled If true, a green tick mark is shown as thumbnail. If false, a red cross is shown. This initial value
-	 * is usually changed via the {@link #enable()} function.
+	/**
+	 * Constructor for this class. Recommended instantation includes overriding
+	 * the {@link #enable()} function (example shown in the link).
+	 * 
+	 * @param name
+	 *            Name that is shown via the UPNP ContentBrowser service. This
+	 *            field cannot be changed after the instantiation.
+	 * @param enabled
+	 *            If true, a green tick mark is shown as thumbnail. If false, a
+	 *            red cross is shown. This initial value is usually changed via
+	 *            the {@link #enable()} function.
 	 */
 	public VirtualVideoAction(String name, boolean enabled) {
 		this.name = name;
