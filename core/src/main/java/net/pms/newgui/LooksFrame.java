@@ -388,13 +388,15 @@ public class LooksFrame extends JFrame implements IFrame, Observer {
 		nt = injector.getInstance(GeneralTab.class);
 		ft = injector.getInstance(NavigationShareTab.class);
 		AboutTab aboutTab = injector.getInstance(AboutTab.class);
+		PluginsTab pluginsTab = injector.getInstance(PluginsTab.class);
+		
 
 		tabbedPane.addTab(Messages.getString("LooksFrame.18"),/* readImageIcon("server-16.png"),*/ st.build());
 		tabbedPane.addTab(Messages.getString("LooksFrame.19"),/* readImageIcon("mail_new-16.png"),*/ tt.build());
 		tabbedPane.addTab(Messages.getString("LooksFrame.20"),/* readImageIcon("advanced-16.png"),*/ nt.build());
 		tabbedPane.addTab(Messages.getString("LooksFrame.22"), /*readImageIcon("bookmark-16.png"),*/ ft.build());
 		tabbedPane.addTab(Messages.getString("ML.Tab.Header"),/*  readImageIcon("mail_new-16.png"), */new MediaLibraryTab().build());
-		tabbedPane.addTab(Messages.getString("LooksFrame.27"),/*  readImageIcon("mail_new-16.png"), */new PluginsTab());
+		tabbedPane.addTab(Messages.getString("LooksFrame.27"),/*  readImageIcon("mail_new-16.png"), */pluginsTab);
 		tabbedPane.addTab(Messages.getString("LooksFrame.21"),/* readImageIcon("player_play-16.png"),*/ tr.build());
 		tabbedPane.addTab(Messages.getString("LooksFrame.24"), /* readImageIcon("mail_new-16.png"), */ new HelpTab().build());
 		tabbedPane.addTab(Messages.getString("LooksFrame.25"), /*readImageIcon("documentinfo-16.png"),*/ aboutTab.build());

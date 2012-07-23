@@ -47,6 +47,7 @@ import net.pms.io.PipeIPCProcess;
 import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
 import net.pms.io.ProcessWrapperImpl;
+import net.pms.logging.FrameAppender;
 import net.pms.medialibrary.gui.tab.libraryview.FileDisplayTable;
 import net.pms.medialibrary.gui.tab.libraryview.FileDisplayer;
 import net.pms.network.HTTPServer;
@@ -56,6 +57,9 @@ import net.pms.network.RequestHandler;
 import net.pms.network.RequestHandlerV2;
 import net.pms.network.RequestV2;
 import net.pms.network.UPNPHelper;
+import net.pms.newgui.plugins.PluginAboutPanel;
+import net.pms.newgui.plugins.PluginDetailDialog;
+import net.pms.newgui.plugins.PluginGroupPanel;
 import net.pms.util.CodecUtil;
 
 import com.google.inject.AbstractModule;
@@ -68,6 +72,7 @@ public class CoreModule extends AbstractModule {
 		requestStaticInjection(UPNPHelper.class);
 		requestStaticInjection(CodecUtil.class);
 		requestStaticInjection(PlayerFactory.class);
+		requestStaticInjection(FrameAppender.class);
 
 		bind(PmsCore.class).to(PmsCoreImpl.class);
 
@@ -124,6 +129,18 @@ public class CoreModule extends AbstractModule {
 		install(new FactoryModuleBuilder()
 				.implement(PlaylistFolder.class, PlaylistFolder.class)
 				.build(PlaylistFolder.Factory.class));
+
+		install(new FactoryModuleBuilder()
+				.implement(PluginAboutPanel.class, PluginAboutPanel.class)
+				.build(PluginAboutPanel.Factory.class));
+
+		install(new FactoryModuleBuilder()
+				.implement(PluginDetailDialog.class, PluginDetailDialog.class)
+				.build(PluginDetailDialog.Factory.class));
+
+		install(new FactoryModuleBuilder()
+				.implement(PluginGroupPanel.class, PluginGroupPanel.class)
+				.build(PluginGroupPanel.Factory.class));
 
 		install(new FactoryModuleBuilder()
 				.implement(ProcessWrapper.class, ProcessWrapperImpl.class)

@@ -46,6 +46,7 @@ import net.pms.configuration.RendererConfiguration;
 import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaDatabase;
 import net.pms.dlna.virtual.MediaLibrary;
+import net.pms.dlna.virtual.VirtualFolder;
 import net.pms.encoders.PlayerFactory;
 import net.pms.gui.DummyFrame;
 import net.pms.gui.IFrame;
@@ -490,7 +491,7 @@ public class PmsCoreImpl implements PmsCore {
 		// initialize the cache
 		if (configuration.getUseCache()) {
 			initializeDatabase(); // XXX: this must be done *before* new MediaLibrary -> new MediaLibraryFolder
-			mediaLibrary = new MediaLibrary();
+			mediaLibrary = InjectionHelper.getInjector().getInstance(MediaLibrary.class);
 			LOGGER.info("A tiny cache admin interface is available at: http://" + server.getHost() + ":" + server.getPort() + "/console/home");
 		}
 

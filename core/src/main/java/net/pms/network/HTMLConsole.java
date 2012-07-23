@@ -18,18 +18,30 @@
  */
 package net.pms.network;
 
-import net.pms.PMS;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
 import net.pms.dlna.DLNAMediaDatabase;
 import net.pms.util.PropertiesUtil;
 
+@Singleton
 public class HTMLConsole {
-	public static String servePage(String resource) {
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
+
+	@Inject
+	HTMLConsole(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+	}
+
+	public String servePage(String resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<html><head><title>" + PropertiesUtil.getProjectProperties().get("project.name") + " HTML Console</title></head><body>");
-
-		DLNAMediaDatabase database = PMS.get().getDatabase();
-		PmsConfiguration configuration = PMS.getConfiguration();
+		DLNAMediaDatabase database = pmsCore.getDatabase();
+	
 		if (resource.equals("compact") && configuration.getUseCache()) {
 			database.compact();
 			sb.append("<p align=center><b>Database compacted!</b></p><br>");

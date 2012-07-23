@@ -42,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import net.pms.Messages;
+import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
 import net.pms.medialibrary.commons.MediaLibraryConfiguration;
 import net.pms.medialibrary.commons.dataobjects.OmitPrefixesConfiguration;
@@ -72,6 +73,9 @@ public class GeneralOptionsView extends JPanel {
 	@Inject
 	private ImportScannerService importScannerService;
 
+	@Inject
+	private PmsCore pmsCore;
+
 	private LibraryManager            libraryManager;
 	private MediaLibraryConfiguration libConfig;
 	private ScanState                 scanState;
@@ -95,6 +99,8 @@ public class GeneralOptionsView extends JPanel {
 	private ManagedFoldersPanel       pManagedFolders;
 
 	private JComponent                pOptions;
+
+	
 	public GeneralOptionsView() {
 		InjectionHelper.injectMembers(this);
 		libConfig = MediaLibraryConfiguration.getInstance();
@@ -449,7 +455,7 @@ public class GeneralOptionsView extends JPanel {
 						tfOmitPrefix.setText(prefixes);
 						cbOmitFiltering.setSelected(omitCfg.isFiltering());
 						cbOmitSorting.setSelected(omitCfg.isSorting());
-						net.pms.PMS.get().getFrame().setStatusLine(Messages.getString("ML.GeneralOptionsView.ResetDBDoneMsg"));
+						pmsCore.getFrame().setStatusLine(Messages.getString("ML.GeneralOptionsView.ResetDBDoneMsg"));
 					} catch (final Exception ex) {
 						log.error("Failed to reset data base", ex);
 					}

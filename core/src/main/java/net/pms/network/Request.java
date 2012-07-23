@@ -36,6 +36,7 @@ import java.util.TimeZone;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAMediaSubtitle;
 import net.pms.dlna.DLNAResource;
@@ -46,6 +47,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
@@ -224,7 +226,9 @@ public class Request extends HTTPResource {
 		if ((method.equals("GET") || method.equals("HEAD"))
 				&& argument.startsWith("console/")) {
 			output(output, "Content-Type: text/html");
-			response.append(HTMLConsole.servePage(argument.substring(8)));
+			Injector injector = InjectionHelper.getInjector();
+			HTMLConsole htmlConsole = injector.getInstance(HTMLConsole.class);
+			response.append(htmlConsole.servePage(argument.substring(8)));
 		} else if ((method.equals("GET") || method.equals("HEAD"))
 				&& argument.startsWith("get/")) {
 			String id = argument.substring(argument.indexOf("get/") + 4,

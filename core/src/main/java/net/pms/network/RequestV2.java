@@ -37,6 +37,7 @@ import java.util.TimeZone;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAMediaSubtitle;
 import net.pms.dlna.DLNAResource;
@@ -54,6 +55,7 @@ import org.jboss.netty.handler.stream.ChunkedStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
@@ -287,7 +289,9 @@ public class RequestV2 extends HTTPResource {
 		if ((method.equals("GET") || method.equals("HEAD")) && argument.startsWith("console/")) {
 			// Request to output a page to the HTLM console.
 			output.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/html");
-			response.append(HTMLConsole.servePage(argument.substring(8)));
+			Injector injector = InjectionHelper.getInjector();
+			HTMLConsole htmlConsole = injector.getInstance(HTMLConsole.class);
+			response.append(htmlConsole.servePage(argument.substring(8)));
 		} else if ((method.equals("GET") || method.equals("HEAD")) && argument.startsWith("get/")) {
 			// Request to retrieve a file
 

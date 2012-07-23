@@ -18,14 +18,17 @@
  */
 package net.pms.logging;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import javax.inject.Inject;
+
+import net.pms.PMS;
+import net.pms.api.PmsCore;
+import net.pms.gui.IFrame;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.status.ErrorStatus;
-import net.pms.PMS;
-import net.pms.gui.IFrame;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 /**
  * Special Logback appender to 'print' log messages on the PMS GUI.
@@ -34,11 +37,18 @@ import java.io.IOException;
  * 
  */
 public class FrameAppender<E> extends UnsynchronizedAppenderBase<E> {
-	private IFrame frame;
 	private Encoder<E> encoder;
 	private final ByteArrayOutputStream outputstream = new ByteArrayOutputStream(
 		256);
 	private final Object lock = new Object();
+
+	@Inject
+	private final PmsCore pmsCore;
+
+	@Inject
+	FrameAppender(PmsCore pmsCore) {
+		this.pmsCore = pmsCore;
+	}
 
 	/**
 	 * Checks that the required parameters are set and if everything is in
@@ -73,32 +83,20 @@ public class FrameAppender<E> extends UnsynchronizedAppenderBase<E> {
 	 */
 	@Override
 	protected void append(E eventObject) {
+		IFrame frame = pmsCore.getFrame();
 
-		if (frame == null) {
-			// TODO: somehow ensure that PMS.get() does not get called before
-			// PMS has been instantiated. Otherwise PMS will be instantiated by
-			// this call and any log messages generated during PMS startup will
-			// be ignored.
-			// Currently the PMS API does not have a method to check if it
-			// has been instantiated.
-
-			frame = PMS.get().getFrame();
-		}
-
-		try {
-			if (frame != null) {
+		if (frame != null) {
+			try {
 				synchronized (lock) {
 					this.encoder.doEncode(eventObject);
 					String msg = outputstream.toString("UTF-8");
 					frame.append(msg);
 					outputstream.reset();
 				}
-
+			} catch (IOException ioe) {
+				addStatus(new ErrorStatus("IO failure in appender", this, ioe));
 			}
-		} catch (IOException ioe) {
-			addStatus(new ErrorStatus("IO failure in appender", this, ioe));
 		}
-
 	}
 
 	/**

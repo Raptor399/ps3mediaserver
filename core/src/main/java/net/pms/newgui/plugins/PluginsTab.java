@@ -15,6 +15,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -49,11 +50,14 @@ public class PluginsTab extends JPanel {
 	
 	private JComboBox cbPluginType;
 	private Map<Class<?>, PluginGroupPanel> pluginGroups;
+	private final PluginGroupPanel.Factory pluginGroupPanelFactory;
 
 	/**
 	 * Creates a new instance of the panel, which is ready to use
 	 */
-	public PluginsTab() {
+	@Inject
+	public PluginsTab(PluginGroupPanel.Factory pluginGroupPanelFactory) {
+		this.pluginGroupPanelFactory = pluginGroupPanelFactory;
 		setLayout(new BorderLayout(0, 5));		
 		initPluginChangeListener();
 	}
@@ -125,7 +129,7 @@ public class PluginsTab extends JPanel {
 		for(Class<?> c : pluginsByClass.keySet()) {
 			String localizedName = Messages.getString("Plugin." + c.getSimpleName());
 			groupNames.add(new ComboBoxItem<Class<?>>(localizedName, c));
-			pluginGroups.put(c, new PluginGroupPanel(localizedName, pluginsByClass.get(c)));
+			pluginGroups.put(c, pluginGroupPanelFactory.create(localizedName, pluginsByClass.get(c)));
 		}
 		Collections.sort(groupNames, new Comparator<ComboBoxItem<Class<?>>>() {
 			@Override

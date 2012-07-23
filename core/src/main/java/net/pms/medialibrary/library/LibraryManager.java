@@ -49,7 +49,7 @@ public class LibraryManager implements ILibraryManager {
 	private LibraryManager() throws InitialisationException{
 		InjectionHelper.injectMembers(this);
 		this.mediaLibraryStorage = MediaLibraryStorage.getInstance();
-		this.fileScanner = FileScanner.getInstance();
+		this.fileScanner = InjectionHelper.getInjector().getInstance(FileScanner.class);
 		this.libraryManagerEventListeners = new ArrayList<ILibraryManagerEventListener>();
 	}
 	
