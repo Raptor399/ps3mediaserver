@@ -37,6 +37,7 @@ import net.pms.dlna.RarredEntry;
 import net.pms.dlna.RarredFile;
 import net.pms.dlna.RealFile;
 import net.pms.dlna.ZippedFile;
+import net.pms.dlna.virtual.MediaLibraryFolder;
 import net.pms.dlna.virtual.VirtualFolder;
 import net.pms.dlna.virtual.VirtualVideoAction;
 import net.pms.encoders.AviDemuxerInputStream;
@@ -118,6 +119,10 @@ public class CoreModule extends AbstractModule {
 				.implement(HTTPServer.class, HTTPServer.class)
 				.build(HTTPServer.Factory.class));
 		
+		install(new FactoryModuleBuilder()
+				.implement(MediaLibraryFolder.class, MediaLibraryFolder.class)
+				.build(MediaLibraryFolder.Factory.class));
+
 		install(new FactoryModuleBuilder()
 				.implement(PipeIPCProcess.class, PipeIPCProcess.class)
 				.build(PipeIPCProcessFactory.class));

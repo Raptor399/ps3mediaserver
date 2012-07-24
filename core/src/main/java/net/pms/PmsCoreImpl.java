@@ -46,7 +46,6 @@ import net.pms.configuration.RendererConfiguration;
 import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaDatabase;
 import net.pms.dlna.virtual.MediaLibrary;
-import net.pms.dlna.virtual.VirtualFolder;
 import net.pms.encoders.PlayerFactory;
 import net.pms.gui.DummyFrame;
 import net.pms.gui.IFrame;
@@ -136,11 +135,6 @@ public class PmsCoreImpl implements PmsCore {
 		}
 		return renderer.getRootFolder();
 	}
-
-	/**
-	 * Pointer to a running PMS server.
-	 */
-	private static PmsCoreImpl instance = null;
 
 	/**
 	 * Array of {@link RendererConfiguration} that have been found by PMS.
@@ -542,8 +536,10 @@ public class PmsCoreImpl implements PmsCore {
 
 	private void initMediaLibrary() {
 		//Initialize media library (only let pms start if the media library is working)
-		MediaLibraryStorage.configure("pms_media_library.db");
-	    if (!MediaLibraryStorage.getInstance().isFunctional()) {
+		Injector injector = InjectionHelper.getInjector();
+		MediaLibraryStorage mediaLibraryStorage = injector.getInstance(MediaLibraryStorage.class);
+
+		if (!mediaLibraryStorage.isFunctional()) {
 	        LOGGER.error("Failed to properly initialize MediaLibraryStorage");
 	        JOptionPane.showMessageDialog(null, Messages.getString("PMS.100"), Messages.getString("PMS.101"), JOptionPane.ERROR_MESSAGE);
 	        System.exit(1);

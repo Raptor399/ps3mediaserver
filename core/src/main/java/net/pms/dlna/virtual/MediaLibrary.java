@@ -24,43 +24,44 @@ public class MediaLibrary extends VirtualFolder {
 
 	@Inject
 	public MediaLibrary(PmsCore pmsCore, PmsConfiguration configuration,
-			VirtualFolder.Factory virtualFolderFactory) {
+			VirtualFolder.Factory virtualFolderFactory,
+			MediaLibraryFolder.Factory mediaLibraryFolderFactory) {
 		super(pmsCore, configuration, Messages.getString("PMS.2"), null);
 
 		VirtualFolder vfAudio = virtualFolderFactory.create(
 				Messages.getString("PMS.1"), null);
-		allFolder = new MediaLibraryFolder(
+		allFolder = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.11"),
 				"select FILENAME, MODIFIED from FILES F, AUDIOTRACKS A where F.ID = A.FILEID AND F.TYPE = 1 ORDER BY F.FILENAME ASC",
 				MediaLibraryFolder.FILES);
 		vfAudio.addChild(allFolder);
-		playlistFolder = new MediaLibraryFolder(
+		playlistFolder = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.9"),
 				"select FILENAME, MODIFIED from FILES F WHERE F.TYPE = 16 ORDER BY F.FILENAME ASC",
 				MediaLibraryFolder.PLAYLISTS);
 		vfAudio.addChild(playlistFolder);
-		artistFolder = new MediaLibraryFolder(
+		artistFolder = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.13"),
 				new String[] {
 						"SELECT DISTINCT A.ARTIST FROM FILES F, AUDIOTRACKS A WHERE F.ID = A.FILEID AND F.TYPE = 1 ORDER BY A.ARTIST ASC",
 						"select FILENAME, MODIFIED  from FILES F, AUDIOTRACKS A where F.ID = A.FILEID AND F.TYPE = 1 AND A.ARTIST = '${0}'" },
 				new int[] { MediaLibraryFolder.TEXTS, MediaLibraryFolder.FILES });
 		vfAudio.addChild(artistFolder);
-		albumFolder = new MediaLibraryFolder(
+		albumFolder = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.16"),
 				new String[] {
 						"SELECT DISTINCT A.ALBUM FROM FILES F, AUDIOTRACKS A WHERE F.ID = A.FILEID AND F.TYPE = 1 ORDER BY A.ALBUM ASC",
 						"select FILENAME, MODIFIED from FILES F, AUDIOTRACKS A where F.ID = A.FILEID AND F.TYPE = 1 AND A.ALBUM = '${0}'" },
 				new int[] { MediaLibraryFolder.TEXTS, MediaLibraryFolder.FILES });
 		vfAudio.addChild(albumFolder);
-		genreFolder = new MediaLibraryFolder(
+		genreFolder = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.19"),
 				new String[] {
 						"SELECT DISTINCT A.GENRE FROM FILES F, AUDIOTRACKS A WHERE F.ID = A.FILEID AND F.TYPE = 1 ORDER BY A.GENRE ASC",
 						"select FILENAME, MODIFIED from FILES F, AUDIOTRACKS A where F.ID = A.FILEID AND F.TYPE = 1 AND A.GENRE = '${0}'" },
 				new int[] { MediaLibraryFolder.TEXTS, MediaLibraryFolder.FILES });
 		vfAudio.addChild(genreFolder);
-		MediaLibraryFolder mlf6 = new MediaLibraryFolder(
+		MediaLibraryFolder mlf6 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.22"),
 				new String[] {
 						"SELECT DISTINCT A.ARTIST FROM FILES F, AUDIOTRACKS A WHERE F.ID = A.FILEID AND F.TYPE = 1 ORDER BY A.ARTIST ASC",
@@ -69,7 +70,7 @@ public class MediaLibrary extends VirtualFolder {
 				new int[] { MediaLibraryFolder.TEXTS, MediaLibraryFolder.TEXTS,
 						MediaLibraryFolder.FILES });
 		vfAudio.addChild(mlf6);
-		MediaLibraryFolder mlf7 = new MediaLibraryFolder(
+		MediaLibraryFolder mlf7 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.26"),
 				new String[] {
 						"SELECT DISTINCT A.GENRE FROM FILES F, AUDIOTRACKS A WHERE F.ID = A.FILEID AND F.TYPE = 1 ORDER BY A.GENRE ASC",
@@ -79,7 +80,7 @@ public class MediaLibrary extends VirtualFolder {
 				new int[] { MediaLibraryFolder.TEXTS, MediaLibraryFolder.TEXTS,
 						MediaLibraryFolder.TEXTS, MediaLibraryFolder.FILES });
 		vfAudio.addChild(mlf7);
-		MediaLibraryFolder mlfAudioDate = new MediaLibraryFolder(
+		MediaLibraryFolder mlfAudioDate = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.12"),
 				new String[] {
 						"SELECT FORMATDATETIME(MODIFIED, 'd MMM yyyy') FROM FILES F, AUDIOTRACKS A WHERE F.ID = A.FILEID AND F.TYPE = 1 ORDER BY F.MODIFIED DESC",
@@ -87,7 +88,7 @@ public class MediaLibrary extends VirtualFolder {
 				new int[] { MediaLibraryFolder.TEXTS, MediaLibraryFolder.FILES });
 		vfAudio.addChild(mlfAudioDate);
 
-		MediaLibraryFolder mlf8 = new MediaLibraryFolder(
+		MediaLibraryFolder mlf8 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.28"),
 				new String[] {
 						"SELECT ID FROM REGEXP_RULES ORDER BY ORDR ASC",
@@ -101,25 +102,25 @@ public class MediaLibrary extends VirtualFolder {
 
 		VirtualFolder vfImage = virtualFolderFactory.create(
 				Messages.getString("PMS.31"), null);
-		MediaLibraryFolder mlfPhoto01 = new MediaLibraryFolder(
+		MediaLibraryFolder mlfPhoto01 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.32"), "TYPE = 2 ORDER BY FILENAME ASC",
 				MediaLibraryFolder.FILES);
 		vfImage.addChild(mlfPhoto01);
-		MediaLibraryFolder mlfPhoto02 = new MediaLibraryFolder(
+		MediaLibraryFolder mlfPhoto02 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.12"),
 				new String[] {
 						"SELECT FORMATDATETIME(MODIFIED, 'd MMM yyyy') FROM FILES WHERE TYPE = 2 ORDER BY MODIFIED DESC",
 						"TYPE = 2 AND FORMATDATETIME(MODIFIED, 'd MMM yyyy') = '${0}' ORDER BY FILENAME ASC" },
 				new int[] { MediaLibraryFolder.TEXTS, MediaLibraryFolder.FILES });
 		vfImage.addChild(mlfPhoto02);
-		MediaLibraryFolder mlfPhoto03 = new MediaLibraryFolder(
+		MediaLibraryFolder mlfPhoto03 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.21"),
 				new String[] {
 						"SELECT MODEL FROM FILES WHERE TYPE = 2 AND MODEL IS NOT NULL ORDER BY MODEL ASC",
 						"TYPE = 2 AND MODEL = '${0}' ORDER BY FILENAME ASC" },
 				new int[] { MediaLibraryFolder.TEXTS, MediaLibraryFolder.FILES });
 		vfImage.addChild(mlfPhoto03);
-		MediaLibraryFolder mlfPhoto04 = new MediaLibraryFolder(
+		MediaLibraryFolder mlfPhoto04 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.25"),
 				new String[] {
 						"SELECT ISO FROM FILES WHERE TYPE = 2 AND ISO > 0 ORDER BY ISO ASC",
@@ -130,28 +131,28 @@ public class MediaLibrary extends VirtualFolder {
 
 		VirtualFolder vfVideo = virtualFolderFactory.create(
 				Messages.getString("PMS.34"), null);
-		MediaLibraryFolder mlfVideo01 = new MediaLibraryFolder(
+		MediaLibraryFolder mlfVideo01 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.35"), "TYPE = 4 ORDER BY FILENAME ASC",
 				MediaLibraryFolder.FILES);
 		vfVideo.addChild(mlfVideo01);
-		MediaLibraryFolder mlfVideo02 = new MediaLibraryFolder(
+		MediaLibraryFolder mlfVideo02 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.12"),
 				new String[] {
 						"SELECT FORMATDATETIME(MODIFIED, 'd MMM yyyy') FROM FILES WHERE TYPE = 4 ORDER BY MODIFIED DESC",
 						"TYPE = 4 AND FORMATDATETIME(MODIFIED, 'd MMM yyyy') = '${0}' ORDER BY FILENAME ASC" },
 				new int[] { MediaLibraryFolder.TEXTS, MediaLibraryFolder.FILES });
 		vfVideo.addChild(mlfVideo02);
-		MediaLibraryFolder mlfVideo03 = new MediaLibraryFolder(
+		MediaLibraryFolder mlfVideo03 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.36"),
 				"TYPE = 4 AND (WIDTH >= 1200 OR HEIGHT >= 700) ORDER BY FILENAME ASC",
 				MediaLibraryFolder.FILES);
 		vfVideo.addChild(mlfVideo03);
-		MediaLibraryFolder mlfVideo04 = new MediaLibraryFolder(
+		MediaLibraryFolder mlfVideo04 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.39"),
 				"TYPE = 4 AND (WIDTH < 1200 AND HEIGHT < 700) ORDER BY FILENAME ASC",
 				MediaLibraryFolder.FILES);
 		vfVideo.addChild(mlfVideo04);
-		MediaLibraryFolder mlfVideo05 = new MediaLibraryFolder(
+		MediaLibraryFolder mlfVideo05 = mediaLibraryFolderFactory.create(
 				Messages.getString("PMS.40"),
 				"TYPE = 32 ORDER BY FILENAME ASC", MediaLibraryFolder.ISOS);
 		vfVideo.addChild(mlfVideo05);

@@ -24,17 +24,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.h2.jdbcx.JdbcConnectionPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import net.pms.Messages;
-import net.pms.PMS;
+import net.pms.api.PmsCore;
+import net.pms.di.InjectionHelper;
 import net.pms.medialibrary.commons.dataobjects.DOAudioFileInfo;
+import net.pms.medialibrary.commons.dataobjects.DOFileEntryFolder;
 import net.pms.medialibrary.commons.dataobjects.DOFileImportTemplate;
 import net.pms.medialibrary.commons.dataobjects.DOFileInfo;
 import net.pms.medialibrary.commons.dataobjects.DOFilter;
-import net.pms.medialibrary.commons.dataobjects.DOFileEntryFolder;
 import net.pms.medialibrary.commons.dataobjects.DOFolder;
 import net.pms.medialibrary.commons.dataobjects.DOImageFileInfo;
 import net.pms.medialibrary.commons.dataobjects.DOManagedFile;
@@ -45,19 +45,29 @@ import net.pms.medialibrary.commons.dataobjects.DOTemplate;
 import net.pms.medialibrary.commons.dataobjects.DOVideoFileInfo;
 import net.pms.medialibrary.commons.enumarations.ConditionType;
 import net.pms.medialibrary.commons.enumarations.FileType;
-import net.pms.medialibrary.commons.enumarations.SortOption;
 import net.pms.medialibrary.commons.enumarations.MediaLibraryConstants.MetaDataKeys;
+import net.pms.medialibrary.commons.enumarations.SortOption;
 import net.pms.medialibrary.commons.exceptions.StorageException;
 import net.pms.medialibrary.commons.helpers.FileImportHelper;
 import net.pms.medialibrary.commons.interfaces.IMediaLibraryStorage;
 
+import org.h2.jdbcx.JdbcConnectionPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+
+@Singleton
 public class MediaLibraryStorage implements IMediaLibraryStorage {		
+	private static final String PMS_MEDIA_LIBRARY_DB = "pms_media_library.db";
 	public static final int ROOT_FOLDER_ID = 1;
 	public static final int ALL_CHILDREN = Integer.MAX_VALUE;
 
 	private static final Logger log = LoggerFactory.getLogger(MediaLibraryStorage.class);
-	private static MediaLibraryStorage instance;
-	
+
+	private final PmsCore pmsCore;
+
 	private JdbcConnectionPool cp;
 	
 	private DBInitializer dbInitializer;
@@ -76,12 +86,16 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 	
 	/**
 	 * Constructor
-	 * @param name The name of the database file. The location will be determined automatically depending on OS
 	 */
-	private MediaLibraryStorage(String name){
-		dbInitializer = new DBInitializer(name, this);
+	@Inject
+	private MediaLibraryStorage(PmsCore pmsCore) {
+		this.pmsCore = pmsCore;
+		dbInitializer = new DBInitializer(PMS_MEDIA_LIBRARY_DB, this);
 		cp = dbInitializer.getConnectionPool();
-		if(log.isDebugEnabled()) log.debug("JdbcConnectionPool created");
+
+		if (log.isDebugEnabled()) {
+			log.debug("JdbcConnectionPool created");
+		}
 		
 		dbGlobal = new DBGlobal(cp);
 		dbFileInfo = new DBFileInfo(cp);
@@ -96,32 +110,20 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 		dbFileImport = new DBFileImport(cp);
 		dbQuickTag = new DBQuickTag(cp);
 		
-		if(dbInitializer.isConnected()){
+		if (dbInitializer.isConnected()) {
 			dbInitializer.configureDb();
 		}
 	}
-	
-	/**
-	 * Creates a new instance of the MediaLibraryStorage which can be retrieved through getInstance()
-	 * @param fileName the name of the database file
-	 */
-	public static void configure(String fileName){
-		if(instance != null){
-			if(log.isDebugEnabled()) log.debug("Dispose of the currently active instance, as configure has been called");
-			instance.dipose();
-			instance = null;
-		}
-		instance = new MediaLibraryStorage(fileName);
-	}
-	
+
 	/**
 	 * Gets the static instance of MediaLibraryStorage
+	 * 
 	 * @return MediaLibraryStorage instance
 	 */
 	public static MediaLibraryStorage getInstance() {
-		return instance;
+		return InjectionHelper.getInjector().getInstance(MediaLibraryStorage.class);
 	}
-	
+
 	/**
 	 * Disposes the storage by releasing the connection pool
 	 */
@@ -132,7 +134,7 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 	        if(log.isInfoEnabled()) log.info("Disposed of the JDBC connection pool while disposing MediaLibraryStorage");
 		}
 	}
-	
+
 	/*********************************************
 	 * 
 	 * Global
@@ -195,14 +197,14 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 		}
 	    
 		String statusMsg = String.format(Messages.getString("ML.Messages.CleanLibraryDone"), nbVideo, nbAudio, nbPictures);
-		PMS.get().getFrame().setStatusLine(statusMsg);
+		pmsCore.getFrame().setStatusLine(statusMsg);
     }
 	
 	@Override
 	public long getRootFolderId(){
 		long rootFolderId;
 		try{
-			rootFolderId = Long.parseLong(MediaLibraryStorage.getInstance().getMetaDataValue(MetaDataKeys.ROOT_FOLDER_ID.toString()));
+			rootFolderId = Long.parseLong(getMetaDataValue(MetaDataKeys.ROOT_FOLDER_ID.toString()));
 		} catch(Exception ex){
 			rootFolderId = MediaLibraryStorage.ROOT_FOLDER_ID;
 		}
@@ -401,7 +403,7 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 //		dbPicturesFileInfo.deletePicturesFileInfo();
 		
 		//show deletion in GUI
-		PMS.get().getFrame().setStatusLine(nbDeletedVideos + " videos have been deleted from the library");
+		pmsCore.getFrame().setStatusLine(nbDeletedVideos + " videos have been deleted from the library");
 	}
 
 	@Override
@@ -441,7 +443,7 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 		
 		// notify of the insert in the GUI
 		if(statusMsg != null) {
-			PMS.get().getFrame().setStatusLine(statusMsg);
+			pmsCore.getFrame().setStatusLine(statusMsg);
 		}
 	}
 
@@ -491,7 +493,7 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 		
 		// notify of the insert in the GUI
 		if(statusMsg != null) {
-			PMS.get().getFrame().setStatusLine(statusMsg);
+			pmsCore.getFrame().setStatusLine(statusMsg);
 		}
 	}
 
