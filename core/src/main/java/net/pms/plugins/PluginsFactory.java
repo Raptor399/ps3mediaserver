@@ -30,6 +30,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import net.pms.PMS;
+import net.pms.di.InjectionHelper;
 import net.pms.notifications.NotificationCenter;
 import net.pms.notifications.types.PluginEvent;
 import net.pms.notifications.types.PluginEvent.Event;
@@ -43,6 +44,8 @@ import net.pms.plugins.wrappers.StartStopListenerWrapper;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
 
 /**
  * This class takes care of registering plugins. Plugin jars are loaded,
@@ -308,7 +311,11 @@ public class PluginsFactory {
 				LOGGER.info("Found plugin: " + pluginMainClassName);
 				Object instance;
 				try {
-					instance = classLoader.loadClass(pluginMainClassName).newInstance();
+					// Let's see if we can get Guice to cook up an instance of the plugin
+					// because we may have to inject PMS classes into plugin instances.
+					Injector injector = InjectionHelper.getInjector();
+					instance = injector.getInstance(classLoader.loadClass(pluginMainClassName));
+					//instance = classLoader.loadClass(pluginMainClassName).newInstance();
 				} catch (Throwable t) {
 					// this can happen if a plugin created for a custom build is being dropped inside
 					// the plugins directory of pms. The plugin might implement an interface only
