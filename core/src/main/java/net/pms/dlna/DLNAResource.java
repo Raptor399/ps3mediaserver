@@ -263,6 +263,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 	protected final PmsCore pmsCore;
 	protected final PmsConfiguration configuration;
+	private final FormatFactory formatFactory;
 
 	/**
 	 * Returns parent object, usually a folder type of resource. In the DLDI
@@ -428,16 +429,19 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	@Deprecated
 	public DLNAResource(int specificType) {
 		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
-				InjectionHelper.getInjector().getInstance(PmsConfiguration.class), specificType);
+				InjectionHelper.getInjector().getInstance(PmsConfiguration.class),
+				InjectionHelper.getInjector().getInstance(FormatFactory.class), specificType);
 	}
 
-	public DLNAResource(PmsCore pmsCore, PmsConfiguration configuration) {
-		this(pmsCore, configuration, Format.UNKNOWN);
+	public DLNAResource(PmsCore pmsCore, PmsConfiguration configuration, FormatFactory formatFactory) {
+		this(pmsCore, configuration, formatFactory, Format.UNKNOWN);
 	}
 
-	public DLNAResource(PmsCore pmsCore, PmsConfiguration configuration, int specificType) {
+	public DLNAResource(PmsCore pmsCore, PmsConfiguration configuration,
+			FormatFactory formatFactory, int specificType) {
 		this.pmsCore = pmsCore;
 		this.configuration = configuration;
+		this.formatFactory = formatFactory;
 		setSpecificType(specificType);
 		setChildren(new ArrayList<DLNAResource>());
 		setUpdateId(1);
@@ -881,7 +885,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 	protected void checktype() {
 		if (getFormat() == null) {
-			setFormat(FormatFactory.getAssociatedExtension(getSystemName()));
+			setFormat(formatFactory.getAssociatedExtension(getSystemName()));
 		}
 		if (getFormat() != null && getFormat().isUnknown()) {
 			getFormat().setType(getSpecificType());

@@ -28,6 +28,7 @@ import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.di.InjectionHelper;
 import net.pms.dlna.virtual.VirtualFolder;
 import net.pms.formats.Format;
+import net.pms.formats.FormatFactory;
 import net.pms.io.OutputParams;
 import net.pms.io.ProcessWrapper;
 import net.pms.util.ProcessUtil;
@@ -61,14 +62,17 @@ public class DVDISOFile extends VirtualFolder {
 		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
 				InjectionHelper.getInjector().getInstance(PmsConfiguration.class),
 				InjectionHelper.getInjector().getInstance(ProcessWrapperFactory.class),
-				InjectionHelper.getInjector().getInstance(DVDISOTitle.Factory.class), f);
+				InjectionHelper.getInjector().getInstance(DVDISOTitle.Factory.class),
+				InjectionHelper.getInjector().getInstance(FormatFactory.class),
+				f);
 	}
 	
 	@AssistedInject
 	public DVDISOFile(PmsCore pmsCore, PmsConfiguration configuration,
 			ProcessWrapperFactory processWrapperFactory, 
-			DVDISOTitle.Factory dvdIsoTitleFactory, @Assisted File f) {
-		super(pmsCore, configuration, PREFIX + (f.isFile() ? f.getName() : "VIDEO_TS"), null);
+			DVDISOTitle.Factory dvdIsoTitleFactory,
+			FormatFactory formatFactory, @Assisted File f) {
+		super(pmsCore, configuration, formatFactory, PREFIX + (f.isFile() ? f.getName() : "VIDEO_TS"), null);
 		this.pmsCore = pmsCore;
 		this.processWrapperFactory = processWrapperFactory;
 		this.dvdIsoTitleFactory = dvdIsoTitleFactory;

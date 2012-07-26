@@ -33,6 +33,7 @@ import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
 import net.pms.formats.Format;
+import net.pms.formats.FormatFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,12 +62,15 @@ public class ZippedFile extends DLNAResource {
 	@Deprecated
 	public ZippedFile(File z) {
 		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
-				InjectionHelper.getInjector().getInstance(PmsConfiguration.class), z);
+				InjectionHelper.getInjector().getInstance(PmsConfiguration.class), 
+				InjectionHelper.getInjector().getInstance(FormatFactory.class), 
+				z);
 	}
 
 	@AssistedInject
-	public ZippedFile(PmsCore pmsCore, PmsConfiguration configuration, @Assisted File z) {
-		super(pmsCore, configuration);
+	public ZippedFile(PmsCore pmsCore, PmsConfiguration configuration,
+			FormatFactory formatFactory, @Assisted File z) {
+		super(pmsCore, configuration, formatFactory);
 		this.z = z;
 		setLastmodified(z.lastModified());
 		try {

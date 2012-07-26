@@ -11,6 +11,7 @@ import net.pms.dlna.DLNAResource;
 import net.pms.dlna.DVDISOFile;
 import net.pms.dlna.PlaylistFolder;
 import net.pms.dlna.RealFile;
+import net.pms.formats.FormatFactory;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -44,10 +45,12 @@ public class MediaLibraryFolder extends VirtualFolder {
 			RealFile.Factory realFileFactory,
 			PlaylistFolder.Factory playlistFolderFactory,
 			DVDISOFile.Factory dvdisoFileFactory,
+			FormatFactory formatFactory,
 			@Assisted("name") String name, @Assisted("sql") String sql,
 			@Assisted int expectedOutput) {
 		this(pmsCore, configuration, mediaLibraryFolderFactory,
 				realFileFactory, playlistFolderFactory, dvdisoFileFactory,
+				formatFactory,
 				name, new String[] { sql }, new int[] { expectedOutput });
 	}
 
@@ -57,9 +60,10 @@ public class MediaLibraryFolder extends VirtualFolder {
 			RealFile.Factory realFileFactory,
 			PlaylistFolder.Factory playlistFolderFactory,
 			DVDISOFile.Factory dvdisoFileFactory,
+			FormatFactory formatFactory,
 			@Assisted String name, @Assisted String[] sql,
 			@Assisted int[] expectedOutput) {
-		super(pmsCore, configuration, name, null);
+		super(pmsCore, configuration, formatFactory, name, null);
 		this.mediaLibraryFolderFactory = mediaLibraryFolderFactory;
 		this.realFileFactory = realFileFactory;
 		this.playlistFolderFactory = playlistFolderFactory;

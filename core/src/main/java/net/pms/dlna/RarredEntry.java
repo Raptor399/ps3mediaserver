@@ -27,6 +27,7 @@ import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
 import net.pms.formats.Format;
+import net.pms.formats.FormatFactory;
 import net.pms.util.FileUtil;
 
 import org.slf4j.Logger;
@@ -73,15 +74,17 @@ public class RarredEntry extends DLNAResource implements IPushOutput {
 	public RarredEntry(String name, File pere, String fileheadername, long length) {
 		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
 				InjectionHelper.getInjector().getInstance(PmsConfiguration.class),
+				InjectionHelper.getInjector().getInstance(FormatFactory.class),
 				name, pere, fileheadername, length);
 	}
 
 	@AssistedInject
 	public RarredEntry(PmsCore pmsCore, PmsConfiguration configuration,
+			FormatFactory formatFactory,
 			@Assisted("name") String name, @Assisted File pere,
 			@Assisted("fileheadername") String fileheadername,
 			@Assisted long length) {
-		super(pmsCore, configuration);
+		super(pmsCore, configuration, formatFactory);
 		this.fileheadername = fileheadername;
 		this.name = name;
 		this.pere = pere;

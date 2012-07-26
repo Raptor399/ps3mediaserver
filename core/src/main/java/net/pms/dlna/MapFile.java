@@ -74,6 +74,7 @@ public class MapFile extends DLNAResource {
 	private final PmsConfiguration configuration;
 	private final RealFile.Factory realFileFactory;
 	private final PlaylistFolder.Factory playlistFolderFactory;
+	private final FormatFactory formatFactory;
 	
 	static {
 		collator = Collator.getInstance();
@@ -108,6 +109,7 @@ public class MapFile extends DLNAResource {
 				InjectionHelper.getInjector().getInstance(PmsConfiguration.class),
 				InjectionHelper.getInjector().getInstance(RealFile.Factory.class),
 				InjectionHelper.getInjector().getInstance(PlaylistFolder.Factory.class),
+				InjectionHelper.getInjector().getInstance(FormatFactory.class),
 				conf);
 		setLastmodified(0);
 	}
@@ -115,19 +117,22 @@ public class MapFile extends DLNAResource {
 	@Inject
 	public MapFile(PmsCore pmsCore, PmsConfiguration configuration,
 			RealFile.Factory realFileFactory,
-			PlaylistFolder.Factory playlistFolderFactory) {
-		this(pmsCore, configuration, realFileFactory, playlistFolderFactory, new MapFileConfiguration());
+			PlaylistFolder.Factory playlistFolderFactory,
+			FormatFactory formatFactory) {
+		this(pmsCore, configuration, realFileFactory, playlistFolderFactory, formatFactory, new MapFileConfiguration());
 	}
 
 	@AssistedInject
 	public MapFile(PmsCore pmsCore, PmsConfiguration configuration,
 			RealFile.Factory realFileFactory,
 			PlaylistFolder.Factory playlistFolderFactory,
+			FormatFactory formatFactory,
 			@Assisted MapFileConfiguration conf) {
-		super(pmsCore, configuration);
+		super(pmsCore, configuration, formatFactory);
 		this.configuration = configuration;
 		this.realFileFactory = realFileFactory;
 		this.playlistFolderFactory = playlistFolderFactory;
+		this.formatFactory = formatFactory;
 		this.conf = conf;
 		setLastmodified(0);
 	}
@@ -146,7 +151,7 @@ public class MapFile extends DLNAResource {
 			File children[] = f.listFiles();
 			for (File child : children) {
 				if (child.isFile()) {
-					if (FormatFactory.getAssociatedExtension(child.getName()) != null || isFileRelevant(child)) {
+					if (formatFactory.getAssociatedExtension(child.getName()) != null || isFileRelevant(child)) {
 						excludeNonRelevantFolder = false;
 						break;
 					}
@@ -321,7 +326,7 @@ public class MapFile extends DLNAResource {
 		}
 
 		for (File f : files) {
-			if (!f.isHidden() && (f.isDirectory() || FormatFactory.getAssociatedExtension(f.getName()) != null)) {
+			if (!f.isHidden() && (f.isDirectory() || formatFactory.getAssociatedExtension(f.getName()) != null)) {
 				addedFiles.add(f);
 			}
 		}

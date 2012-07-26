@@ -26,17 +26,21 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.pms.dlna.DLNAResource;
 import net.pms.plugin.dlnatreefolder.fsfp.configuration.GlobalConfiguration;
 import net.pms.plugin.dlnatreefolder.fsfp.configuration.InstanceConfiguration;
+import net.pms.plugin.dlnatreefolder.fsfp.di.FileSystemFolderPluginModule;
 import net.pms.plugin.dlnatreefolder.fsfp.dlna.FileSystemResource;
 import net.pms.plugin.dlnatreefolder.fsfp.gui.GlobalConfigurationPanel;
 import net.pms.plugin.dlnatreefolder.fsfp.gui.InstanceConfigurationPanel;
 import net.pms.plugins.DlnaTreeFolderPlugin;
 import net.pms.util.PmsProperties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 /**
  * This plugin for the ps3 media server lets configure 0-n folders 
@@ -47,7 +51,15 @@ public class FileSystemFolderPlugin implements DlnaTreeFolderPlugin {
 	
 	/** Resource used for localization */
 	public static final ResourceBundle messages = ResourceBundle.getBundle("net.pms.plugin.dlnatreefolder.fsfp.lang.messages");
-	
+
+	private final Injector injector;
+	private final FileSystemResource.Factory fileSystemResourceFactory;
+
+	FileSystemFolderPlugin() {
+		injector = Guice.createInjector(new FileSystemFolderPluginModule());
+		fileSystemResourceFactory = injector.getInstance(FileSystemResource.Factory.class);
+	}
+
 	/** Holds only the project version. It's used to always use the maven build number in code */
 	private static final PmsProperties properties = new PmsProperties();
 	static {
@@ -93,7 +105,7 @@ public class FileSystemFolderPlugin implements DlnaTreeFolderPlugin {
 	@Override
 	public DLNAResource getDLNAResource() {
 		if(fileSystemResource == null){
-			fileSystemResource = new FileSystemResource(rootFolderName, instanceConfig.getFolderPaths());
+			fileSystemResource = fileSystemResourceFactory.create(rootFolderName, instanceConfig.getFolderPaths());
 		}
 		
 		return fileSystemResource;

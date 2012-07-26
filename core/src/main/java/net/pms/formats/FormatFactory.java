@@ -19,15 +19,23 @@
  */
 package net.pms.formats;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.di.InjectionHelper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.google.inject.Injector;
 
 /**
  * This class matches and instantiates formats.
  */
+@Singleton
 public final class FormatFactory {
 	/**
 	 * Logger used for all logging.
@@ -37,20 +45,26 @@ public final class FormatFactory {
 	/**
 	 * Initial list of known formats.
 	 */
-	private static final Format[] FORMATS = new Format[] { new WEB(),
-			new MKV(), new M4A(), new MP3(), new ISO(), new MPG(), new WAV(),
-			new JPG(), new OGG(), new PNG(), new GIF(), new TIF(), new FLAC(),
-			new DVRMS(), new RAW() };
+	private final List<Format> formats = new ArrayList<Format>(); 
 
-	/**
-	 * The list of registered formats.
-	 */
-	private static ArrayList<Format> formats = new ArrayList<Format>(Arrays.asList(FORMATS));
-	
-	/**
-	 * This class is not meant to be instantiated.
-	 */
-	private FormatFactory() {
+	@Inject
+	FormatFactory() {
+		Injector injector = InjectionHelper.getInjector();
+		formats.add(injector.getInstance(WEB.class));
+		formats.add(injector.getInstance(MKV.class));
+		formats.add(injector.getInstance(M4A.class));
+		formats.add(injector.getInstance(MP3.class));
+		formats.add(injector.getInstance(ISO.class));
+		formats.add(injector.getInstance(MPG.class));
+		formats.add(injector.getInstance(WAV.class));
+		formats.add(injector.getInstance(JPG.class));
+		formats.add(injector.getInstance(OGG.class));
+		formats.add(injector.getInstance(PNG.class));
+		formats.add(injector.getInstance(GIF.class));
+		formats.add(injector.getInstance(TIF.class));
+		formats.add(injector.getInstance(FLAC.class));
+		formats.add(injector.getInstance(DVRMS.class));
+		formats.add(injector.getInstance(RAW.class));
 	}
 
 	/**
@@ -63,7 +77,7 @@ public final class FormatFactory {
 	 * @return The format.
 	 * @see Format#match(String)
 	 */
-	public static Format getAssociatedExtension(final String filename) {
+	public Format getAssociatedExtension(final String filename) {
 		for (Format ext : formats) {
 			if (ext.match(filename)) {
 				LOGGER.trace("Matched format " + ext + " to \"" + filename + "\"");
@@ -82,17 +96,8 @@ public final class FormatFactory {
 	 *
 	 * @return The list of known formats.
 	 */
-	public static ArrayList<Format> getExtensions() {
+	public List<Format> getExtensions() {
 		return formats;
-	}
-
-	/**
-	 * Sets the list of known formats.
-	 *
-	 * @param formatList The list of known formats.
-	 */
-	public static void setExtensions(ArrayList<Format> formatList) {
-		formats = formatList;
 	}
 }
 

@@ -24,7 +24,9 @@ import java.io.InputStream;
 
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAResource;
+import net.pms.formats.FormatFactory;
 import net.pms.network.HTTPResource;
 
 import com.google.inject.assistedinject.Assisted;
@@ -49,10 +51,14 @@ public class VirtualFolder extends DLNAResource {
 
 	/**
 	 * Temporary constructor to help with transition to DI.
-	 * @deprecated Use {@link #CueFolder(PmsCore, File)} instead.
+	 * @deprecated Use {@link #VirtualFolder(PmsCore, PmsConfiguration, FormatFactory, String, String)} instead.
 	 */
 	@Deprecated
 	public VirtualFolder(String name, String thumbnailIcon) {
+		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
+				InjectionHelper.getInjector().getInstance(PmsConfiguration.class),
+				InjectionHelper.getInjector().getInstance(FormatFactory.class),
+				name, thumbnailIcon);
 	}
 
 	/**
@@ -72,9 +78,10 @@ public class VirtualFolder extends DLNAResource {
 	 */
 	@AssistedInject
 	public VirtualFolder(PmsCore pmsCore, PmsConfiguration configuration,
+			FormatFactory formatFactory,
 			@Assisted("name") String name,
 			@Assisted("thumbnailIcon") String thumbnailIcon) {
-		super(pmsCore, configuration);
+		super(pmsCore, configuration, formatFactory);
 		this.name = name;
 		this.thumbnailIcon = thumbnailIcon;
 		if (thumbnailIcon != null && thumbnailIcon.toLowerCase().endsWith(".png")) {

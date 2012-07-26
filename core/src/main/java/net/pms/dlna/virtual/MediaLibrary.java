@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import net.pms.Messages;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
+import net.pms.formats.FormatFactory;
 
 public class MediaLibrary extends VirtualFolder {
 	private MediaLibraryFolder allFolder;
@@ -25,8 +26,9 @@ public class MediaLibrary extends VirtualFolder {
 	@Inject
 	public MediaLibrary(PmsCore pmsCore, PmsConfiguration configuration,
 			VirtualFolder.Factory virtualFolderFactory,
-			MediaLibraryFolder.Factory mediaLibraryFolderFactory) {
-		super(pmsCore, configuration, Messages.getString("PMS.2"), null);
+			MediaLibraryFolder.Factory mediaLibraryFolderFactory,
+			FormatFactory formatFactory) {
+		super(pmsCore, configuration, formatFactory, Messages.getString("PMS.2"), null);
 
 		VirtualFolder vfAudio = virtualFolderFactory.create(
 				Messages.getString("PMS.1"), null);

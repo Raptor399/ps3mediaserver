@@ -36,6 +36,7 @@ import com.google.inject.Injector;
  */
 public class FormatFactoryTest {
 	private Injector injector;
+	private FormatFactory formatFactory;
 
 	/**
 	 * Set up testing conditions before running the tests.
@@ -48,6 +49,7 @@ public class FormatFactoryTest {
 
 		// Instantiate Guice because some classes use InjectionHelper.getInjector()
 		injector = new PmsGuice().getInjector();
+		formatFactory = injector.getInstance(FormatFactory.class);
 	}
 
 	/**
@@ -56,15 +58,15 @@ public class FormatFactoryTest {
 	@Test
 	public final void testFormatFactoryEdgeCases() {
 		// Null string
-		Format result = FormatFactory.getAssociatedExtension(null);
+		Format result = formatFactory.getAssociatedExtension(null);
 		assertNull("Null string matches no format", result);
 
 		// Empty string
-		result = FormatFactory.getAssociatedExtension("");
+		result = formatFactory.getAssociatedExtension("");
 		assertNull("Empty string matches no extension", result);
 
 		// Unsupported protocol and extension
-		result = FormatFactory.getAssociatedExtension(
+		result = formatFactory.getAssociatedExtension(
 			"bogus://example.com/test.bogus"
 		);
 		assertNull(
@@ -85,7 +87,7 @@ public class FormatFactoryTest {
 		*/
 
 		// Unsupported extension
-		result = FormatFactory.getAssociatedExtension(
+		result = formatFactory.getAssociatedExtension(
 			"test.bogus"
 		);
 		assertNull(
@@ -131,7 +133,7 @@ public class FormatFactoryTest {
 	 *            The name of the expected format.
 	 */
 	private void testSingleFormat(final String filename, final String formatName) {
-		Format result = FormatFactory.getAssociatedExtension(filename);
+		Format result = formatFactory.getAssociatedExtension(filename);
 
 		if (result != null) {
 			assertEquals("\"" + filename + "\" is expected to match",

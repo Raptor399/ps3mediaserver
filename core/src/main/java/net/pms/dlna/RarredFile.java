@@ -27,6 +27,7 @@ import java.util.List;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
+import net.pms.formats.FormatFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,14 +61,16 @@ public class RarredFile extends DLNAResource {
 	public RarredFile(File f) {
 		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
 				InjectionHelper.getInjector().getInstance(PmsConfiguration.class),
-				InjectionHelper.getInjector().getInstance(RarredEntry.Factory.class), f);
+				InjectionHelper.getInjector().getInstance(RarredEntry.Factory.class),
+				InjectionHelper.getInjector().getInstance(FormatFactory.class),
+				f);
 	}
 
 	@AssistedInject
 	public RarredFile(PmsCore pmsCore, PmsConfiguration configuration,
-			RarredEntry.Factory rarredEntryFactory,
+			RarredEntry.Factory rarredEntryFactory, FormatFactory formatFactory,
 			@Assisted File f) {
-		super(pmsCore, configuration);
+		super(pmsCore, configuration, formatFactory);
 		this.f = f;
 		setLastmodified(f.lastModified());
 		try {

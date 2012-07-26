@@ -18,6 +18,7 @@ import net.pms.encoders.MEncoderVideo;
 import net.pms.encoders.MPlayerAudio;
 import net.pms.encoders.Player;
 import net.pms.formats.Format;
+import net.pms.formats.FormatFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -53,12 +54,13 @@ public class CueFolder extends DLNAResource {
 	@Deprecated
 	public CueFolder(File f) {
 		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
-				InjectionHelper.getInjector().getInstance(PmsConfiguration.class), f);
+				InjectionHelper.getInjector().getInstance(PmsConfiguration.class),
+				InjectionHelper.getInjector().getInstance(FormatFactory.class), f);
 	}
 
 	@AssistedInject
-	public CueFolder(PmsCore pmsCore, PmsConfiguration configuration, @Assisted File f) {
-		super(pmsCore, configuration);
+	public CueFolder(PmsCore pmsCore, PmsConfiguration configuration, FormatFactory formatFactory, @Assisted File f) {
+		super(pmsCore, configuration, formatFactory);
 		this.pmsCore = pmsCore;
 		playlistfile = f;
 		setLastmodified(playlistfile.lastModified());

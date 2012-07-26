@@ -11,6 +11,7 @@ import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
 import net.pms.formats.Format;
+import net.pms.formats.FormatFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,13 +45,16 @@ public class PlaylistFolder extends DLNAResource {
 		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
 				InjectionHelper.getInjector().getInstance(PmsConfiguration.class),
 				InjectionHelper.getInjector().getInstance(RealFile.Factory.class),
+				InjectionHelper.getInjector().getInstance(FormatFactory.class),
 				file);
 	}
 
 	@AssistedInject
 	public PlaylistFolder(PmsCore pmsCore, PmsConfiguration configuration,
-			RealFile.Factory realFileFactory, @Assisted File f) {
-		super(pmsCore, configuration);
+			RealFile.Factory realFileFactory,
+			FormatFactory formatFactory,
+			@Assisted File f) {
+		super(pmsCore, configuration, formatFactory);
 		this.pmsCore = pmsCore;
 		this.realFileFactory = realFileFactory;
 		playlistfile = f;
