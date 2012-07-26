@@ -30,7 +30,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import net.pms.PMS;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.api.PmsCore;
 import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.di.InjectionHelper;
 import net.pms.io.OutputParams;
@@ -39,8 +42,6 @@ import net.pms.io.SystemUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Injector;
 
 /**
  * Network speed tester class. This can be used in an asynchronous way, as it returns Future objects.
@@ -52,18 +53,20 @@ import com.google.inject.Injector;
  * @author zsombor <gzsombor@gmail.com>
  *
  */
+@Singleton
 public class SpeedStats {
-	private static SpeedStats instance = new SpeedStats();
 	private static ExecutorService executor = Executors.newCachedThreadPool();
+	private final PmsCore pmsCore;
 	private final ProcessWrapperFactory processWrapperFactory;
 
-	SpeedStats() {
-		Injector injector = InjectionHelper.getInjector();
-		processWrapperFactory = injector.getInstance(ProcessWrapperFactory.class);
+	@Inject
+	SpeedStats(PmsCore pmsCore, ProcessWrapperFactory processWrapperFactory) {
+		this.pmsCore = pmsCore;
+		this.processWrapperFactory = processWrapperFactory;
 	}
 
 	public static SpeedStats getInstance() {
-		return instance;
+		return InjectionHelper.getInjector().getInstance(SpeedStats.class);
 	}
 
 	private static final Logger logger = LoggerFactory.getLogger(SpeedStats.class);
@@ -141,7 +144,7 @@ public class SpeedStats {
 			OutputParams op = new OutputParams(null);
 			op.log = true;
 			op.maxBufferSize = 1;
-			SystemUtils sysUtil = PMS.get().getRegistry();
+			SystemUtils sysUtil = pmsCore.getRegistry();
 			final ProcessWrapper pw = processWrapperFactory.create(sysUtil.getPingCommand(addr.getHostAddress(), 3, 64000), op,
 					true, false);
 			Runnable r = new Runnable() {

@@ -62,6 +62,7 @@ import net.pms.newgui.plugins.PluginAboutPanel;
 import net.pms.newgui.plugins.PluginDetailDialog;
 import net.pms.newgui.plugins.PluginGroupPanel;
 import net.pms.util.CodecUtil;
+import net.pms.util.ProcessUtil;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
@@ -70,10 +71,11 @@ public class CoreModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		// This is here to help with the transition to DI
-		requestStaticInjection(UPNPHelper.class);
 		requestStaticInjection(CodecUtil.class);
-		requestStaticInjection(PlayerFactory.class);
 		requestStaticInjection(FrameAppender.class);
+		requestStaticInjection(PlayerFactory.class);
+		requestStaticInjection(ProcessUtil.class);
+		requestStaticInjection(UPNPHelper.class);
 
 		bind(PmsCore.class).to(PmsCoreImpl.class);
 

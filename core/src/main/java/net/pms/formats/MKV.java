@@ -18,7 +18,21 @@
  */
 package net.pms.formats;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
+import net.pms.configuration.RendererConfiguration;
+import net.pms.dlna.DLNAMediaInfo;
+
+@Singleton
 public class MKV extends MPG {
+	@Inject
+	public MKV(PmsCore pmsCore, PmsConfiguration configuration) {
+		super(pmsCore, configuration);
+	}
+
 	/**
 	 * {@inheritDoc} 
 	 */

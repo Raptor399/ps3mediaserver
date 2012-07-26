@@ -56,7 +56,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.pms.Messages;
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.encoders.Player;
@@ -314,9 +313,8 @@ public class TranscodingTab {
 	public void addEngines() {
 		ArrayList<Player> disPlayers = new ArrayList<Player>();
 		ArrayList<Player> ordPlayers = new ArrayList<Player>();
-		PmsCore r = PMS.get();
 
-		for (String id : configuration.getEnginesAsList(r.getRegistry())) {
+		for (String id : configuration.getEnginesAsList(pmsCore.getRegistry())) {
 			//boolean matched = false;
 			for (Player p : PlayerFactory.getAllPlayers()) {
 				if (p.id().equals(id)) {

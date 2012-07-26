@@ -20,7 +20,10 @@ package net.pms.formats;
 
 import java.util.ArrayList;
 
-import net.pms.PMS;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.dlna.DLNAMediaInfo;
@@ -28,7 +31,18 @@ import net.pms.encoders.FFMpegAudio;
 import net.pms.encoders.MPlayerAudio;
 import net.pms.encoders.Player;
 
+@Singleton
 public class WAV extends Format {
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
+
+	@Inject
+	public WAV(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+		type = AUDIO;
+	}
+	
 	/**
 	 * {@inheritDoc} 
 	 */
@@ -37,10 +51,6 @@ public class WAV extends Format {
 		return Identifier.WAV;
 	}
 
-	public WAV() {
-		type = AUDIO;
-	}
-	
 	@Override
 	public boolean transcodable() {
 		return true;
@@ -49,8 +59,8 @@ public class WAV extends Format {
 	@Override
 	public ArrayList<Class<? extends Player>> getProfiles() {
 		ArrayList<Class<? extends Player>> a = new ArrayList<Class<? extends Player>>();
-		PmsCore r = PMS.get();
-		for (String engine : PMS.getConfiguration().getEnginesAsList(r.getRegistry())) {
+
+		for (String engine : configuration.getEnginesAsList(pmsCore.getRegistry())) {
 			if (engine.equals(MPlayerAudio.ID)) {
 				a.add(MPlayerAudio.class);
 			} else if (engine.equals(FFMpegAudio.ID)) {

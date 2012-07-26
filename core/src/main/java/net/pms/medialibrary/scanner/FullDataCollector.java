@@ -24,12 +24,12 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.RealFile;
 import net.pms.formats.FLAC;
+import net.pms.formats.Format;
+import net.pms.formats.FormatFactory;
 import net.pms.formats.GIF;
 import net.pms.formats.ISO;
 import net.pms.formats.JPG;
@@ -41,14 +41,19 @@ import net.pms.formats.OGG;
 import net.pms.formats.PNG;
 import net.pms.formats.RAW;
 import net.pms.formats.TIF;
-import net.pms.medialibrary.commons.dataobjects.DOFileInfo;
 import net.pms.medialibrary.commons.dataobjects.DOAudioFileInfo;
+import net.pms.medialibrary.commons.dataobjects.DOFileInfo;
 import net.pms.medialibrary.commons.dataobjects.DOImageFileInfo;
 import net.pms.medialibrary.commons.dataobjects.DOManagedFile;
 import net.pms.medialibrary.commons.dataobjects.DOVideoFileInfo;
 import net.pms.medialibrary.commons.enumarations.FileType;
 import net.pms.medialibrary.commons.exceptions.InitialisationException;
 import net.pms.medialibrary.commons.helpers.FileImportHelper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
 
 public class FullDataCollector {	
 	private static final Logger log = LoggerFactory.getLogger(FullDataCollector.class);
@@ -230,23 +235,26 @@ public class FullDataCollector {
 	}
 
 	private void populateExtensions(){
-		this.audioFileExtensions = new ArrayList<String>();
-		this.audioFileExtensions.addAll(Arrays.asList(new M4A().getId()));
-		this.audioFileExtensions.addAll(Arrays.asList(new MP3().getId()));
-		this.audioFileExtensions.addAll(Arrays.asList(new OGG().getId()));
-		this.audioFileExtensions.addAll(Arrays.asList(new FLAC().getId()));
+		Injector injector = InjectionHelper.getInjector();
+		FormatFactory formatFactory = injector.getInstance(FormatFactory.class);
 
-		this.videoFileExtensions = new ArrayList<String>();
-		this.videoFileExtensions.addAll(Arrays.asList(new MKV().getId()));
-		this.videoFileExtensions.addAll(Arrays.asList(new ISO().getId()));
-		this.videoFileExtensions.addAll(Arrays.asList(new MPG().getId()));
+		audioFileExtensions = new ArrayList<String>();
+		videoFileExtensions = new ArrayList<String>();
+		imageFileExtensions = new ArrayList<String>();
 
-		this.imageFileExtensions = new ArrayList<String>();
-		this.imageFileExtensions.addAll(Arrays.asList(new JPG().getId()));
-		this.imageFileExtensions.addAll(Arrays.asList(new PNG().getId()));
-		this.imageFileExtensions.addAll(Arrays.asList(new GIF().getId()));
-		this.imageFileExtensions.addAll(Arrays.asList(new TIF().getId()));
-		this.imageFileExtensions.addAll(Arrays.asList(new RAW().getId()));
+		for (Format format : formatFactory.getFormats()) {
+			if (format.isAudio()) {
+				audioFileExtensions.addAll(Arrays.asList(format.getId()));
+			}
+
+			if (format.isVideo()) {
+				videoFileExtensions.addAll(Arrays.asList(format.getId()));
+			}
+
+			if (format.isImage()) {
+				imageFileExtensions.addAll(Arrays.asList(format.getId()));
+			}
+		}
 	}
 
 }

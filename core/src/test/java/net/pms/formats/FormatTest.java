@@ -79,25 +79,20 @@ public class FormatTest {
     @Test
 	public void testFormatIdentifiers() {
 		// Identifier tests based on the identifiers defined in getId() of each class
-    	DVRMS dvrms = injector.getInstance(DVRMS.class);
-		assertEquals("DVRMS matches \"test.dvr\"", true, dvrms.match("test.dvr"));
-
-		FLAC flac = injector.getInstance(FLAC.class);
-		assertEquals("FLAC matches \"test.flac\"", true, flac.match("test.flac"));
-
-		GIF gif = injector.getInstance(GIF.class);
-		assertEquals("GIF matches \"test.gif\"", true, gif.match("test.gif"));
-		assertEquals("ISO matches \"test.iso\"", true, new ISO().match("test.iso"));
-		assertEquals("JPG matches \"test.jpg\"", true, new JPG().match("test.jpg"));
-		assertEquals("M4A matches \"test.wma\"", true, new M4A().match("test.wma"));
-		assertEquals("MKV matches \"test.mkv\"", true, new MKV().match("test.mkv"));
-		assertEquals("MP3 matches \"test.mp3\"", true, new MP3().match("test.mp3"));
+		assertEquals("DVRMS matches \"test.dvr\"", true, injector.getInstance(DVRMS.class).match("test.dvr"));
+		assertEquals("FLAC matches \"test.flac\"", true, injector.getInstance(FLAC.class).match("test.flac"));
+		assertEquals("GIF matches \"test.gif\"", true, injector.getInstance(GIF.class).match("test.gif"));
+		assertEquals("ISO matches \"test.iso\"", true, injector.getInstance(ISO.class).match("test.iso"));
+		assertEquals("JPG matches \"test.jpg\"", true, injector.getInstance(JPG.class).match("test.jpg"));
+		assertEquals("M4A matches \"test.wma\"", true, injector.getInstance(M4A.class).match("test.wma"));
+		assertEquals("MKV matches \"test.mkv\"", true, injector.getInstance(MKV.class).match("test.mkv"));
+		assertEquals("MP3 matches \"test.mp3\"", true, injector.getInstance(MP3.class).match("test.mp3"));
 		assertEquals("MPG matches \"test.mpg\"", true, injector.getInstance(MPG.class).match("test.mpg"));
-		assertEquals("OGG matches \"test.ogg\"", true, new OGG().match("test.ogg"));
-		assertEquals("PNG matches \"test.png\"", true, new PNG().match("test.png"));
-		assertEquals("RAW matches \"test.arw\"", true, new RAW().match("test.arw"));
-		assertEquals("TIF matches \"test.tiff\"", true, new TIF().match("test.tiff"));
-		assertEquals("WAV matches \"test.wav\"", true, new WAV().match("test.wav"));
-		assertEquals("WEB matches \"http\"", true, new WEB().match("http://test.org/"));
+		assertEquals("OGG matches \"test.ogg\"", true, injector.getInstance(OGG.class).match("test.ogg"));
+		assertEquals("PNG matches \"test.png\"", true, injector.getInstance(PNG.class).match("test.png"));
+		assertEquals("RAW matches \"test.arw\"", true, injector.getInstance(RAW.class).match("test.arw"));
+		assertEquals("TIF matches \"test.tiff\"", true, injector.getInstance(TIF.class).match("test.tiff"));
+		assertEquals("WAV matches \"test.wav\"", true, injector.getInstance(WAV.class).match("test.wav"));
+		assertEquals("WEB matches \"http\"", true, injector.getInstance(WEB.class).match("http://test.org/"));
 	}
 }

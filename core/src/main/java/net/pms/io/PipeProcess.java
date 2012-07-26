@@ -50,6 +50,7 @@ public class PipeProcess {
 	@AssistedInject
 	public PipeProcess(PmsCore pmsCore, PmsConfiguration configuration,
 			ProcessWrapperFactory processWrapperFactory,
+			WindowsNamedPipe.Factory windowsNamedPipeFactory,
 			@Assisted String pipeName, @Assisted OutputParams params,
 			@Assisted String... extras) {
 
@@ -72,7 +73,7 @@ public class PipeProcess {
 		}
 
 		if (pmsCore.isWindows()) {
-			mk = new WindowsNamedPipe(pipeName, forcereconnect, in, params);
+			mk = windowsNamedPipeFactory.create(pipeName, forcereconnect, in, params);
 		} else {
 			linuxPipeName = getPipeName(pipeName);
 		}
@@ -81,8 +82,10 @@ public class PipeProcess {
 	@AssistedInject
 	public PipeProcess(PmsCore pmsCore, PmsConfiguration configuration,
 			ProcessWrapperFactory processWrapperFactory,
+			WindowsNamedPipe.Factory windowsNamedPipeFactory,
 			@Assisted String pipeName, @Assisted String... extras) {
-		this(pmsCore, configuration, processWrapperFactory, pipeName, null, extras);
+		this(pmsCore, configuration, processWrapperFactory,
+				windowsNamedPipeFactory, pipeName, null, extras);
 	}
 
 	private String getPipeName(String pipeName) {

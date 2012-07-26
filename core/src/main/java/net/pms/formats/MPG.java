@@ -21,6 +21,7 @@ package net.pms.formats;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
@@ -34,18 +35,10 @@ import net.pms.encoders.MEncoderVideo;
 import net.pms.encoders.Player;
 import net.pms.encoders.TSMuxerVideo;
 
+@Singleton
 public class MPG extends Format {
 	private final PmsCore pmsCore;
 	private final PmsConfiguration configuration;
-
-	/**
-	 * @deprecated Use {@link #MPG(PmsCore, PmsConfiguration)} instead.
-	 * This constructor helps during the transition to DI.
-	 */
-	public MPG() {
-		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
-				InjectionHelper.getInjector().getInstance(PmsConfiguration.class));
-	}
 
 	@Inject
 	public MPG(PmsCore pmsCore, PmsConfiguration configuration) {

@@ -18,13 +18,26 @@
  */
 package net.pms.formats;
 
+import java.util.ArrayList;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
+import net.pms.configuration.RendererConfiguration;
+import net.pms.dlna.DLNAMediaInfo;
 import net.pms.encoders.MEncoderVideo;
 import net.pms.encoders.Player;
 
-import java.util.ArrayList;
-
+@Singleton
 public class ISO extends MPG {
 	public static final String[] ISO_EXTENSIONS = new String[] { "iso", "img", /*"bin", "mdf", "nrg", "bwt", "cif","ccd", "vcd", "fcd"*/ };
+
+	@Inject
+	public ISO(PmsCore pmsCore, PmsConfiguration configuration) {
+		super(pmsCore, configuration);
+	}
 
 	/**
 	 * {@inheritDoc} 

@@ -151,7 +151,7 @@ public class MapFile extends DLNAResource {
 			File children[] = f.listFiles();
 			for (File child : children) {
 				if (child.isFile()) {
-					if (formatFactory.getAssociatedExtension(child.getName()) != null || isFileRelevant(child)) {
+					if (formatFactory.getAssociatedFormat(child.getName()) != null || isFileRelevant(child)) {
 						excludeNonRelevantFolder = false;
 						break;
 					}
@@ -326,7 +326,7 @@ public class MapFile extends DLNAResource {
 		}
 
 		for (File f : files) {
-			if (!f.isHidden() && (f.isDirectory() || formatFactory.getAssociatedExtension(f.getName()) != null)) {
+			if (!f.isHidden() && (f.isDirectory() || formatFactory.getAssociatedFormat(f.getName()) != null)) {
 				addedFiles.add(f);
 			}
 		}

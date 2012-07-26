@@ -18,10 +18,16 @@
  */
 package net.pms.formats;
 
-import net.pms.encoders.Player;
-
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.configuration.RendererConfiguration;
+import net.pms.dlna.DLNAMediaInfo;
+import net.pms.encoders.Player;
+
+@Singleton
 public class JPG extends Format {
 	/**
 	 * {@inheritDoc} 
@@ -31,6 +37,7 @@ public class JPG extends Format {
 		return Identifier.JPG;
 	}
 
+	@Inject
 	public JPG() {
 		type = IMAGE;
 	}

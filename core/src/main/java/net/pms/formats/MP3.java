@@ -18,10 +18,15 @@
  */
 package net.pms.formats;
 
-import net.pms.encoders.Player;
-
 import java.util.ArrayList;
 
+import javax.inject.Singleton;
+
+import net.pms.configuration.RendererConfiguration;
+import net.pms.dlna.DLNAMediaInfo;
+import net.pms.encoders.Player;
+
+@Singleton
 public class MP3 extends Format {
 	/**
 	 * {@inheritDoc} 

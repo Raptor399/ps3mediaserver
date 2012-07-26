@@ -182,7 +182,7 @@ public class RealFile extends MapFile {
 	@Override
 	protected void checktype() {
 		if (getFormat() == null) {
-			setFormat(formatFactory.getAssociatedExtension(getFile().getAbsolutePath()));
+			setFormat(formatFactory.getAssociatedFormat(getFile().getAbsolutePath()));
 		}
 
 		super.checktype();

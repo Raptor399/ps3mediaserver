@@ -18,6 +18,9 @@
  */
 package net.pms.formats;
 
+import javax.inject.Singleton;
+
+@Singleton
 public class GIF extends JPG {
 	/**
 	 * {@inheritDoc} 

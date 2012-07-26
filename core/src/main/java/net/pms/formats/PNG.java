@@ -18,7 +18,9 @@
  */
 package net.pms.formats;
 
+import javax.inject.Singleton;
 
+@Singleton
 public class PNG extends JPG {
 	/**
 	 * {@inheritDoc} 

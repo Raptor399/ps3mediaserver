@@ -21,17 +21,21 @@ package net.pms.formats;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.encoders.Player;
 import net.pms.encoders.TsMuxerAudio;
 
+@Singleton
 public class AudioAsVideo extends MKV {
 	private final PmsCore pmsCore;
 
 	@Inject
-	protected AudioAsVideo(PmsCore pmsCore) {
+	protected AudioAsVideo(PmsCore pmsCore, PmsConfiguration configuration) {
+		super(pmsCore, configuration);
 		this.pmsCore = pmsCore;
 	}
 

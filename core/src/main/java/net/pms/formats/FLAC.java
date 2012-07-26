@@ -17,10 +17,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */package net.pms.formats;
 
-import com.google.inject.Injector;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+import net.pms.api.PmsConfiguration;
+import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
 
+import com.google.inject.Injector;
+
+@Singleton
 public class FLAC extends OGG {
 	/**
 	 * {@inheritDoc} 
@@ -30,7 +36,9 @@ public class FLAC extends OGG {
 		return Identifier.FLAC;
 	}
 
-	public FLAC() {
+	@Inject
+	public FLAC(PmsCore pmsCore, PmsConfiguration configuration) {
+		super(pmsCore, configuration);
 		type = AUDIO;
 		Injector injector = InjectionHelper.getInjector();
 		secondaryFormat = injector.getInstance(AudioAsVideo.class);

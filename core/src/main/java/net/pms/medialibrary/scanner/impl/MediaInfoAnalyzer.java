@@ -5,23 +5,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.pms.formats.FLAC;
-import net.pms.formats.GIF;
-import net.pms.formats.ISO;
-import net.pms.formats.JPG;
-import net.pms.formats.M4A;
-import net.pms.formats.MKV;
-import net.pms.formats.MP3;
-import net.pms.formats.MPG;
-import net.pms.formats.OGG;
-import net.pms.formats.PNG;
-import net.pms.formats.RAW;
-import net.pms.formats.TIF;
+import net.pms.di.InjectionHelper;
+import net.pms.formats.Format;
+import net.pms.formats.FormatFactory;
 import net.pms.medialibrary.commons.enumarations.FileType;
 import net.pms.medialibrary.scanner.MediaInfo;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
+import com.google.inject.Injector;
 
 public class MediaInfoAnalyzer implements MediaInfo {
 
@@ -30,26 +21,26 @@ public class MediaInfoAnalyzer implements MediaInfo {
 	private final Set<String> imageFileExtensions;
 
 	MediaInfoAnalyzer() {
-		final Set<String> tmp = new HashSet<String>();
-		tmp.addAll(Arrays.asList(new M4A().getId()));
-		tmp.addAll(Arrays.asList(new MP3().getId()));
-		tmp.addAll(Arrays.asList(new OGG().getId()));
-		tmp.addAll(Arrays.asList(new FLAC().getId()));
-		audioFileExtensions = ImmutableSet.copyOf(tmp);
+		Injector injector = InjectionHelper.getInjector();
+		FormatFactory formatFactory = injector.getInstance(FormatFactory.class);
 
-		tmp.clear();
-		tmp.addAll(Arrays.asList(new MKV().getId()));
-		tmp.addAll(Arrays.asList(new ISO().getId()));
-		tmp.addAll(Arrays.asList(new MPG().getId()));
-		videoFileExtensions = ImmutableSet.copyOf(tmp);
+		audioFileExtensions = new HashSet<String>();
+		videoFileExtensions = new HashSet<String>();
+		imageFileExtensions = new HashSet<String>();
 
-		tmp.clear();
-		tmp.addAll(Arrays.asList(new JPG().getId()));
-		tmp.addAll(Arrays.asList(new PNG().getId()));
-		tmp.addAll(Arrays.asList(new GIF().getId()));
-		tmp.addAll(Arrays.asList(new TIF().getId()));
-		tmp.addAll(Arrays.asList(new RAW().getId()));
-		imageFileExtensions = ImmutableSet.copyOf(tmp);
+		for (Format format : formatFactory.getFormats()) {
+			if (format.isAudio()) {
+				audioFileExtensions.addAll(Arrays.asList(format.getId()));
+			}
+
+			if (format.isVideo()) {
+				videoFileExtensions.addAll(Arrays.asList(format.getId()));
+			}
+
+			if (format.isImage()) {
+				imageFileExtensions.addAll(Arrays.asList(format.getId()));
+			}
+		}
 	}
 
 	@Override

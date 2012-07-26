@@ -220,7 +220,7 @@ public abstract class VirtualVideoAction extends DLNAResource {
 	 */
 	@Override
 	public boolean isValid() {
-		setFormat(formatFactory.getAssociatedExtension("toto.mpg"));
+		setFormat(formatFactory.getAssociatedFormat("toto.mpg"));
 		return true;
 	}
 }

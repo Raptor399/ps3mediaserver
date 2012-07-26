@@ -20,7 +20,10 @@ package net.pms.formats;
 
 import java.util.ArrayList;
 
-import net.pms.PMS;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.dlna.DLNAMediaInfo;
@@ -31,7 +34,17 @@ import net.pms.encoders.Player;
 import net.pms.encoders.VideoLanAudioStreaming;
 import net.pms.encoders.VideoLanVideoStreaming;
 
+@Singleton
 public class WEB extends Format {
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
+
+	@Inject
+	public WEB(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+	}
+
 	/**
 	 * {@inheritDoc} 
 	 */
@@ -59,8 +72,8 @@ public class WEB extends Format {
 	public ArrayList<Class<? extends Player>> getProfiles() {
 		ArrayList<Class<? extends Player>> a = new ArrayList<Class<? extends Player>>();
 		if (type == AUDIO) {
-			PmsCore r = PMS.get();
-			for (String engine : PMS.getConfiguration().getEnginesAsList(r.getRegistry())) {
+
+			for (String engine : configuration.getEnginesAsList(pmsCore.getRegistry())) {
 				if (engine.equals(MPlayerWebAudio.ID)) {
 					a.add(MPlayerWebAudio.class);
 				} else if (engine.equals(VideoLanAudioStreaming.ID)) {
@@ -68,8 +81,7 @@ public class WEB extends Format {
 				}
 			}
 		} else {
-			PmsCore r = PMS.get();
-			for (String engine : PMS.getConfiguration().getEnginesAsList(r.getRegistry())) {
+			for (String engine : configuration.getEnginesAsList(pmsCore.getRegistry())) {
 				if (engine.equals(MEncoderWebVideo.ID)) {
 					a.add(MEncoderWebVideo.class);
 				} else if (engine.equals(VideoLanVideoStreaming.ID)) {

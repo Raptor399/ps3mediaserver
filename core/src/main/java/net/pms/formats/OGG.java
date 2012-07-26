@@ -20,7 +20,10 @@ package net.pms.formats;
 
 import java.util.ArrayList;
 
-import net.pms.PMS;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.dlna.DLNAMediaInfo;
@@ -28,7 +31,17 @@ import net.pms.encoders.FFMpegAudio;
 import net.pms.encoders.MPlayerAudio;
 import net.pms.encoders.Player;
 
+@Singleton
 public class OGG extends MP3 {
+	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
+
+	@Inject
+	public OGG(PmsCore pmsCore, PmsConfiguration configuration) {
+		this.pmsCore = pmsCore;
+		this.configuration = configuration;
+	}
+
 	/**
 	 * {@inheritDoc} 
 	 */
@@ -45,8 +58,8 @@ public class OGG extends MP3 {
 	@Override
 	public ArrayList<Class<? extends Player>> getProfiles() {
 		ArrayList<Class<? extends Player>> a = new ArrayList<Class<? extends Player>>();
-		PmsCore r = PMS.get();
-		for (String engine : PMS.getConfiguration().getEnginesAsList(r.getRegistry())) {
+
+		for (String engine : configuration.getEnginesAsList(pmsCore.getRegistry())) {
 			if (engine.equals(MPlayerAudio.ID)) {
 				a.add(MPlayerAudio.class);
 			} else if (engine.equals(FFMpegAudio.ID)) {

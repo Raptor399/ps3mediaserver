@@ -21,6 +21,7 @@ package net.pms.formats;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
@@ -30,6 +31,7 @@ import net.pms.dlna.DLNAMediaInfo;
 import net.pms.encoders.FFMpegDVRMSRemux;
 import net.pms.encoders.Player;
 
+@Singleton
 public class DVRMS extends Format {
 	private final PmsCore pmsCore;
 	private final PmsConfiguration configuration;

@@ -53,20 +53,20 @@ public class FormatFactoryTest {
 	}
 
 	/**
-	 * Test edge cases for {@link FormatFactory#getAssociatedExtension(String)}.
+	 * Test edge cases for {@link FormatFactory#getAssociatedFormat(String)}.
 	 */
 	@Test
 	public final void testFormatFactoryEdgeCases() {
 		// Null string
-		Format result = formatFactory.getAssociatedExtension(null);
+		Format result = formatFactory.getAssociatedFormat(null);
 		assertNull("Null string matches no format", result);
 
 		// Empty string
-		result = formatFactory.getAssociatedExtension("");
+		result = formatFactory.getAssociatedFormat("");
 		assertNull("Empty string matches no extension", result);
 
 		// Unsupported protocol and extension
-		result = formatFactory.getAssociatedExtension(
+		result = formatFactory.getAssociatedFormat(
 			"bogus://example.com/test.bogus"
 		);
 		assertNull(
@@ -87,7 +87,7 @@ public class FormatFactoryTest {
 		*/
 
 		// Unsupported extension
-		result = formatFactory.getAssociatedExtension(
+		result = formatFactory.getAssociatedFormat(
 			"test.bogus"
 		);
 		assertNull(
@@ -101,7 +101,7 @@ public class FormatFactoryTest {
 	}
 
 	/**
-	 * Test whether {@link FormatFactory#getAssociatedExtension(String)} manages
+	 * Test whether {@link FormatFactory#getAssociatedFormat(String)} manages
 	 * to retrieve the correct format.
 	 */
 	@Test
@@ -133,7 +133,7 @@ public class FormatFactoryTest {
 	 *            The name of the expected format.
 	 */
 	private void testSingleFormat(final String filename, final String formatName) {
-		Format result = formatFactory.getAssociatedExtension(filename);
+		Format result = formatFactory.getAssociatedFormat(filename);
 
 		if (result != null) {
 			assertEquals("\"" + filename + "\" is expected to match",

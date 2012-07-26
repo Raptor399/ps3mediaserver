@@ -1,12 +1,15 @@
 package net.pms.util;
 
-import net.pms.PMS;
-import net.pms.io.Gob;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
+
+import javax.inject.Inject;
+
+import net.pms.api.PmsCore;
+import net.pms.io.Gob;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // see https://code.google.com/p/ps3mediaserver/issues/detail?id=680
 // for background/issues/discussion related to this class
@@ -16,6 +19,10 @@ public class ProcessUtil {
 	private static final int TERM_TIMEOUT = 10000;
 	// how long to wait in milliseconds until a kill -ALRM on Unix has been deemed to fail
 	private static final int ALRM_TIMEOUT = 2000;
+
+	// Injected by Guice with requestStaticInjection
+	@Inject
+	private static PmsCore pmsCore;
 
 	// work around a Java bug
 	// see: http://kylecartmell.com/?p=9
@@ -140,6 +147,6 @@ public class ProcessUtil {
 	}
 
 	public static String getShortFileNameIfWideChars(String name) {
-		return PMS.get().getRegistry().getShortPathNameW(name);
+		return pmsCore.getRegistry().getShortPathNameW(name);
 	}
 }

@@ -18,7 +18,9 @@
  */
 package net.pms.formats;
 
+import javax.inject.Singleton;
 
+@Singleton
 public class TIF extends JPG {
 	/**
 	 * {@inheritDoc} 

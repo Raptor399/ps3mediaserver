@@ -103,7 +103,7 @@ public class FormatRecognitionTest {
 		// Construct GIF information
 		DLNAMediaInfo info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("gif");
-		Format format = new GIF();
+		Format format = injector.getInstance(GIF.class);
 		format.match("test.gif");
 		assertEquals("PS3 is compatible with GIF", true,
 				conf.isCompatible(info, format));
@@ -123,7 +123,7 @@ public class FormatRecognitionTest {
 		// Construct JPG information
 		DLNAMediaInfo info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("png");
-		Format format = new PNG();
+		Format format = injector.getInstance(PNG.class);
 		format.match("test.png");
 		assertEquals("PS3 is compatible with PNG", true,
 				conf.isCompatible(info, format));
@@ -143,7 +143,7 @@ public class FormatRecognitionTest {
 		// Construct JPG information
 		DLNAMediaInfo info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("tiff");
-		Format format = new TIF();
+		Format format = injector.getInstance(TIF.class);
 		format.match("test.tiff");
 		assertEquals("PS3 is compatible with TIFF", true,
 				conf.isCompatible(info, format));
@@ -164,7 +164,7 @@ public class FormatRecognitionTest {
 		DLNAMediaInfo info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("mp3");
 		info.setMimeType(HTTPResource.AUDIO_MP3_TYPEMIME);
-		DLNAMediaAudio audio = new DLNAMediaAudio();
+		DLNAMediaAudio audio = injector.getInstance(DLNAMediaAudio.class);
 		audio.getAudioProperties().setNumberOfChannels(2);
 		ArrayList<DLNAMediaAudio> audioCodes = new ArrayList<DLNAMediaAudio>();
 		audioCodes.add(audio);
@@ -194,7 +194,7 @@ public class FormatRecognitionTest {
 		// Construct regular two channel MPG information
 		DLNAMediaInfo info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("avi");
-		DLNAMediaAudio audio = new DLNAMediaAudio();
+		DLNAMediaAudio audio = injector.getInstance(DLNAMediaAudio.class);
 		audio.setCodecA("ac3");
 		audio.getAudioProperties().setNumberOfChannels(5);
 		ArrayList<DLNAMediaAudio> audioCodes = new ArrayList<DLNAMediaAudio>();
@@ -226,7 +226,7 @@ public class FormatRecognitionTest {
 		// Construct MKV information
 		DLNAMediaInfo info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("mkv");
-		DLNAMediaAudio audio = new DLNAMediaAudio();
+		DLNAMediaAudio audio = injector.getInstance(DLNAMediaAudio.class);
 		audio.setCodecA("ac3");
 		audio.getAudioProperties().setNumberOfChannels(5);
 		ArrayList<DLNAMediaAudio> audioCodes = new ArrayList<DLNAMediaAudio>();
@@ -258,7 +258,7 @@ public class FormatRecognitionTest {
 		// DVRMS: false
 		DLNAMediaInfo info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("dvr");
-		Format format = new DVRMS();
+		Format format = injector.getInstance(DVRMS.class);
 		format.match("test.dvr");
 		assertEquals("isCompatible() gives same outcome as ps3compatible() for DVRMS",
 				format.ps3compatible(),	conf.isCompatible(info, format));
@@ -266,7 +266,7 @@ public class FormatRecognitionTest {
 		// ISO: false
 		info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("iso");
-		format = new ISO();
+		format = injector.getInstance(ISO.class);
 		format.match("test.iso");
 		assertEquals("isCompatible() gives same outcome as ps3compatible() for ISO",
 				format.ps3compatible(),	conf.isCompatible(info, format));
@@ -274,7 +274,7 @@ public class FormatRecognitionTest {
 		// JPG: true
 		info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("jpg");
-		format = new JPG();
+		format = injector.getInstance(JPG.class);
 		format.match("test.jpeg");
 		assertEquals("isCompatible() gives same outcome as ps3compatible() for JPG",
 				format.ps3compatible(),	conf.isCompatible(info, format));
@@ -282,7 +282,7 @@ public class FormatRecognitionTest {
 		// M4A: false
 		info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("m4a");
-		format = new M4A();
+		format = injector.getInstance(M4A.class);
 		format.match("test.m4a");
 		assertEquals("isCompatible() gives same outcome as ps3compatible() for M4A",
 				format.ps3compatible(),	conf.isCompatible(info, format));
@@ -290,7 +290,7 @@ public class FormatRecognitionTest {
 		// MKV: false
 		info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("mkv");
-		format = new MKV();
+		format = injector.getInstance(MKV.class);
 		format.match("test.mkv");
 		assertEquals("isCompatible() gives same outcome as ps3compatible() for MKV",
 				format.ps3compatible(),	conf.isCompatible(info, format));
@@ -298,7 +298,7 @@ public class FormatRecognitionTest {
 		// MP3: true
 		info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("mp3");
-		format = new MP3();
+		format = injector.getInstance(MP3.class);
 		format.match("test.mp3");
 		assertEquals("isCompatible() gives same outcome as ps3compatible() for MP3",
 				format.ps3compatible(),	conf.isCompatible(info, format));
@@ -314,7 +314,7 @@ public class FormatRecognitionTest {
 		// OGG: false
 		info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("ogg");
-		format = new OGG();
+		format = injector.getInstance(OGG.class);
 		format.match("test.ogg");
 		assertEquals("isCompatible() gives same outcome as ps3compatible() for OGG",
 				format.ps3compatible(),	conf.isCompatible(info, format));
@@ -322,7 +322,7 @@ public class FormatRecognitionTest {
 		// RAW: false
 		info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("raw");
-		format = new RAW();
+		format = injector.getInstance(RAW.class);
 		format.match("test.arw");
 		assertEquals("isCompatible() gives same outcome as ps3compatible() for RAW",
 				format.ps3compatible(),	conf.isCompatible(info, format));
@@ -330,7 +330,7 @@ public class FormatRecognitionTest {
 		// WAV: true
 		info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("wav");
-		format = new WAV();
+		format = injector.getInstance(WAV.class);
 		format.match("test.wav");
 		assertEquals("isCompatible() gives same outcome as ps3compatible() for WAV",
 				format.ps3compatible(),	conf.isCompatible(info, format));
@@ -338,7 +338,7 @@ public class FormatRecognitionTest {
 		// WEB: type=IMAGE
 		info = injector.getInstance(DLNAMediaInfo.class);
 		info.setContainer("jpg");
-		format = new WEB();
+		format = injector.getInstance(WEB.class);
 		format.match("http://test.org/");
 		format.setType(Format.IMAGE);
 		assertEquals("isCompatible() give same outcome as ps3compatible() for WEB image",

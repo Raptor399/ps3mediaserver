@@ -77,7 +77,7 @@ public final class FormatFactory {
 	 * @return The format.
 	 * @see Format#match(String)
 	 */
-	public Format getAssociatedExtension(final String filename) {
+	public Format getAssociatedFormat(final String filename) {
 		for (Format ext : formats) {
 			if (ext.match(filename)) {
 				LOGGER.trace("Matched format " + ext + " to \"" + filename + "\"");
@@ -96,7 +96,7 @@ public final class FormatFactory {
 	 *
 	 * @return The list of known formats.
 	 */
-	public List<Format> getExtensions() {
+	public List<Format> getFormats() {
 		return formats;
 	}
 }

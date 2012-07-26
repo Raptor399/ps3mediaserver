@@ -218,7 +218,7 @@ public class FileSystemResource extends VirtualFolder {
 						present = true;
 					}
 				}
-				if (!present && (f.isDirectory() || rootFolders.contains(f) || formatFactory.getAssociatedExtension(f.getName()) != null))
+				if (!present && (f.isDirectory() || rootFolders.contains(f) || formatFactory.getAssociatedFormat(f.getName()) != null))
 					addedFiles.add(f);
 			}
 			i++;
@@ -329,7 +329,7 @@ public class FileSystemResource extends VirtualFolder {
 			}
 			for (File child : children) {
 				if (child.isFile()) {
-					if (formatFactory.getAssociatedExtension(child.getName()) != null || isFileRelevant(child)) {
+					if (formatFactory.getAssociatedFormat(child.getName()) != null || isFileRelevant(child)) {
 						excludeNonRelevantFolder = false;
 						break;
 					}
