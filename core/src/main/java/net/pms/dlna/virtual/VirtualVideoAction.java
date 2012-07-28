@@ -54,6 +54,19 @@ public abstract class VirtualVideoAction extends DLNAResource {
 	private final FormatFactory formatFactory;
 
 	/**
+	 * Constructor for backwards compatibility.
+	 *
+	 * @param name
+	 * @param enabled
+	 */
+	public VirtualVideoAction(String name, boolean enabled) {
+		this(InjectionHelper.getInjector().getInstance(PmsCore.class),
+				InjectionHelper.getInjector().getInstance(PmsConfiguration.class),
+				InjectionHelper.getInjector().getInstance(FormatFactory.class),
+				name, enabled);
+	}
+
+	/**
 	 * Constructor for this class. Recommended instantation includes overriding
 	 * the {@link #enable()} function (example shown in the link).
 	 * 

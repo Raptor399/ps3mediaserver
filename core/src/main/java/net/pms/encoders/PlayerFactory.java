@@ -22,6 +22,8 @@ package net.pms.encoders;
 import java.io.File;
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
@@ -64,7 +66,10 @@ public final class PlayerFactory {
 	 */
 	private static SystemUtils utils;
 
+	@Inject
 	private static PmsCore pmsCore;
+
+	@Inject
 	private static PmsConfiguration configuration;
 
 	/**

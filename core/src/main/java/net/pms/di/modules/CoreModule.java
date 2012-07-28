@@ -44,6 +44,7 @@ import net.pms.encoders.AviDemuxerInputStream;
 import net.pms.encoders.PlayerFactory;
 import net.pms.io.BufferedOutputFile;
 import net.pms.io.BufferedOutputFileImpl;
+import net.pms.io.OutputBufferConsumer;
 import net.pms.io.PipeIPCProcess;
 import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
@@ -135,6 +136,10 @@ public class CoreModule extends AbstractModule {
 		install(new FactoryModuleBuilder()
 				.implement(MediaLibraryFolder.class, MediaLibraryFolder.class)
 				.build(MediaLibraryFolder.Factory.class));
+
+		install(new FactoryModuleBuilder()
+			.implement(OutputBufferConsumer.class, OutputBufferConsumer.class)
+			.build(OutputBufferConsumer.Factory.class));
 
 		install(new FactoryModuleBuilder()
 				.implement(PipeIPCProcess.class, PipeIPCProcess.class)

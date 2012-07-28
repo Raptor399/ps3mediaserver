@@ -64,31 +64,39 @@ public class ProcessWrapperImpl extends Thread implements ProcessWrapper {
 
 	private final PmsCore pmsCore;
 	private final AviDemuxerInputStreamFactory aviDemuxerInputStreamFactory;
+	private final OutputBufferConsumer.Factory outputBufferConsumerFactory;
 
 	@AssistedInject
 	public ProcessWrapperImpl(PmsCore pmsCore,
 			AviDemuxerInputStreamFactory aviDemuxerInputStreamFactory,
+			OutputBufferConsumer.Factory outputBufferConsumerFactory,
 			@Assisted String cmdArray[], @Assisted OutputParams params) {
-		this(pmsCore, aviDemuxerInputStreamFactory, cmdArray, params, false, false);
+		this(pmsCore, aviDemuxerInputStreamFactory,
+				outputBufferConsumerFactory, cmdArray, params, false, false);
 	}
 
 	@AssistedInject
 	public ProcessWrapperImpl(PmsCore pmsCore,
 			AviDemuxerInputStreamFactory aviDemuxerInputStreamFactory,
+			OutputBufferConsumer.Factory outputBufferConsumerFactory,
 			@Assisted String cmdArray[], @Assisted OutputParams params,
 			@Assisted boolean keepOutput) {
-		this(pmsCore, aviDemuxerInputStreamFactory, cmdArray, params, keepOutput, keepOutput);
+		this(pmsCore, aviDemuxerInputStreamFactory,
+				outputBufferConsumerFactory, cmdArray, params, keepOutput,
+				keepOutput);
 	}
 
 	@AssistedInject
 	public ProcessWrapperImpl(PmsCore pmsCore,
 			AviDemuxerInputStreamFactory aviDemuxerInputStreamFactory,
+			OutputBufferConsumer.Factory outputBufferConsumerFactory,
 			@Assisted String cmdArray[], @Assisted OutputParams params,
 			@Assisted("keepStdout") boolean keepStdout, @Assisted("keepStderr") boolean keepStderr) {
 		super();
 
 		this.pmsCore = pmsCore;
 		this.aviDemuxerInputStreamFactory = aviDemuxerInputStreamFactory;
+		this.outputBufferConsumerFactory = outputBufferConsumerFactory;
 
 		// Determine a suitable thread name for this process:
 		// use the command name, but remove its path first.
@@ -167,7 +175,7 @@ public class ProcessWrapperImpl extends Thread implements ProcessWrapper {
 				bo = params.input_pipes[0].getDirectBuffer();
 				if (bo == null || params.losslessaudio || params.lossyaudio || params.no_videoencode) {
 					InputStream is = params.input_pipes[0].getInputStream();
-					outConsumer = new OutputBufferConsumer((params.avidemux) ? aviDemuxerInputStreamFactory.create(is, params, attachedProcesses) : is, params);
+					outConsumer = outputBufferConsumerFactory.create((params.avidemux) ? aviDemuxerInputStreamFactory.create(is, params, attachedProcesses) : is, params);
 					bo = outConsumer.getBuffer();
 				}
 				bo.attachThread(this);
@@ -177,7 +185,7 @@ public class ProcessWrapperImpl extends Thread implements ProcessWrapper {
 					? new OutputTextConsumer(process.getInputStream(), true)
 					: new OutputTextLogger(process.getInputStream());
 			} else {
-				outConsumer = new OutputBufferConsumer(process.getInputStream(), params);
+				outConsumer = outputBufferConsumerFactory.create(process.getInputStream(), params);
 				bo = outConsumer.getBuffer();
 				bo.attachThread(this);
 			}
