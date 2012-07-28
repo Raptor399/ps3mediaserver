@@ -28,7 +28,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import net.pms.Messages;
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 

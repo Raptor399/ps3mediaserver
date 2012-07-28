@@ -18,7 +18,6 @@
  */
 package net.pms.io;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,10 +29,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import net.pms.PMS;
 import net.pms.api.PmsCore;
 import net.pms.api.io.BufferedOutputFileFactory;
-import net.pms.dlna.CueFolder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

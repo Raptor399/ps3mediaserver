@@ -31,7 +31,6 @@ import net.pms.configuration.PmsConfigurationImpl;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.configuration.WindowsRegistryProgramPaths;
 import net.pms.di.PmsGuice;
-import net.pms.di.modules.CoreModule;
 import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.LibMediaInfoParser;
@@ -44,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 

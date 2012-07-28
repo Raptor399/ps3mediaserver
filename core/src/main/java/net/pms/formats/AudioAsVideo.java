@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.encoders.Player;

@@ -38,10 +38,6 @@ import net.pms.io.ProcessWrapper;
 public class TsMuxerAudio extends TSMuxerVideo {
 	public static final String ID = "tsmuxeraudio";
 
-	private final PmsConfiguration configuration;
-	private final ProcessWrapperFactory processWrapperFactory;
-	private final PipeProcessFactory pipeProcessFactory;
-	private final PipeIPCProcessFactory pipeIPCProcessFactory;
 
 	@Inject
 	public TsMuxerAudio(PmsConfiguration configuration,
@@ -49,10 +45,6 @@ public class TsMuxerAudio extends TSMuxerVideo {
 			PipeProcessFactory pipeProcessFactory,
 			PipeIPCProcessFactory pipeIPCProcessFactory) {
 		super(configuration, processWrapperFactory, pipeProcessFactory, pipeIPCProcessFactory);
-		this.configuration = configuration;
-		this.processWrapperFactory = processWrapperFactory;
-		this.pipeProcessFactory = pipeProcessFactory;
-		this.pipeIPCProcessFactory = pipeIPCProcessFactory;
 	}
 
 	@Override

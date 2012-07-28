@@ -57,7 +57,6 @@ public class ShutdownPlugin implements DlnaTreeFolderPlugin {
 	/**
 	 * Properties object to retrieve project properties.
 	 */
-	private Properties properties = new Properties();
 
 	/**
 	 * Constructor for the plugin.

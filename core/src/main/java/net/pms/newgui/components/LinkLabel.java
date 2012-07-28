@@ -8,7 +8,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.JLabel;
 
 import net.pms.api.PmsCore;
-import net.pms.configuration.MapFileConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -39,15 +39,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import net.pms.Messages;
-import net.pms.PMS;
 import net.pms.api.PmsCore;
 import net.pms.newgui.LooksFrame;
 import net.pms.util.PropertiesUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.jna.Platform;
 
 /**
  * Base implementation for the SystemUtils class for the generic cases.

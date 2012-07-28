@@ -70,7 +70,6 @@ import net.pms.newgui.LooksFrame;
 import net.pms.plugins.PluginsFactory;
 import net.pms.plugins.notifications.StartStopNotifier;
 import net.pms.update.AutoUpdater;
-import net.pms.update.AutoUpdater.Factory;
 import net.pms.util.ProcessUtil;
 import net.pms.util.PropertiesUtil;
 import net.pms.util.SystemErrWrapper;

@@ -28,7 +28,6 @@ import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ServerSocketChannel;
 import java.util.concurrent.Executors;
 
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 
 import org.apache.commons.lang.StringUtils;

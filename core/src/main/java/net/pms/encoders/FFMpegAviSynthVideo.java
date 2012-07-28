@@ -29,7 +29,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.swing.JComponent;
 
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.io.PipeIPCProcessFactory;
 import net.pms.api.io.ProcessWrapperFactory;
@@ -52,16 +51,12 @@ public class FFMpegAviSynthVideo extends FFMpegVideo {
 	public static final String ID      = "avsffmpeg";
 
 	private final PmsConfiguration configuration;
-	private final ProcessWrapperFactory processWrapperFactory;
-	private final PipeIPCProcessFactory pipeIPCProcessFactory;
 
 	@Inject
 	public FFMpegAviSynthVideo(PmsConfiguration configuration, ProcessWrapperFactory processWrapperFactory, PipeIPCProcessFactory pipeIPCProcessFactory) {
 		super(configuration, processWrapperFactory, pipeIPCProcessFactory);
 
 		this.configuration = configuration;
-		this.processWrapperFactory = processWrapperFactory;
-		this.pipeIPCProcessFactory = pipeIPCProcessFactory;
 	}
 
 	@Override

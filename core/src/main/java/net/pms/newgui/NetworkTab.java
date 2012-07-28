@@ -45,7 +45,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import net.pms.Messages;
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.util.KeyedComboBoxModel;

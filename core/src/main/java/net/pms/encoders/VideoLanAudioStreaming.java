@@ -31,18 +31,12 @@ import net.pms.formats.Format;
 public class VideoLanAudioStreaming extends VideoLanVideoStreaming {
 	public static final String ID = "vlcaudio";
 
-	private final PmsConfiguration configuration;
-	private final ProcessWrapperFactory processWrapperFactory;
-	private final PipeProcessFactory pipeProcessFactory;
 
 	@Inject
 	public VideoLanAudioStreaming(PmsConfiguration configuration,
 			ProcessWrapperFactory processWrapperFactory,
 			PipeProcessFactory pipeProcessFactory) {
 		super(configuration, processWrapperFactory, pipeProcessFactory);
-		this.configuration = configuration;
-		this.processWrapperFactory = processWrapperFactory;
-		this.pipeProcessFactory = pipeProcessFactory;
 	}
 
 	@Override

@@ -26,7 +26,6 @@ import javax.inject.Singleton;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;
-import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.encoders.FFMpegAviSynthVideo;
 import net.pms.encoders.FFMpegVideo;

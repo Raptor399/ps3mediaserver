@@ -55,9 +55,6 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
-
 @Singleton
 public class MediaLibraryStorage implements IMediaLibraryStorage {		
 	private static final String PMS_MEDIA_LIBRARY_DB = "pms_media_library.db";

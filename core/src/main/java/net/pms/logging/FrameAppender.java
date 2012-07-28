@@ -23,7 +23,6 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
-import net.pms.PMS;
 import net.pms.api.PmsCore;
 import net.pms.gui.IFrame;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;

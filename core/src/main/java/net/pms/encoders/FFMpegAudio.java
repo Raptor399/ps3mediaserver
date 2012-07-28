@@ -29,7 +29,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 
 import net.pms.Messages;
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.io.PipeIPCProcessFactory;
 import net.pms.api.io.ProcessWrapperFactory;
@@ -50,16 +49,12 @@ public class FFMpegAudio extends FFMpegVideo {
 	public static final String ID = "ffmpegaudio";
 
 	private final PmsConfiguration configuration;
-	private final ProcessWrapperFactory processWrapperFactory;
-	private final PipeIPCProcessFactory pipeIPCProcessFactory;
 
 	@Inject
 	public FFMpegAudio(PmsConfiguration configuration, ProcessWrapperFactory processWrapperFactory, PipeIPCProcessFactory pipeIPCProcessFactory) {
 		super(configuration, processWrapperFactory, pipeIPCProcessFactory);
 
 		this.configuration = configuration;
-		this.processWrapperFactory = processWrapperFactory;
-		this.pipeIPCProcessFactory = pipeIPCProcessFactory;
 	}
 
 	JCheckBox noresample;

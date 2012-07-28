@@ -37,19 +37,12 @@ import net.pms.io.ProcessWrapper;
 public class MPlayerWebAudio extends MPlayerAudio {
 	public static final String ID = "mplayerwebaudio";
 
-	private final PmsConfiguration configuration;
-	private final ProcessWrapperFactory processWrapperFactory;
-	private final PipeProcessFactory pipeProcessFactory;
 
 	@Inject
 	public MPlayerWebAudio(PmsConfiguration configuration,
 			ProcessWrapperFactory processWrapperFactory,
 			PipeProcessFactory pipeProcessFactory) {
 		super(configuration, processWrapperFactory, pipeProcessFactory);
-	
-		this.configuration = configuration;
-		this.processWrapperFactory = processWrapperFactory;
-		this.pipeProcessFactory = pipeProcessFactory;
 	}
 
 	@Override

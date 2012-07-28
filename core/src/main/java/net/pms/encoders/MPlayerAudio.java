@@ -29,7 +29,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 
 import net.pms.Messages;
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.io.PipeProcessFactory;
 import net.pms.api.io.ProcessWrapperFactory;

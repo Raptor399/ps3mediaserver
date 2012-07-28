@@ -39,7 +39,6 @@ import net.pms.network.HTTPResource;
 @Singleton
 public class MPlayerWebVideoDump extends MPlayerAudio {
 
-	private final PmsConfiguration configuration;
 	private final ProcessWrapperFactory processWrapperFactory;
 	private final PipeProcessFactory pipeProcessFactory;
 
@@ -49,7 +48,6 @@ public class MPlayerWebVideoDump extends MPlayerAudio {
 			PipeProcessFactory pipeProcessFactory) {
 		super(configuration, processWrapperFactory, pipeProcessFactory);
 	
-		this.configuration = configuration;
 		this.processWrapperFactory = processWrapperFactory;
 		this.pipeProcessFactory = pipeProcessFactory;
 	}

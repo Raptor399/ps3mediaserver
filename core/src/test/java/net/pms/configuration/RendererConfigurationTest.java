@@ -36,7 +36,6 @@ import java.util.Set;
 
 import net.pms.api.PmsConfiguration;
 import net.pms.di.PmsGuice;
-import net.pms.di.modules.CoreModule;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.junit.Before;
@@ -45,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 

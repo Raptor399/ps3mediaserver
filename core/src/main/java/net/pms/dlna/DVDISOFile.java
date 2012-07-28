@@ -21,7 +21,6 @@ package net.pms.dlna;
 import java.io.File;
 import java.util.List;
 
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.api.io.ProcessWrapperFactory;
