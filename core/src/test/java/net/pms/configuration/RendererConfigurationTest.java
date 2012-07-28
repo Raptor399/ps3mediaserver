@@ -35,6 +35,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import net.pms.api.PmsConfiguration;
+import net.pms.di.PmsGuice;
+import net.pms.di.modules.CoreModule;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.junit.Before;
@@ -43,19 +45,29 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
 
 /**
  * Test the RendererConfiguration class
  */
 public class RendererConfigurationTest {
 	private final Map<String, String> testCases = new HashMap<String, String>();
+	private Injector injector;
+	private WindowsRegistryProgramPaths.Factory windowsRegistryProgramPathsFactory;
 
 	@Before
 	public void setUp() {
 		// Silence all log messages from the PMS code that is being tested
 		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 		context.reset(); 
-		
+
+		// Instantiate Guice via PmsGuice because some classes use InjectionHelper.getInjector()
+		injector = new PmsGuice().getInjector();
+
+		windowsRegistryProgramPathsFactory = injector.getInstance(WindowsRegistryProgramPaths.Factory.class); 
+
 		// Set locale to EN to ignore translations for renderers
 		Locale.setDefault(Locale.ENGLISH);
 
@@ -122,7 +134,7 @@ public class RendererConfigurationTest {
 		PmsConfiguration pmsConf = null;
 
 		try {
-			pmsConf = new PmsConfigurationImpl(false);
+			pmsConf = new PmsConfigurationImpl(windowsRegistryProgramPathsFactory, false);
 		} catch (IOException e) {
 			// This should be impossible since no configuration file will be loaded.
 		} catch (ConfigurationException e) {
@@ -150,7 +162,7 @@ public class RendererConfigurationTest {
 		PmsConfiguration pmsConf = null;
 
 		try {
-			pmsConf = new PmsConfigurationImpl(false);
+			pmsConf = new PmsConfigurationImpl(windowsRegistryProgramPathsFactory, false);
 		} catch (IOException e) {
 			// This should be impossible since no configuration file will be loaded.
 		} catch (ConfigurationException e) {
@@ -178,7 +190,7 @@ public class RendererConfigurationTest {
 		PmsConfiguration pmsConf = null;
 
 		try {
-			pmsConf = new PmsConfigurationImpl(false);
+			pmsConf = new PmsConfigurationImpl(windowsRegistryProgramPathsFactory, false);
 		} catch (IOException e) {
 			// This should be impossible since no configuration file will be loaded.
 		} catch (ConfigurationException e) {
@@ -203,7 +215,7 @@ public class RendererConfigurationTest {
 		PmsConfiguration pmsConf = null;
 
 		try {
-			pmsConf = new PmsConfigurationImpl(false);
+			pmsConf = new PmsConfigurationImpl(windowsRegistryProgramPathsFactory, false);
 		} catch (IOException e) {
 			// This should be impossible since no configuration file will be loaded.
 		} catch (ConfigurationException e) {

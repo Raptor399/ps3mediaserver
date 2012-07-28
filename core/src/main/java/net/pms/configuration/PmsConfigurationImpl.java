@@ -33,6 +33,7 @@ import javax.inject.Singleton;
 
 import net.pms.Messages;
 import net.pms.api.PmsConfiguration;
+import net.pms.configuration.WindowsRegistryProgramPaths.Factory;
 import net.pms.io.SystemUtils;
 import net.pms.util.PropertiesUtil;
 
@@ -217,6 +218,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 					KEY_HIDE_EXTENSIONS);
 
 	private final IpFilter filter = new IpFilter();
+	private final Factory windowsRegistryProgramPathsFactory;
 
 	/*
 		The following code enables a single setting - PMS_PROFILE - to be used to
@@ -346,8 +348,8 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 * @throws java.io.IOException
 	 */
 	@Inject
-	public PmsConfigurationImpl() throws ConfigurationException, IOException {
-		this(true);
+	public PmsConfigurationImpl(WindowsRegistryProgramPaths.Factory windowsRegistryProgramPathsFactory) throws ConfigurationException, IOException {
+		this(windowsRegistryProgramPathsFactory, true);
 	}
 
 	/**
@@ -359,7 +361,8 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 * @throws org.apache.commons.configuration.ConfigurationException
 	 * @throws java.io.IOException
 	 */
-	public PmsConfigurationImpl(boolean loadFile) throws ConfigurationException, IOException {
+	public PmsConfigurationImpl(WindowsRegistryProgramPaths.Factory windowsRegistryProgramPathsFactory, boolean loadFile) throws ConfigurationException, IOException {
+		this.windowsRegistryProgramPathsFactory = windowsRegistryProgramPathsFactory; 
 		configuration = new PropertiesConfiguration();
 		configuration.setListDelimiter((char) 0);
 
@@ -405,10 +408,10 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 * then the Windows registry, then check for a platform-specific
 	 * default.
 	 */
-	private static ProgramPathDisabler createProgramPathsChain(Configuration configuration) {
+	private ProgramPathDisabler createProgramPathsChain(Configuration configuration) {
 		return new ProgramPathDisabler(
 			new ConfigurationProgramPaths(configuration,
-			new WindowsRegistryProgramPaths(
+					windowsRegistryProgramPathsFactory.create(
 			new PlatformSpecificDefaultPathsFactory().get())));
 	}
 

@@ -28,6 +28,7 @@ import net.pms.api.io.PipeIPCProcessFactory;
 import net.pms.api.io.PipeProcessFactory;
 import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.PmsConfigurationImpl;
+import net.pms.configuration.WindowsRegistryProgramPaths;
 import net.pms.dlna.CueFolder;
 import net.pms.dlna.DLNAMediaDatabase;
 import net.pms.dlna.DVDISOFile;
@@ -188,6 +189,10 @@ public class CoreModule extends AbstractModule {
 		install(new FactoryModuleBuilder()
 				.implement(VirtualVideoAction.class, VirtualVideoAction.class)
 				.build(VirtualVideoAction.Factory.class));
+
+		install(new FactoryModuleBuilder()
+				.implement(WindowsRegistryProgramPaths.class, WindowsRegistryProgramPaths.class)
+				.build(WindowsRegistryProgramPaths.Factory.class));
 
 		install(new FactoryModuleBuilder()
 				.implement(ZippedFile.class, ZippedFile.class)

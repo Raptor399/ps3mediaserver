@@ -43,7 +43,7 @@ public class FormatTest {
 		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.reset();
 
-		// Instantiate Guice because some classes use InjectionHelper.getInjector()
+		// Instantiate Guice via PmsGuice because some classes use InjectionHelper.getInjector()
 		injector = new PmsGuice().getInjector();
 	}
 

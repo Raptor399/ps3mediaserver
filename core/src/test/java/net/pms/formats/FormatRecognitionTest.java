@@ -29,7 +29,9 @@ import java.util.ArrayList;
 import net.pms.api.PmsConfiguration;
 import net.pms.configuration.PmsConfigurationImpl;
 import net.pms.configuration.RendererConfiguration;
-import net.pms.di.InjectionHelper;
+import net.pms.configuration.WindowsRegistryProgramPaths;
+import net.pms.di.PmsGuice;
+import net.pms.di.modules.CoreModule;
 import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.LibMediaInfoParser;
@@ -40,9 +42,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Injector;
-
 import ch.qos.logback.classic.LoggerContext;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 
 /**
@@ -58,17 +61,20 @@ public class FormatRecognitionTest {
 		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.reset(); 
 
+		// Instantiate Guice via PmsGuice because some classes use InjectionHelper.getInjector()
+		injector = new PmsGuice().getInjector();
+
+		WindowsRegistryProgramPaths.Factory windowsRegistryProgramPathsFactory = injector.getInstance(WindowsRegistryProgramPaths.Factory.class); 
 		PmsConfiguration pmsConf = null;
 
 		try {
-			pmsConf = new PmsConfigurationImpl(false);
+			pmsConf = new PmsConfigurationImpl(windowsRegistryProgramPathsFactory, false);
 		} catch (IOException e) {
 			// This should be impossible since no configuration file will be loaded.
 		} catch (ConfigurationException e) {
 			// This should be impossible since no configuration file will be loaded.
 		}
 
-		injector = InjectionHelper.getInjector();
 
 		// Initialize the RendererConfiguration
 		RendererConfiguration.loadRendererConfigurations(pmsConf);
