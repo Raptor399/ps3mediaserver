@@ -29,7 +29,7 @@ import java.util.ArrayList;
 
 import javax.inject.Singleton;
 
-import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
 import net.pms.api.io.PipeProcessFactory;
 import net.pms.di.InjectionHelper;
 import net.pms.io.Gob;
@@ -73,12 +73,15 @@ public class AviDemuxerInputStream extends InputStream {
 	private InputStream realIS;
 	private Thread parsing;
 	private final OutputParams params;
+	private final PmsConfiguration configuration;
 	private final PipeProcessFactory pipeProcessFactory;
 
 	@AssistedInject
-	public AviDemuxerInputStream(PipeProcessFactory ppf, @Assisted InputStream fin,
+	public AviDemuxerInputStream(PmsConfiguration conf,
+			PipeProcessFactory ppf, @Assisted InputStream fin,
 			@Assisted OutputParams outputParams,
 			@Assisted ArrayList<ProcessWrapper> at) throws IOException {
+		this.configuration = conf;
 		this.pipeProcessFactory = ppf;
 		this.params = outputParams;
 		stream = fin;
@@ -117,7 +120,7 @@ public class AviDemuxerInputStream extends InputStream {
 					// TODO(tcox): Is this used anymore?
 					Injector injector = InjectionHelper.getInjector();
 					TSMuxerVideo ts = injector.getInstance(TSMuxerVideo.class);
-					File f = new File(PMS.getConfiguration().getTempFolder(), "pms-tsmuxer.meta");
+					File f = new File(configuration.getTempFolder(), "pms-tsmuxer.meta");
 					PrintWriter pw = new PrintWriter(f);
 					pw.println("MUXOPT --no-pcr-on-video-pid --no-asyncio --new-audio-pes --vbr --vbv-len=500");
 					String videoType = "V_MPEG-2";

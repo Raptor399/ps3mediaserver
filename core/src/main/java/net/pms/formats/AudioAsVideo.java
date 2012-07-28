@@ -32,11 +32,13 @@ import net.pms.encoders.TsMuxerAudio;
 @Singleton
 public class AudioAsVideo extends MKV {
 	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
 
 	@Inject
 	protected AudioAsVideo(PmsCore pmsCore, PmsConfiguration configuration) {
 		super(pmsCore, configuration);
 		this.pmsCore = pmsCore;
+		this.configuration = configuration;
 	}
 
 	/**
@@ -51,7 +53,7 @@ public class AudioAsVideo extends MKV {
 	public ArrayList<Class<? extends Player>> getProfiles() {
 		ArrayList<Class<? extends Player>> a = new ArrayList<Class<? extends Player>>();
 
-		for (String engine : PMS.getConfiguration().getEnginesAsList(pmsCore.getRegistry())) {
+		for (String engine : configuration.getEnginesAsList(pmsCore.getRegistry())) {
 			if (engine.equals(TsMuxerAudio.ID)) {
 				a.add(TsMuxerAudio.class);
 			}

@@ -62,6 +62,7 @@ import net.pms.network.UPNPHelper;
 import net.pms.newgui.plugins.PluginAboutPanel;
 import net.pms.newgui.plugins.PluginDetailDialog;
 import net.pms.newgui.plugins.PluginGroupPanel;
+import net.pms.update.AutoUpdater;
 import net.pms.util.CodecUtil;
 import net.pms.util.ProcessUtil;
 
@@ -81,6 +82,10 @@ public class CoreModule extends AbstractModule {
 		bind(PmsCore.class).to(PmsCoreImpl.class);
 
 		bind(PmsConfiguration.class).to(PmsConfigurationImpl.class);
+
+		install(new FactoryModuleBuilder()
+				.implement(AutoUpdater.class, AutoUpdater.class)
+				.build(AutoUpdater.class));
 
 		install(new FactoryModuleBuilder()
 				.implement(AviDemuxerInputStream.class, AviDemuxerInputStream.class)

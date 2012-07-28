@@ -70,6 +70,7 @@ import net.pms.newgui.LooksFrame;
 import net.pms.plugins.PluginsFactory;
 import net.pms.plugins.notifications.StartStopNotifier;
 import net.pms.update.AutoUpdater;
+import net.pms.update.AutoUpdater.Factory;
 import net.pms.util.ProcessUtil;
 import net.pms.util.PropertiesUtil;
 import net.pms.util.SystemErrWrapper;
@@ -101,6 +102,7 @@ public class PmsCoreImpl implements PmsCore {
 	private final ProcessWrapperFactory processWrapperFactory;
 	private final HTTPServer.Factory httpServerFactory;
 	private final DLNAMediaDatabase.Factory dlnaMediaDatabaseFactory;
+	private final AutoUpdater.Factory autoUpdaterFactory;
 
 	/**
 	 * Default constructor that initializes the PMS core.
@@ -109,11 +111,13 @@ public class PmsCoreImpl implements PmsCore {
 	protected PmsCoreImpl(PmsConfiguration configuration,
 			ProcessWrapperFactory processWrapperFactory,
 			HTTPServer.Factory httpServerFactory,
-			DLNAMediaDatabase.Factory dlnaMediaDatabaseFactory) {
+			DLNAMediaDatabase.Factory dlnaMediaDatabaseFactory,
+			AutoUpdater.Factory autoUpdaterFactory) {
 		this.configuration = configuration;
 		this.processWrapperFactory = processWrapperFactory;
 		this.httpServerFactory = httpServerFactory;
 		this.dlnaMediaDatabaseFactory = dlnaMediaDatabaseFactory;
+		this.autoUpdaterFactory = autoUpdaterFactory;
 	}
 
 	/**
@@ -303,7 +307,7 @@ public class PmsCoreImpl implements PmsCore {
 
 		if (Build.isUpdatable()) {
 			final String serverURL = Build.getUpdateServerURL();
-			autoUpdater = new AutoUpdater(serverURL, getVersion());
+			autoUpdater = autoUpdaterFactory.create(serverURL, getVersion());
 		}
 
 		registry = createSystemUtils();
