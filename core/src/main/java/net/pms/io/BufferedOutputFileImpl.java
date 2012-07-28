@@ -29,6 +29,7 @@ import java.util.TimerTask;
 
 import net.pms.Messages;
 import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 
 import org.slf4j.Logger;
@@ -53,6 +54,7 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 	private static final Logger LOGGER = LoggerFactory.getLogger(BufferedOutputFileImpl.class);
 
 	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
 
 	/**
 	 * Initial size for the buffer in bytes.
@@ -74,7 +76,7 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 	private boolean eof;
 	private long writeCount;
 	private byte buffer[];
-	private boolean forcefirst = (PMS.getConfiguration().getTrancodeBlocksMultipleConnections() && PMS.getConfiguration().getTrancodeKeepFirstConnections());
+	private boolean forcefirst;
 	private ArrayList<WaitBufferedInputStream> inputStreams;
 	private ProcessWrapper attachedThread;
 	private int secondread_minsize;
@@ -177,8 +179,10 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 	 * 				dimensions and behavior.
 	 */
 	@AssistedInject
-	public BufferedOutputFileImpl(PmsCore core, @Assisted OutputParams params) {
+	public BufferedOutputFileImpl(PmsCore core, PmsConfiguration configuration,
+			@Assisted OutputParams params) {
 		this.pmsCore = core;
+		this.configuration = configuration;
 		this.minMemorySize = (int) (1048576 * params.minBufferSize);
 		this.maxMemorySize = (int) (1048576 * params.maxBufferSize);
 
@@ -198,8 +202,10 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 		this.timeend = params.timeend;
 		this.shiftScr = params.shift_scr;
 
+		forcefirst = (configuration.getTrancodeBlocksMultipleConnections() && configuration.getTrancodeKeepFirstConnections());
+
 		if ((maxMemorySize > INITIAL_BUFFER_SIZE) && 
-			!PMS.getConfiguration().initBufferMax()) {
+			!configuration.initBufferMax()) {
 			// Try to limit memory usage a bit.
 			// Start with a modest allocation initially, grow to max when needed later.
 			buffer = growBuffer(null, INITIAL_BUFFER_SIZE);
@@ -267,11 +273,11 @@ public class BufferedOutputFileImpl extends OutputStream implements BufferedOutp
 			attachedThread.setReadyToStop(false);
 		}
 		WaitBufferedInputStream atominputStream = null;
-		if (!PMS.getConfiguration().getTrancodeBlocksMultipleConnections() || getCurrentInputStream() == null) {
+		if (!configuration.getTrancodeBlocksMultipleConnections() || getCurrentInputStream() == null) {
 			atominputStream = new WaitBufferedInputStream(this);
 			inputStreams.add(atominputStream);
 		} else {
-			if (PMS.getConfiguration().getTrancodeKeepFirstConnections()) {
+			if (configuration.getTrancodeKeepFirstConnections()) {
 				LOGGER.debug("BufferedOutputFile is already attached to an InputStream: " + getCurrentInputStream());
 			} else {
 				// Ditlew - fixes the above (the above iterator breaks on items getting close, cause they will remove them self from the arraylist)

@@ -41,6 +41,7 @@ public class DVDISOFile extends VirtualFolder {
 	private final File f;
 	private final ProcessWrapperFactory processWrapperFactory;
 	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
 	private final DVDISOTitle.Factory dvdIsoTitleFactory;
 
 	/**
@@ -74,6 +75,7 @@ public class DVDISOFile extends VirtualFolder {
 			FormatFactory formatFactory, @Assisted File f) {
 		super(pmsCore, configuration, formatFactory, PREFIX + (f.isFile() ? f.getName() : "VIDEO_TS"), null);
 		this.pmsCore = pmsCore;
+		this.configuration = configuration;
 		this.processWrapperFactory = processWrapperFactory;
 		this.dvdIsoTitleFactory = dvdIsoTitleFactory;
 		this.f = f;
@@ -83,8 +85,8 @@ public class DVDISOFile extends VirtualFolder {
 	@Override
 	public void resolve() {
 		double titles[] = new double[100];
-		String cmd[] = new String[]{PMS.getConfiguration().getMplayerPath(), "-identify", "-endpos", "0", "-v", "-ao", "null", "-vc", "null", "-vo", "null", "-dvd-device", ProcessUtil.getShortFileNameIfWideChars(f.getAbsolutePath()), "dvd://1"};
-		OutputParams params = new OutputParams(PMS.getConfiguration());
+		String cmd[] = new String[]{configuration.getMplayerPath(), "-identify", "-endpos", "0", "-v", "-ao", "null", "-vc", "null", "-vo", "null", "-dvd-device", ProcessUtil.getShortFileNameIfWideChars(f.getAbsolutePath()), "dvd://1"};
+		OutputParams params = new OutputParams(configuration);
 		params.maxBufferSize = 1;
 		params.log = true;
 		final ProcessWrapper pw = processWrapperFactory.create(cmd, params, true, false);

@@ -33,7 +33,7 @@ import java.net.URLConnection;
 
 import javax.inject.Inject;
 
-import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.dlna.DLNAResource;
@@ -75,10 +75,12 @@ public class HTTPResource {
 	public static final String BMP_TYPEMIME = "image/bmp";
 
 	private final PmsCore pmsCore;
+	private final PmsConfiguration configuration;
 
 	@Inject
-	public HTTPResource(PmsCore pmsCore) {
+	public HTTPResource(PmsCore pmsCore, PmsConfiguration configuration) {
 		this.pmsCore = pmsCore;
+		this.configuration = configuration;
 	}
 
 	/**
@@ -133,7 +135,7 @@ public class HTTPResource {
 			String hostName = convertURLToFileName(host);
 			String fileName = url.getFile();
 			fileName = convertURLToFileName(fileName);
-			File hostDir = new File(PMS.getConfiguration().getTempFolder(), hostName);
+			File hostDir = new File(configuration.getTempFolder(), hostName);
 
 			if (!hostDir.isDirectory()) {
 				if (!hostDir.mkdir()) {

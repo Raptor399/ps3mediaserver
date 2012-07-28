@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 import javax.swing.JComponent;
 
 import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
 import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAResource;
@@ -23,9 +24,12 @@ public class RAWThumbnailer extends Player {
 	public final static String ID = "rawthumbs";
 
 	private static ProcessWrapperFactory processWrapperFactory;
+	private static PmsConfiguration configuration;
 
 	@Inject
-	RAWThumbnailer(ProcessWrapperFactory processWrapperFactory) {
+	RAWThumbnailer(PmsConfiguration configuration,
+			ProcessWrapperFactory processWrapperFactory) {
+		this.configuration = configuration;
 		this.processWrapperFactory = processWrapperFactory;
 	}
 
@@ -46,7 +50,7 @@ public class RAWThumbnailer extends Player {
 
 	@Override
 	public String executable() {
-		return PMS.getConfiguration().getDCRawPath();
+		return configuration.getDCRawPath();
 	}
 
 	@Override
@@ -103,11 +107,11 @@ public class RAWThumbnailer extends Player {
 		return Format.IMAGE;
 	}
 
-	public static byte[] getThumbnail(OutputParams params, String fileName) throws Exception {
+	public byte[] getThumbnail(OutputParams params, String fileName) throws Exception {
 		params.log = false;
 
 		String cmdArray[] = new String[4];
-		cmdArray[0] = PMS.getConfiguration().getDCRawPath();
+		cmdArray[0] = configuration.getDCRawPath();
 		cmdArray[1] = "-e";
 		cmdArray[2] = "-c";
 		cmdArray[3] = fileName;

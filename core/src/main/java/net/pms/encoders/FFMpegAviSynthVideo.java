@@ -84,17 +84,17 @@ public class FFMpegAviSynthVideo extends FFMpegVideo {
 		return config("FFMpegVideo.0");
 	}
 
-	public static File getAVSScript(String fileName, DLNAMediaSubtitle subTrack) throws IOException {
+	public File getAVSScript(String fileName, DLNAMediaSubtitle subTrack) throws IOException {
 		return getAVSScript(fileName, subTrack, -1, -1);
 	}
 
-	public static File getAVSScript(String fileName, DLNAMediaSubtitle subTrack, int fromFrame, int toFrame) throws IOException {
+	public File getAVSScript(String fileName, DLNAMediaSubtitle subTrack, int fromFrame, int toFrame) throws IOException {
 		String onlyFileName = fileName.substring(1 + fileName.lastIndexOf("\\"));
-		File file = new File(PMS.getConfiguration().getTempFolder(), "pms-avs-" + onlyFileName + ".avs");
+		File file = new File(configuration.getTempFolder(), "pms-avs-" + onlyFileName + ".avs");
 		PrintWriter pw = new PrintWriter(new FileOutputStream(file));
 
 		String convertfps = "";
-		if (PMS.getConfiguration().getAvisynthConvertFps()) {
+		if (configuration.getAvisynthConvertFps()) {
 			convertfps = ", convertfps=true";
 		}
 		File f = new File(fileName);
@@ -103,7 +103,7 @@ public class FFMpegAviSynthVideo extends FFMpegVideo {
 		}
 		String movieLine = "clip=DirectShowSource(\"" + fileName + "\"" + convertfps + ")";
 		String subLine = null;
-		if (subTrack != null && PMS.getConfiguration().getUseSubtitles() && !PMS.getConfiguration().isMencoderDisableSubs()) {
+		if (subTrack != null && configuration.getUseSubtitles() && !configuration.isMencoderDisableSubs()) {
 			logger.trace("Avisynth script: Using sub track: " + subTrack);
 			if (subTrack.getExternalFile() != null) {
 				String function = "TextSub";
@@ -117,7 +117,7 @@ public class FFMpegAviSynthVideo extends FFMpegVideo {
 		ArrayList<String> lines = new ArrayList<String>();
 
 		boolean fullyManaged = false;
-		String script = PMS.getConfiguration().getAvisynthScript();
+		String script = configuration.getAvisynthScript();
 		StringTokenizer st = new StringTokenizer(script, AVS_SEPARATOR);
 		while (st.hasMoreTokens()) {
 			String line = st.nextToken();

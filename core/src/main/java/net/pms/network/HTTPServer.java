@@ -58,6 +58,7 @@ public class HTTPServer implements Runnable {
 	private NetworkInterface ni = null;
 	private ChannelGroup group;
 
+	private final PmsConfiguration configuration;
 	private final RequestHandler.Factory requestHandlerFactory;
 	private final HttpServerPipelineFactory.Factory httpServerPipelineFactoryFactory;
 
@@ -79,17 +80,17 @@ public class HTTPServer implements Runnable {
 	}
 
 	@AssistedInject
-	public HTTPServer(RequestHandler.Factory requestHandlerFactory,
+	public HTTPServer(PmsConfiguration configuration, 
+			RequestHandler.Factory requestHandlerFactory,
 			HttpServerPipelineFactory.Factory httpServerPipelineFactoryFactory,
 			@Assisted int port) {
+		this.configuration = configuration;
 		this.requestHandlerFactory = requestHandlerFactory;
 		this.httpServerPipelineFactoryFactory = httpServerPipelineFactoryFactory;
 		this.port = port;
 	}
 
 	public boolean start() throws IOException {
-		final PmsConfiguration configuration = PMS.getConfiguration();
-
 		hostName = configuration.getServerHostname();
 		InetSocketAddress address = null;
 		if (hostName != null && hostName.length() > 0) {
@@ -210,7 +211,7 @@ public class HTTPServer implements Runnable {
 				String ip = inetAddress.getHostAddress();
 				// basic ipfilter: solntcev at gmail dot com
 				boolean ignore = false;
-				if (!PMS.getConfiguration().getIpFiltering().allowed(inetAddress)) {
+				if (!configuration.getIpFiltering().allowed(inetAddress)) {
 					ignore = true;
 					socket.close();
 					logger.trace("Ignoring request from: " + ip);

@@ -439,7 +439,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 	public DLNAResource(PmsCore pmsCore, PmsConfiguration configuration,
 			FormatFactory formatFactory, int specificType) {
-		super(pmsCore);
+		super(pmsCore, configuration);
 		this.pmsCore = pmsCore;
 		this.configuration = configuration;
 		this.formatFactory = formatFactory;

@@ -120,7 +120,7 @@ public class PMS {
 		try {
 			configuration = injector.getInstance(PmsConfigurationImpl.class);
 
-			assert getConfiguration() != null;
+			assert configuration != null;
 
 			// Load the (optional) logback config file. This has to be called after 'new PmsConfiguration'
 			// as the logging starts immediately and some filters need the PmsConfiguration.

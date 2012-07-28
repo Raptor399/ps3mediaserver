@@ -95,10 +95,10 @@ public class NetworkTab {
 		smcheckBox.addItemListener(new ItemListener() {
 
 			public void itemStateChanged(ItemEvent e) {
-				PMS.getConfiguration().setMinimized((e.getStateChange() == ItemEvent.SELECTED));
+				configuration.setMinimized((e.getStateChange() == ItemEvent.SELECTED));
 			}
 		});
-		if (PMS.getConfiguration().isMinimized()) {
+		if (configuration.isMinimized()) {
 			smcheckBox.setSelected(true);
 		}
 
@@ -170,7 +170,7 @@ public class NetworkTab {
 
 
 
-		host = new JTextField(PMS.getConfiguration().getServerHostname());
+		host = new JTextField(configuration.getServerHostname());
 		host.addKeyListener(new KeyListener() {
 
 			@Override
@@ -257,7 +257,7 @@ public class NetworkTab {
 			}
 		});
 
-		ip_filter = new JTextField(PMS.getConfiguration().getIpFilter());
+		ip_filter = new JTextField(configuration.getIpFilter());
 		ip_filter.addKeyListener(new KeyListener() {
 
 			@Override
@@ -292,21 +292,21 @@ public class NetworkTab {
 
 
 		newHTTPEngine = new JCheckBox(Messages.getString("NetworkTab.32"));
-		newHTTPEngine.setSelected(PMS.getConfiguration().isHTTPEngineV2());
+		newHTTPEngine.setSelected(configuration.isHTTPEngineV2());
 		newHTTPEngine.addItemListener(new ItemListener() {
 
 			public void itemStateChanged(ItemEvent e) {
-				PMS.getConfiguration().setHTTPEngineV2((e.getStateChange() == ItemEvent.SELECTED));
+				configuration.setHTTPEngineV2((e.getStateChange() == ItemEvent.SELECTED));
 			}
 		});
 		builder.add(newHTTPEngine, cc.xyw(1, 33, 9));
 
 		preventSleep = new JCheckBox(Messages.getString("NetworkTab.33"));
-		preventSleep.setSelected(PMS.getConfiguration().isPreventsSleep());
+		preventSleep.setSelected(configuration.isPreventsSleep());
 		preventSleep.addItemListener(new ItemListener() {
 
 			public void itemStateChanged(ItemEvent e) {
-				PMS.getConfiguration().setPreventsSleep((e.getStateChange() == ItemEvent.SELECTED));
+				configuration.setPreventsSleep((e.getStateChange() == ItemEvent.SELECTED));
 			}
 		});
 		builder.add(preventSleep, cc.xyw(1, 35, 9));

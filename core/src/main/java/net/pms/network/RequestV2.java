@@ -214,7 +214,7 @@ public class RequestV2 extends HTTPResource {
 	public RequestV2(PmsCore pmsCore, PmsConfiguration configuration,
 			@Assisted("method") String method,
 			@Assisted("argument") String argument) {
-		super(pmsCore);
+		super(pmsCore, configuration);
 		this.pmsCore = pmsCore;
 		this.configuration = configuration;
 		this.method = method;

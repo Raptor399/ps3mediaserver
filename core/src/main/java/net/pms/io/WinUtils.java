@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import net.pms.PMS;
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 
 import org.slf4j.Logger;
@@ -45,10 +46,12 @@ import com.sun.jna.ptr.LongByReference;
 @Singleton
 public class WinUtils extends BasicSystemUtils implements SystemUtils {
 	private static final Logger logger = LoggerFactory.getLogger(WinUtils.class);
+	private final PmsConfiguration configuration;
 
 	@Inject
-	public WinUtils(PmsCore pmsCore) {
+	public WinUtils(PmsCore pmsCore, PmsConfiguration configuration) {
 		super(pmsCore);
+		this.configuration = configuration;
 		start();
 	}
 
@@ -89,7 +92,7 @@ public class WinUtils extends BasicSystemUtils implements SystemUtils {
 	@Override
 	public void disableGoToSleep() {
 		// Disable go to sleep (every 40s)
-		if (PMS.getConfiguration().isPreventsSleep()
+		if (configuration.isPreventsSleep()
 				&& System.currentTimeMillis() - lastDontSleepCall > 40000) {
 			logger.trace("Calling SetThreadExecutionState ES_SYSTEM_REQUIRED");
 			Kernel32.INSTANCE.SetThreadExecutionState(Kernel32.ES_SYSTEM_REQUIRED | Kernel32.ES_CONTINUOUS);
@@ -103,7 +106,7 @@ public class WinUtils extends BasicSystemUtils implements SystemUtils {
 	@Override
 	public void reenableGoToSleep() {
 		// Reenable go to sleep
-		if (PMS.getConfiguration().isPreventsSleep()
+		if (configuration.isPreventsSleep()
 				&& System.currentTimeMillis() - lastGoToSleepCall > 40000) {
 			logger.trace("Calling SetThreadExecutionState ES_CONTINUOUS");
 			Kernel32.INSTANCE.SetThreadExecutionState(Kernel32.ES_CONTINUOUS);

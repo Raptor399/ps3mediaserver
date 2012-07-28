@@ -26,6 +26,7 @@ import java.util.HashMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.network.HTTPResource;
 
@@ -58,8 +59,8 @@ public class CoverUtil extends HTTPResource {
 	 * This class is not meant to be instantiated. Use {@link #get()} instead.
 	 */
 	@Inject
-	public CoverUtil(PmsCore pmsCore) {
-		super(pmsCore);
+	public CoverUtil(PmsCore pmsCore, PmsConfiguration configuration) {
+		super(pmsCore, configuration);
 		covers = new HashMap<String, byte[]>();
 	}
 

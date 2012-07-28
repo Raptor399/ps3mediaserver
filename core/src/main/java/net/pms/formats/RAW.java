@@ -6,11 +6,11 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import net.pms.PMS;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.api.io.ProcessWrapperFactory;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.di.InjectionHelper;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.InputFile;
 import net.pms.encoders.Player;
@@ -20,6 +20,8 @@ import net.pms.io.ProcessWrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Injector;
 
 @Singleton
 public class RAW extends JPG {
@@ -116,8 +118,9 @@ public class RAW extends JPG {
 			}
 
 			if (media.getWidth() > 0) {
-
-				media.setThumb(RAWThumbnailer.getThumbnail(params, file.getFile().getAbsolutePath()));
+				Injector injector = InjectionHelper.getInjector();
+				RAWThumbnailer rawthumbnailer = injector.getInstance(RAWThumbnailer.class);
+				media.setThumb(rawthumbnailer.getThumbnail(params, file.getFile().getAbsolutePath()));
 				if (media.getThumb() != null) {
 					media.setSize(media.getThumb().length);
 				}

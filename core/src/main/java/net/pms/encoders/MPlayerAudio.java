@@ -80,7 +80,7 @@ public class MPlayerAudio extends Player {
 
 	@Override
 	public String executable() {
-		return PMS.getConfiguration().getMplayerPath();
+		return configuration.getMplayerPath();
 	}
 
 	@Override
@@ -102,11 +102,11 @@ public class MPlayerAudio extends Player {
 			return player.launchTranscode(fileName, dlna, media, params);
 		}
 
-		params.maxBufferSize = PMS.getConfiguration().getMaxAudioBuffer();
+		params.maxBufferSize = configuration.getMaxAudioBuffer();
 		
 		PipeProcess audioP = pipeProcessFactory.create("mplayer_aud" + System.currentTimeMillis());
 
-		String mPlayerdefaultAudioArgs[] = new String[]{PMS.getConfiguration().getMplayerPath(), fileName, "-prefer-ipv4", "-nocache", "-af", "channels=2", "-srate", "48000", "-vo", "null", "-ao", "pcm:nowaveheader:fast:file=" + audioP.getInputPipe(), "-quiet", "-format", "s16be"};
+		String mPlayerdefaultAudioArgs[] = new String[]{configuration.getMplayerPath(), fileName, "-prefer-ipv4", "-nocache", "-af", "channels=2", "-srate", "48000", "-vo", "null", "-ao", "pcm:nowaveheader:fast:file=" + audioP.getInputPipe(), "-quiet", "-format", "s16be"};
 		if (params.mediaRenderer.isTranscodeToWAV()) {
 			mPlayerdefaultAudioArgs[11] = "pcm:waveheader:fast:file=" + audioP.getInputPipe();
 			mPlayerdefaultAudioArgs[13] = "-quiet";
