@@ -35,7 +35,9 @@ public class MediaLibraryFolder extends VirtualFolder {
 	 * AssistedInject</a>.
 	 */
 	public interface Factory {
-		public MediaLibraryFolder create(String name, String sql, int expectedOutput);
+		public MediaLibraryFolder create(@Assisted("name") String name,
+				@Assisted("sql") String sql, int expectedOutput);
+
 		public MediaLibraryFolder create(String name, String[] sql, int[] expectedOutput);
 	}
 

@@ -40,7 +40,6 @@ import net.pms.dlna.RealFile;
 import net.pms.dlna.ZippedFile;
 import net.pms.dlna.virtual.MediaLibraryFolder;
 import net.pms.dlna.virtual.VirtualFolder;
-import net.pms.dlna.virtual.VirtualVideoAction;
 import net.pms.encoders.AviDemuxerInputStream;
 import net.pms.encoders.PlayerFactory;
 import net.pms.io.BufferedOutputFile;
@@ -49,6 +48,7 @@ import net.pms.io.PipeIPCProcess;
 import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
 import net.pms.io.ProcessWrapperImpl;
+import net.pms.io.WindowsNamedPipe;
 import net.pms.logging.FrameAppender;
 import net.pms.medialibrary.gui.tab.libraryview.FileDisplayTable;
 import net.pms.medialibrary.gui.tab.libraryview.FileDisplayer;
@@ -59,6 +59,7 @@ import net.pms.network.RequestHandler;
 import net.pms.network.RequestHandlerV2;
 import net.pms.network.RequestV2;
 import net.pms.network.UPNPHelper;
+import net.pms.newgui.components.LinkLabel;
 import net.pms.newgui.plugins.PluginAboutPanel;
 import net.pms.newgui.plugins.PluginDetailDialog;
 import net.pms.newgui.plugins.PluginGroupPanel;
@@ -85,7 +86,7 @@ public class CoreModule extends AbstractModule {
 
 		install(new FactoryModuleBuilder()
 				.implement(AutoUpdater.class, AutoUpdater.class)
-				.build(AutoUpdater.class));
+				.build(AutoUpdater.Factory.class));
 
 		install(new FactoryModuleBuilder()
 				.implement(AviDemuxerInputStream.class, AviDemuxerInputStream.class)
@@ -127,6 +128,10 @@ public class CoreModule extends AbstractModule {
 				.implement(HTTPServer.class, HTTPServer.class)
 				.build(HTTPServer.Factory.class));
 		
+		install(new FactoryModuleBuilder()
+			.implement(LinkLabel.class, LinkLabel.class)
+			.build(LinkLabel.Factory.class));
+
 		install(new FactoryModuleBuilder()
 				.implement(MediaLibraryFolder.class, MediaLibraryFolder.class)
 				.build(MediaLibraryFolder.Factory.class));
@@ -192,8 +197,8 @@ public class CoreModule extends AbstractModule {
 				.build(VirtualFolder.Factory.class));
 
 		install(new FactoryModuleBuilder()
-				.implement(VirtualVideoAction.class, VirtualVideoAction.class)
-				.build(VirtualVideoAction.Factory.class));
+				.implement(WindowsNamedPipe.class, WindowsNamedPipe.class)
+				.build(WindowsNamedPipe.Factory.class));
 
 		install(new FactoryModuleBuilder()
 				.implement(WindowsRegistryProgramPaths.class, WindowsRegistryProgramPaths.class)
