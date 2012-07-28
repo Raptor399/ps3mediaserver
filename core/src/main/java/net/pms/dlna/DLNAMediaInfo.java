@@ -93,6 +93,7 @@ public class DLNAMediaInfo implements Cloneable {
 
 	private final PmsConfiguration configuration;
 	private final ProcessWrapperFactory processWrapperFactory;
+	private final CoverUtil coverUtil;
 
 	/**
 	 * @deprecated Use standard getter and setter to access this variable.
@@ -312,9 +313,11 @@ public class DLNAMediaInfo implements Cloneable {
 	}
 
 	@Inject
-	public DLNAMediaInfo(PmsConfiguration configuration, ProcessWrapperFactory processWrapperFactory) {
+	public DLNAMediaInfo(PmsConfiguration configuration, ProcessWrapperFactory processWrapperFactory,
+			CoverUtil coverUtil) {
 		this.configuration = configuration;
 		this.processWrapperFactory = processWrapperFactory;
+		this.coverUtil = coverUtil;
 
 		setThumbready(true); // this class manages thumbnails by default with the parser_v1 method
 	}
@@ -562,7 +565,7 @@ public class DLNAMediaInfo implements Cloneable {
 								setThumb(t.getArtworkList().get(0).getBinaryData());
 							} else {
 								if (configuration.getAudioThumbnailMethod() > 0) {
-									setThumb(CoverUtil.get().getThumbnailFromArtistAlbum(configuration.getAudioThumbnailMethod() == 1 ? CoverUtil.AUDIO_AMAZON : CoverUtil.AUDIO_DISCOGS, audio.getArtist(), audio.getAlbum()));
+									setThumb(coverUtil.getThumbnailFromArtistAlbum(configuration.getAudioThumbnailMethod() == 1 ? CoverUtil.AUDIO_AMAZON : CoverUtil.AUDIO_DISCOGS, audio.getArtist(), audio.getAlbum()));
 								}
 							}
 							if (!thumbOnly) {

@@ -1,8 +1,7 @@
 package net.pms.io;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -10,10 +9,26 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.api.PmsCore;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Singleton
 public class MacSystemUtils extends BasicSystemUtils {
 	private final static Logger logger = LoggerFactory.getLogger(MacSystemUtils.class); 
 
-	public MacSystemUtils() {
+	/**
+	 * OS specific tray icon.
+	 */
+	private static final String TRAY_ICON = "/resources/images/icon-22.png";
+
+	@Inject
+	public MacSystemUtils(PmsCore pmsCore) {
+		super(pmsCore);
 	}
 
 	@Override
@@ -83,4 +98,12 @@ public class MacSystemUtils extends BasicSystemUtils {
 		return aHardwareAddress;
 	}	
 
+	/**
+	 * Return the proper tray icon for the operating system.
+	 * 
+	 * @return The tray icon.
+	 */
+	protected Image resolveTrayIcon() {
+		return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(TRAY_ICON));
+	}
 }

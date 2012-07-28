@@ -19,15 +19,21 @@
 
 package net.pms.util;
 
-import net.pms.network.HTTPResource;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.api.PmsCore;
+import net.pms.network.HTTPResource;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Singleton
 public class CoverUtil extends HTTPResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CoverUtil.class);
 
@@ -42,11 +48,6 @@ public class CoverUtil extends HTTPResource {
 	public static final int AUDIO_AMAZON = 1;
 
 	/**
-	 * Class instance.
-	 */
-	private static CoverUtil instance;
-
-	/**
 	 * Storage for cover information (artist + album and thumbnail data).
 	 * FIXME: Storing the thumbnail image data in memory is very costly.
 	 * It would be wiser to store the image as a file instead.
@@ -54,21 +55,11 @@ public class CoverUtil extends HTTPResource {
 	private HashMap<String, byte[]> covers;
 
 	/**
-	 * Returns the instance of the CoverUtil class.
-	 *
-	 * @return The class instance.
-	 */
-	public static synchronized CoverUtil get() {
-		if (instance == null) {
-			instance = new CoverUtil();
-		}
-		return instance;
-	}
-
-	/**
 	 * This class is not meant to be instantiated. Use {@link #get()} instead.
 	 */
-	private CoverUtil() {
+	@Inject
+	public CoverUtil(PmsCore pmsCore) {
+		super(pmsCore);
 		covers = new HashMap<String, byte[]>();
 	}
 

@@ -570,16 +570,18 @@ public class PmsCoreImpl implements PmsCore {
 	}
 
 	private SystemUtils createSystemUtils() {
+		Injector injector = InjectionHelper.getInjector();
+
 		if (Platform.isWindows()) {
-			return new WinUtils();
+			return injector.getInstance(WinUtils.class);
 		} else {
 			if (Platform.isMac()) {
-				return new MacSystemUtils();
+				return injector.getInstance(MacSystemUtils.class);
 			} else {
 				if (Platform.isSolaris()) {
-					return new SolarisUtils();
+					return injector.getInstance(SolarisUtils.class);
 				} else {
-					return new BasicSystemUtils();
+					return injector.getInstance(BasicSystemUtils.class);
 				}
 			}
 		}

@@ -170,7 +170,7 @@ public class DLNAMediaDatabase implements Runnable {
 			close(stmt);
 			close(conn);
 		}
-		boolean force_reinit = !PMS.getVersion().equals(version); // here we can force a deletion for a specific version
+		boolean force_reinit = !pmsCore.getVersion().equals(version); // here we can force a deletion for a specific version
 		if (force || count == -1 || force_reinit) {
 			logger.debug("Database will be (re)initialized");
 //			if (force_reinit) {
@@ -248,7 +248,7 @@ public class DLNAMediaDatabase implements Runnable {
 
 				executeUpdate(conn, sb.toString());
 				executeUpdate(conn, "CREATE TABLE METADATA (KEY VARCHAR2(255) NOT NULL, VALUE VARCHAR2(255) NOT NULL)");
-				executeUpdate(conn, "INSERT INTO METADATA VALUES ('VERSION', '" + PMS.getVersion() + "')");
+				executeUpdate(conn, "INSERT INTO METADATA VALUES ('VERSION', '" + pmsCore.getVersion() + "')");
 				executeUpdate(conn, "CREATE INDEX IDXARTIST on AUDIOTRACKS (ARTIST asc);");
 				executeUpdate(conn, "CREATE INDEX IDXALBUM on AUDIOTRACKS (ALBUM asc);");
 				executeUpdate(conn, "CREATE INDEX IDXGENRE on AUDIOTRACKS (GENRE asc);");

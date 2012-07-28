@@ -162,6 +162,7 @@ public class Request extends HTTPResource {
 	@AssistedInject
 	public Request(PmsCore pmsCore, PmsConfiguration configuration, @Assisted("method") String method,
 			@Assisted("argument") String argument) {
+		super(pmsCore);
 		this.pmsCore = pmsCore;
 		this.configuration = configuration;
 		this.method = method;

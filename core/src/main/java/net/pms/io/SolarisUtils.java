@@ -18,13 +18,24 @@
  */
 package net.pms.io;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.api.PmsCore;
+
 /**
  * Solaris specific platform code 
  * 
  * @author zsombor
  *
  */
+@Singleton
 public class SolarisUtils extends BasicSystemUtils {
+
+	@Inject
+	public SolarisUtils(PmsCore pmsCore) {
+		super(pmsCore);
+	}
 
 	/**
 	 * Return the Solaris specific ping command for the given host address,

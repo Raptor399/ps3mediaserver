@@ -18,20 +18,30 @@
  */
 package net.pms.network;
 
-import net.pms.PMS;
-import net.pms.configuration.RendererConfiguration;
-import net.pms.dlna.DLNAResource;
-import net.pms.formats.Format;
-import net.pms.util.PropertiesUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static net.pms.util.StringUtil.convertURLToFileName;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.Authenticator;
 import java.net.URL;
 import java.net.URLConnection;
 
-import static net.pms.util.StringUtil.convertURLToFileName;
+import javax.inject.Inject;
+
+import net.pms.PMS;
+import net.pms.api.PmsCore;
+import net.pms.configuration.RendererConfiguration;
+import net.pms.dlna.DLNAResource;
+import net.pms.formats.Format;
+import net.pms.util.PropertiesUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements any item that can be transfered through the HTTP pipes.
@@ -63,7 +73,12 @@ public class HTTPResource {
 	public static final String TIFF_TYPEMIME = "image/tiff";
 	public static final String GIF_TYPEMIME = "image/gif";
 	public static final String BMP_TYPEMIME = "image/bmp";
-	public HTTPResource() {
+
+	private final PmsCore pmsCore;
+
+	@Inject
+	public HTTPResource(PmsCore pmsCore) {
+		this.pmsCore = pmsCore;
 	}
 
 	/**
@@ -109,7 +124,7 @@ public class HTTPResource {
 	 * @throws IOException
 	 * @see #downloadAndSendBinary(String)
 	 */
-	protected static InputStream downloadAndSend(String u, boolean saveOnDisk) throws IOException {
+	protected InputStream downloadAndSend(String u, boolean saveOnDisk) throws IOException {
 		URL url = new URL(u);
 		File f = null;
 
@@ -143,7 +158,7 @@ public class HTTPResource {
 	 * @return byte array.
 	 * @throws IOException
 	 */
-	protected static byte[] downloadAndSendBinary(String u) throws IOException {
+	protected byte[] downloadAndSendBinary(String u) throws IOException {
 		return downloadAndSendBinary(u, false, null);
 	}
 
@@ -156,7 +171,7 @@ public class HTTPResource {
 	 * @return The byte array
 	 * @throws IOException
 	 */
-	protected static byte[] downloadAndSendBinary(String u, boolean saveOnDisk, File f) throws IOException {
+	protected byte[] downloadAndSendBinary(String u, boolean saveOnDisk, File f) throws IOException {
 		URL url = new URL(u);
 		
 		// The URL may contain user authentication information
@@ -167,7 +182,7 @@ public class HTTPResource {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		URLConnection conn = url.openConnection();
 		// GameTrailers blocks user-agents that identify themselves as "Java"
-		conn.setRequestProperty("User-agent", PropertiesUtil.getProjectProperties().get("project.name") + " " + PMS.getVersion());
+		conn.setRequestProperty("User-agent", PropertiesUtil.getProjectProperties().get("project.name") + " " + pmsCore.getVersion());
 		InputStream in = conn.getInputStream();
 		FileOutputStream fOUT = null;
 		if (saveOnDisk && f != null) {

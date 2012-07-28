@@ -18,15 +18,14 @@
  */
 package net.pms.io;
 
-import com.sun.jna.Platform;
-import net.pms.Messages;
-import net.pms.PMS;
-import net.pms.newgui.LooksFrame;
-import net.pms.util.PropertiesUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.awt.*;
+import java.awt.AWTException;
+import java.awt.Desktop;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -36,17 +35,44 @@ import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.Messages;
+import net.pms.PMS;
+import net.pms.api.PmsCore;
+import net.pms.newgui.LooksFrame;
+import net.pms.util.PropertiesUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.jna.Platform;
+
 /**
  * Base implementation for the SystemUtils class for the generic cases.
  * @author zsombor
  *
  */
+@Singleton
 public class BasicSystemUtils implements SystemUtils {
+	/**
+	 * OS specific tray icon.
+	 */
+	private static final String TRAY_ICON = "/resources/images/icon-16.png";
+
 	private final static Logger logger = LoggerFactory.getLogger(BasicSystemUtils.class); 
+
+	private final PmsCore pmsCore;
 
 	protected String vlcp;
 	protected String vlcv;
 	protected boolean avis;
+
+	@Inject
+	public BasicSystemUtils(PmsCore pmsCore) {
+		this.pmsCore = pmsCore;
+	}
 
 	@Override
 	public void disableGoToSleep() {
@@ -156,7 +182,7 @@ public class BasicSystemUtils implements SystemUtils {
 			popup.add(traceItem);
 			popup.add(defaultItem);
 
-			final TrayIcon trayIcon = new TrayIcon(trayIconImage, PropertiesUtil.getProjectProperties().get("project.name") + " " + PMS.getVersion(), popup);
+			final TrayIcon trayIcon = new TrayIcon(trayIconImage, PropertiesUtil.getProjectProperties().get("project.name") + " " + pmsCore.getVersion(), popup);
 
 			trayIcon.setImageAutoSize(true);
 			trayIcon.addActionListener(new ActionListener() {
@@ -207,12 +233,7 @@ public class BasicSystemUtils implements SystemUtils {
 	 * 
 	 * @return The tray icon.
 	 */
-	private Image resolveTrayIcon() {
-		String icon = "icon-16.png";
-
-		if (Platform.isMac()) {
-			icon = "icon-22.png";
-		}
-		return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/resources/images/" + icon));
+	protected Image resolveTrayIcon() {
+		return Toolkit.getDefaultToolkit().getImage(this.getClass().getResource(TRAY_ICON));
 	}
 }

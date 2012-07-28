@@ -160,13 +160,4 @@ public class PMS {
 	public static PmsConfiguration getConfiguration() {
 		return configuration;
 	}
-
-	/**
-	 * Returns the build version of PMS.
-	 *
-	 * @return The build version.
-	 */
-	public static String getVersion() {
-		return pmsCore.getVersion();
-	}
 }

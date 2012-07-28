@@ -18,26 +18,39 @@
  */
 package net.pms.io;
 
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import com.sun.jna.WString;
-import com.sun.jna.ptr.LongByReference;
-import net.pms.PMS;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.lang.reflect.Method;
 import java.nio.CharBuffer;
 import java.util.prefs.Preferences;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import net.pms.PMS;
+import net.pms.api.PmsCore;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.jna.Library;
+import com.sun.jna.Native;
+import com.sun.jna.WString;
+import com.sun.jna.ptr.LongByReference;
 
 /**
  * Contains the Windows specific native functionality. Do not try to instantiate on Linux/MacOSX !
  * @author zsombor
  *
  */
+@Singleton
 public class WinUtils extends BasicSystemUtils implements SystemUtils {
 	private static final Logger logger = LoggerFactory.getLogger(WinUtils.class);
+
+	@Inject
+	public WinUtils(PmsCore pmsCore) {
+		super(pmsCore);
+		start();
+	}
 
 	public interface Kernel32 extends Library {
 		Kernel32 INSTANCE = (Kernel32) Native.loadLibrary("kernel32",
@@ -211,10 +224,6 @@ public class WinUtils extends BasicSystemUtils implements SystemUtils {
 			}
 		}
 		return new String(chars, 0, i);
-	}
-
-	public WinUtils() {
-		start();
 	}
 
 	private void start() {

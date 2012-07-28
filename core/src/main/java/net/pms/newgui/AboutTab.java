@@ -74,7 +74,7 @@ public class AboutTab {
 
 		String projectName = PropertiesUtil.getProjectProperties().get("project.name");
 
-		final LinkMouseListener pms3Link = new LinkMouseListener(projectName + " " + PMS.getVersion(),
+		final LinkMouseListener pms3Link = new LinkMouseListener(projectName + " " + pmsCore.getVersion(),
 			"http://www.ps3mediaserver.org/");
 		JLabel lPms3Link = builder.addLabel(pms3Link.getLabel(), cc.xy(2, 1, "center, fill"));
 		lPms3Link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
