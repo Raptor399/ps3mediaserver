@@ -46,7 +46,7 @@ public class FrameAppender<E> extends UnsynchronizedAppenderBase<E> {
 	/**
 	 * This constructor is called by ch.qos.logback.core.util.OptionHelper.
 	 */
-	FrameAppender() {
+	public FrameAppender() {
 		this(InjectionHelper.getInjector().getInstance(PmsCore.class));
 	}
 
