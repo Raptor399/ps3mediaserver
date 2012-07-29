@@ -117,8 +117,8 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 	 * 
 	 * @return MediaLibraryStorage instance
 	 */
-	public static MediaLibraryStorage getInstance() {
-		return InjectionHelper.getInjector().getInstance(MediaLibraryStorage.class);
+	public static IMediaLibraryStorage getInstance() {
+		return InjectionHelper.getInjector().getInstance(IMediaLibraryStorage.class);
 	}
 
 	/**

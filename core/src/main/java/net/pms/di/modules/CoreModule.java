@@ -50,9 +50,10 @@ import net.pms.io.PipeProcess;
 import net.pms.io.ProcessWrapper;
 import net.pms.io.ProcessWrapperImpl;
 import net.pms.io.WindowsNamedPipe;
-import net.pms.logging.FrameAppender;
+import net.pms.medialibrary.commons.interfaces.IMediaLibraryStorage;
 import net.pms.medialibrary.gui.tab.libraryview.FileDisplayTable;
 import net.pms.medialibrary.gui.tab.libraryview.FileDisplayer;
+import net.pms.medialibrary.storage.MediaLibraryStorage;
 import net.pms.network.HTTPServer;
 import net.pms.network.HttpServerPipelineFactory;
 import net.pms.network.Request;
@@ -81,8 +82,8 @@ public class CoreModule extends AbstractModule {
 		requestStaticInjection(UPNPHelper.class);
 
 		bind(PmsCore.class).to(PmsCoreImpl.class);
-
 		bind(PmsConfiguration.class).to(PmsConfigurationImpl.class);
+		bind(IMediaLibraryStorage.class).to(MediaLibraryStorage.class);
 
 		install(new FactoryModuleBuilder()
 				.implement(AutoUpdater.class, AutoUpdater.class)

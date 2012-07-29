@@ -33,6 +33,7 @@ import net.pms.medialibrary.commons.dataobjects.DOFilter;
 import net.pms.medialibrary.commons.dataobjects.DOMediaLibraryFolder;
 import net.pms.medialibrary.commons.enumarations.FileType;
 import net.pms.medialibrary.commons.events.LibraryShowListener;
+import net.pms.medialibrary.commons.interfaces.IMediaLibraryStorage;
 import net.pms.medialibrary.storage.MediaLibraryStorage;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -53,7 +54,7 @@ public class DLNAViewPanel extends JPanel {
 	public DLNAViewPanel(){
 		super(new GridLayout());
 		
-		MediaLibraryStorage mediaLibraryStorage = MediaLibraryStorage.getInstance();
+		IMediaLibraryStorage mediaLibraryStorage = MediaLibraryStorage.getInstance();
 
 		// create the tree structure from stored folders
 		DOMediaLibraryFolder rootFolder = mediaLibraryStorage.getMediaLibraryFolder(MediaLibraryStorage.ROOT_FOLDER_ID, MediaLibraryStorage.ALL_CHILDREN);
