@@ -138,7 +138,7 @@ public class AudioProperties {
 		this.sampleFrequency = getSampleFrequencyFromLibMediaInfo(mediaInfoValue);
 	}
 
-	public static int getChannelsNumberFromLibMediaInfo(String mediaInfoValue) {
+	public int getChannelsNumberFromLibMediaInfo(String mediaInfoValue) {
 		if (isEmpty(mediaInfoValue)) {
 			LOGGER.warn("Empty value passed in. Returning default number 2.");
 			return 2;
@@ -172,7 +172,7 @@ public class AudioProperties {
 	}
 
 
-	public static int getAudioDelayFromLibMediaInfo(String mediaInfoValue) {
+	public int getAudioDelayFromLibMediaInfo(String mediaInfoValue) {
 		if (isEmpty(mediaInfoValue)) {
 			LOGGER.warn("Empty value passed in. Returning default number 0.");
 			return 0;
@@ -194,7 +194,7 @@ public class AudioProperties {
 		return result;
 	}
 
-	public static int getSampleFrequencyFromLibMediaInfo(String mediaInfoValue) {
+	public int getSampleFrequencyFromLibMediaInfo(String mediaInfoValue) {
 		if (isEmpty(mediaInfoValue)) {
 			LOGGER.warn("Empty value passed in. Returning default number 48000 Hz.");
 			return 48000;

@@ -87,55 +87,61 @@ public class AudioPropertiesTest {
 
 	@Test
 	public void testGetChannelsNumberFromLibMediaInfo_withNullEmptyOrNegativeValue() {
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo(null)).isEqualTo(2);
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo("")).isEqualTo(2);
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo("-2chan")).isEqualTo(2);
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo("0")).isEqualTo(2);
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo("zero number")).isEqualTo(2);
+		AudioProperties audioProperties = new AudioProperties();
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo(null)).isEqualTo(2);
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo("")).isEqualTo(2);
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo("-2chan")).isEqualTo(2);
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo("0")).isEqualTo(2);
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo("zero number")).isEqualTo(2);
 	}
 
 	@Test
 	public void testGetChannelsNumberFromLibMediaInfo() {
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo("1 channel")).isEqualTo(1);
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo("3 channels")).isEqualTo(3);
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo("   3 ch ls 21")).isEqualTo(21);
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo("6 channels")).isEqualTo(6);
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo("2 channels / 1 channel / 1 channel")).isEqualTo(2);
-		assertThat(AudioProperties.getChannelsNumberFromLibMediaInfo("2 channels / 4 channel / 3 channel")).isEqualTo(4);
+		AudioProperties audioProperties = new AudioProperties();
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo("1 channel")).isEqualTo(1);
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo("3 channels")).isEqualTo(3);
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo("   3 ch ls 21")).isEqualTo(21);
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo("6 channels")).isEqualTo(6);
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo("2 channels / 1 channel / 1 channel")).isEqualTo(2);
+		assertThat(audioProperties.getChannelsNumberFromLibMediaInfo("2 channels / 4 channel / 3 channel")).isEqualTo(4);
 	}
 
 	@Test
 	public void testGetAudioDelayFromLibMediaInfo_withNullEmpty() {
-		assertThat(AudioProperties.getAudioDelayFromLibMediaInfo(null)).isEqualTo(0);
-		assertThat(AudioProperties.getAudioDelayFromLibMediaInfo("")).isEqualTo(0);
-		assertThat(AudioProperties.getAudioDelayFromLibMediaInfo("zero number")).isEqualTo(0);
+		AudioProperties audioProperties = new AudioProperties();
+		assertThat(audioProperties.getAudioDelayFromLibMediaInfo(null)).isEqualTo(0);
+		assertThat(audioProperties.getAudioDelayFromLibMediaInfo("")).isEqualTo(0);
+		assertThat(audioProperties.getAudioDelayFromLibMediaInfo("zero number")).isEqualTo(0);
 	}
 
 	@Test
 	public void testGetAudioDelayFromLibMediaInfo() {
-		assertThat(AudioProperties.getAudioDelayFromLibMediaInfo("1")).isEqualTo(1);
-		assertThat(AudioProperties.getAudioDelayFromLibMediaInfo("5 msec")).isEqualTo(5);
-		assertThat(AudioProperties.getAudioDelayFromLibMediaInfo("5.4 milli")).isEqualTo(5);
-		assertThat(AudioProperties.getAudioDelayFromLibMediaInfo("0")).isEqualTo(0);
-		assertThat(AudioProperties.getAudioDelayFromLibMediaInfo("-7")).isEqualTo(-7);
-		assertThat(AudioProperties.getAudioDelayFromLibMediaInfo("delay -15 ms")).isEqualTo(-15);
+		AudioProperties audioProperties = new AudioProperties();
+		assertThat(audioProperties.getAudioDelayFromLibMediaInfo("1")).isEqualTo(1);
+		assertThat(audioProperties.getAudioDelayFromLibMediaInfo("5 msec")).isEqualTo(5);
+		assertThat(audioProperties.getAudioDelayFromLibMediaInfo("5.4 milli")).isEqualTo(5);
+		assertThat(audioProperties.getAudioDelayFromLibMediaInfo("0")).isEqualTo(0);
+		assertThat(audioProperties.getAudioDelayFromLibMediaInfo("-7")).isEqualTo(-7);
+		assertThat(audioProperties.getAudioDelayFromLibMediaInfo("delay -15 ms")).isEqualTo(-15);
 	}
 
 	@Test
 	public void testGetSampleFrequencyFromLibMediaInfo_withNullEmpty() {
-		assertThat(AudioProperties.getSampleFrequencyFromLibMediaInfo(null)).isEqualTo(48000);
-		assertThat(AudioProperties.getSampleFrequencyFromLibMediaInfo("")).isEqualTo(48000);
-		assertThat(AudioProperties.getSampleFrequencyFromLibMediaInfo("freq unknown")).isEqualTo(48000);
+		AudioProperties audioProperties = new AudioProperties();
+		assertThat(audioProperties.getSampleFrequencyFromLibMediaInfo(null)).isEqualTo(48000);
+		assertThat(audioProperties.getSampleFrequencyFromLibMediaInfo("")).isEqualTo(48000);
+		assertThat(audioProperties.getSampleFrequencyFromLibMediaInfo("freq unknown")).isEqualTo(48000);
 	}
 
 	@Test
 	public void testGetSampleFrequencyFromLibMediaInfo() {
-		assertThat(AudioProperties.getSampleFrequencyFromLibMediaInfo("1")).isEqualTo(1);
-		assertThat(AudioProperties.getSampleFrequencyFromLibMediaInfo("5 Hz")).isEqualTo(5);
-		assertThat(AudioProperties.getSampleFrequencyFromLibMediaInfo("48000")).isEqualTo(48000);
-		assertThat(AudioProperties.getSampleFrequencyFromLibMediaInfo("44100 Hz")).isEqualTo(44100);
-		assertThat(AudioProperties.getSampleFrequencyFromLibMediaInfo("44100 / 22050")).isEqualTo(44100);
-		assertThat(AudioProperties.getSampleFrequencyFromLibMediaInfo("22050 / 44100 Hz")).isEqualTo(44100);
-		assertThat(AudioProperties.getSampleFrequencyFromLibMediaInfo("-7 kHz")).isEqualTo(48000);
+		AudioProperties audioProperties = new AudioProperties();
+		assertThat(audioProperties.getSampleFrequencyFromLibMediaInfo("1")).isEqualTo(1);
+		assertThat(audioProperties.getSampleFrequencyFromLibMediaInfo("5 Hz")).isEqualTo(5);
+		assertThat(audioProperties.getSampleFrequencyFromLibMediaInfo("48000")).isEqualTo(48000);
+		assertThat(audioProperties.getSampleFrequencyFromLibMediaInfo("44100 Hz")).isEqualTo(44100);
+		assertThat(audioProperties.getSampleFrequencyFromLibMediaInfo("44100 / 22050")).isEqualTo(44100);
+		assertThat(audioProperties.getSampleFrequencyFromLibMediaInfo("22050 / 44100 Hz")).isEqualTo(44100);
+		assertThat(audioProperties.getSampleFrequencyFromLibMediaInfo("-7 kHz")).isEqualTo(48000);
 	}
 }
