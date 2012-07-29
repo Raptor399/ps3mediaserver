@@ -3,23 +3,27 @@ package net.pms.plugin.dnlatreefolder;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.pms.Messages;
 import net.pms.PMS;
+import net.pms.api.PmsCore;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.virtual.VirtualFolder;
 import net.pms.dlna.virtual.VirtualVideoAction;
 import net.pms.plugins.DlnaTreeFolderPlugin;
 import net.pms.util.PmsProperties;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Singleton
 public class VideoSettingsFolderPlugin implements DlnaTreeFolderPlugin {
 	private static final Logger log = LoggerFactory.getLogger(VideoSettingsFolderPlugin.class);
 	public static final ResourceBundle messages = ResourceBundle.getBundle("net.pms.plugin.dnlatreefolder.vsfp.lang.messages");
@@ -33,6 +37,13 @@ public class VideoSettingsFolderPlugin implements DlnaTreeFolderPlugin {
 		} catch (IOException e) {
 			log.error("Could not load videosettingsfolderplugin.properties", e);
 		}
+	}
+
+	private final PmsCore pmsCore;
+
+	@Inject
+	VideoSettingsFolderPlugin(PmsCore pmsCore) {
+		this.pmsCore = pmsCore;
 	}
 
 	@Override
@@ -133,7 +144,7 @@ public class VideoSettingsFolderPlugin implements DlnaTreeFolderPlugin {
 
 		vf.addChild(new VirtualVideoAction(Messages.getString("LooksFrame.12"), true) {
 			public boolean enable() {
-				PMS.get().reset();
+				pmsCore.reset();
 				return true;
 			}
 		});

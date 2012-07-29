@@ -3,20 +3,24 @@ package net.pms.plugin.webservice;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.pms.PMS;
+import net.pms.api.PmsCore;
 import net.pms.plugin.webservice.configuration.GlobalConfiguration;
 import net.pms.plugin.webservice.configurationws.ConfigurationWebService;
 import net.pms.plugin.webservice.medialibraryws.LibraryWebService;
 import net.pms.plugins.Plugin;
 import net.pms.util.PmsProperties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Singleton
 public class WebServicePlugin implements Plugin {
 	private static final Logger log = LoggerFactory.getLogger(WebServicePlugin.class);
 	public static final ResourceBundle messages = ResourceBundle.getBundle("net.pms.plugin.webservice.lang.messages");
@@ -30,6 +34,12 @@ public class WebServicePlugin implements Plugin {
 	private String libraryWsName = "PmsLibrary";
 	
 	private String hostName;
+	private final PmsCore pmsCore;
+
+	@Inject
+	WebServicePlugin(PmsCore pmsCore) {
+		this.pmsCore = pmsCore;
+	}
 
 	/** Holds only the project version. It's used to always use the maven build number in code */
 	private static final PmsProperties properties = new PmsProperties();
@@ -127,8 +137,8 @@ public class WebServicePlugin implements Plugin {
 					@Override
 					public void run() {
 						while(hostName == null) {
-							if(PMS.get().getServer() != null && PMS.get().getServer().getIafinal() != null) {
-								hostName = PMS.get().getServer().getIafinal().getHostAddress();			
+							if(pmsCore.getServer() != null && pmsCore.getServer().getIafinal() != null) {
+								hostName = pmsCore.getServer().getIafinal().getHostAddress();			
 							}
 							try {
 								Thread.sleep(1000);

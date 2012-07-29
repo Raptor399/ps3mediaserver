@@ -190,7 +190,7 @@ public class FFMpegVideo extends Player {
 			if (mplayer()) {
 				cmdArray[3] = "-f";
 				cmdArray[4] = "yuv4mpegpipe";
-				//cmdArray[6] = pipeprefix + videoPipe + (PMS.get().isWindows()?".2":"");
+				//cmdArray[6] = pipeprefix + videoPipe + (pmsCore.isWindows()?".2":"");
 				cmdArray[6] = videoP.getOutputPipe();
 			}
 		}
@@ -203,7 +203,7 @@ public class FFMpegVideo extends Player {
 				cmdArray[7] = "-f";
 				cmdArray[8] = "wav";
 				cmdArray[9] = "-i";
-				//cmdArray[10] = pipeprefix + audioPipe + (PMS.get().isWindows()?".2":"");
+				//cmdArray[10] = pipeprefix + audioPipe + (pmsCore.isWindows()?".2":"");
 				cmdArray[10] = audioP.getOutputPipe();
 			} else if (type() == Format.AUDIO) {
 				cmdArray[7] = "-i";
