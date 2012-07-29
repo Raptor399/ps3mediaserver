@@ -24,6 +24,7 @@ import java.io.IOException;
 import javax.inject.Inject;
 
 import net.pms.api.PmsCore;
+import net.pms.di.InjectionHelper;
 import net.pms.gui.IFrame;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import ch.qos.logback.core.encoder.Encoder;
@@ -40,9 +41,14 @@ public class FrameAppender<E> extends UnsynchronizedAppenderBase<E> {
 	private final ByteArrayOutputStream outputstream = new ByteArrayOutputStream(
 		256);
 	private final Object lock = new Object();
-
-	@Inject
 	private final PmsCore pmsCore;
+
+	/**
+	 * This constructor is called by ch.qos.logback.core.util.OptionHelper.
+	 */
+	FrameAppender() {
+		this(InjectionHelper.getInjector().getInstance(PmsCore.class));
+	}
 
 	@Inject
 	FrameAppender(PmsCore pmsCore) {

@@ -76,7 +76,6 @@ public class CoreModule extends AbstractModule {
 	protected void configure() {
 		// This is here to help with the transition to DI
 		requestStaticInjection(CodecUtil.class);
-		requestStaticInjection(FrameAppender.class);
 		requestStaticInjection(PlayerFactory.class);
 		requestStaticInjection(ProcessUtil.class);
 		requestStaticInjection(UPNPHelper.class);
