@@ -53,6 +53,65 @@ import org.slf4j.LoggerFactory;
 
 class DBVideoFileInfo extends DBFileInfo {	
 	private static final Logger log = LoggerFactory.getLogger(DBVideoFileInfo.class);
+
+	private static final String COL_FILE_ID = "FILE.ID";
+	private static final String COL_FILE_FOLDERPATH = "FILE.FOLDERPATH";
+	private static final String COL_FILE_FILENAME = "FILE.FILENAME";
+	private static final String COL_FILE_TYPE = "FILE.TYPE";
+	private static final String COL_FILE_SIZEBYTE = "FILE.SIZEBYTE";
+	private static final String COL_FILE_DATELASTUPDATEDDB = "FILE.DATELASTUPDATEDDB";
+	private static final String COL_FILE_DATEINSERTEDDB = "FILE.DATEINSERTEDDB";
+	private static final String COL_FILE_DATEMODIFIEDOS = "FILE.DATEMODIFIEDOS";
+	private static final String COL_FILE_THUMBNAILPATH = "FILE.THUMBNAILPATH";
+	private static final String COL_FILE_PLAYCOUNT = "FILE.PLAYCOUNT";
+	private static final String COL_FILE_ENABLED = "FILE.ENABLED";
+	private static final String COL_VIDEO_ORIGINALNAME = "VIDEO.ORIGINALNAME";
+	private static final String COL_VIDEO_NAME = "VIDEO.NAME";
+	private static final String COL_VIDEO_SORTNAME = "VIDEO.SORTNAME";
+	private static final String COL_VIDEO_TMDBID = "VIDEO.TMDBID";
+	private static final String COL_VIDEO_IMDBID = "VIDEO.IMDBID";
+	private static final String COL_VIDEO_OVERVIEW = "VIDEO.OVERVIEW";
+	private static final String COL_VIDEO_BUDGET = "VIDEO.BUDGET";
+	private static final String COL_VIDEO_REVENUE = "VIDEO.REVENUE";
+	private static final String COL_VIDEO_HOMEPAGEURL = "VIDEO.HOMEPAGEURL";
+	private static final String COL_VIDEO_TRAILERURL = "VIDEO.TRAILERURL";
+	private static final String COL_VIDEO_AGERATINGLEVEL = "VIDEO.AGERATINGLEVEL";
+	private static final String COL_VIDEO_AGERATINGREASON = "VIDEO.AGERATINGREASON";
+	private static final String COL_VIDEO_RATINGPERCENT = "VIDEO.RATINGPERCENT";
+	private static final String COL_VIDEO_RATINGVOTERS = "VIDEO.RATINGVOTERS";
+	private static final String COL_VIDEO_DIRECTOR = "VIDEO.DIRECTOR";
+	private static final String COL_VIDEO_TAGLINE = "VIDEO.TAGLINE";
+	private static final String COL_VIDEO_ASPECTRATIO = "VIDEO.ASPECTRATIO";
+	private static final String COL_VIDEO_BITRATE = "VIDEO.BITRATE";
+	private static final String COL_VIDEO_BITSPERPIXEL = "VIDEO.BITSPERPIXEL";
+	private static final String COL_VIDEO_CODECV = "VIDEO.CODECV";
+	private static final String COL_VIDEO_DURATIONSEC = "VIDEO.DURATIONSEC";
+	private static final String COL_VIDEO_CONTAINER = "VIDEO.CONTAINER";
+	private static final String COL_VIDEO_DVDTRACK = "VIDEO.DVDTRACK";
+	private static final String COL_VIDEO_FRAMERATE = "VIDEO.FRAMERATE";
+	private static final String COL_VIDEO_HEIGHT = "VIDEO.HEIGHT";
+	private static final String COL_VIDEO_MIMETYPE = "VIDEO.MIMETYPE";
+	private static final String COL_VIDEO_MODEL = "VIDEO.MODEL";
+	private static final String COL_VIDEO_MUXABLE = "VIDEO.MUXABLE";
+	private static final String COL_VIDEO_WIDTH = "VIDEO.WIDTH";
+	private static final String COL_VIDEO_YEAR = "VIDEO.YEAR";
+	private static final String COL_VIDEO_MUXINGMODE = "VIDEO.MUXINGMODE";
+	private static final String COL_VIDEO_FRAMERATEMODE = "VIDEO.FRAMERATEMODE";
+	private static final String COL_FILEPLAYS_DATEPLAYEND = "FILEPLAYS.DATEPLAYEND";
+	private static final String COL_VIDEOAUDIO_LANG = "VIDEOAUDIO.LANG";
+	private static final String COL_VIDEOAUDIO_NRAUDIOCHANNELS = "VIDEOAUDIO.NRAUDIOCHANNELS";
+	private static final String COL_VIDEOAUDIO_SAMPLEFREQ = "VIDEOAUDIO.SAMPLEFREQ";
+	private static final String COL_VIDEOAUDIO_CODECA = "VIDEOAUDIO.CODECA";
+	private static final String COL_VIDEOAUDIO_BITSPERSAMPLE = "VIDEOAUDIO.BITSPERSAMPLE";
+	private static final String COL_VIDEOAUDIO_DELAYMS = "VIDEOAUDIO.DELAYMS";
+	private static final String COL_VIDEOAUDIO_MUXINGMODE = "VIDEOAUDIO.MUXINGMODE";
+	private static final String COL_VIDEOAUDIO_BITRATE = "VIDEOAUDIO.BITRATE";
+	private static final String COL_SUBTITLES_FILEPATH = "SUBTITLES.FILEPATH";
+	private static final String COL_SUBTITLES_LANG = "SUBTITLES.LANG";
+	private static final String COL_SUBTITLES_TYPE = "SUBTITLES.TYPE";
+	private static final String COL_FILETAGS_KEY = "FILETAGS.KEY";
+	private static final String COL_FILETAGS_VALUE = "FILETAGS.VALUE";
+
 	
 	DBVideoFileInfo(JdbcConnectionPool cp){
 		super(cp);
@@ -257,64 +316,60 @@ class DBVideoFileInfo extends DBFileInfo {
 			while (rs.next()) {
 				DOVideoFileInfo videoFile = new DOVideoFileInfo();
 				try {
-					int pos = 1;
-					videoFile.setId(rs.getInt(pos++));
+					videoFile.setId(rs.getInt(COL_FILE_ID));
 
 					if (!videos.containsKey(videoFile.getId())) {
 						//import all fields when having a video with a new id
-						videoFile.setFolderPath(rs.getString(pos++));
-						videoFile.setFileName(rs.getString(pos++));
-						videoFile.setType(FileType.valueOf(rs.getString(pos++)));
-						videoFile.setSize(rs.getLong(pos++));
-						videoFile.setDateLastUpdatedDb(new Date(rs.getTimestamp(pos++).getTime()));
-						videoFile.setDateInsertedDb(new Date(rs.getTimestamp(pos++).getTime()));
-						videoFile.setDateModifiedOs(new Date(rs.getTimestamp(pos++).getTime()));
-						videoFile.setThumbnailPath(rs.getString(pos++));
-						videoFile.setPlayCount(rs.getInt(pos++));
-						videoFile.setActive(rs.getBoolean(pos++));
+						videoFile.setFolderPath(rs.getString(COL_FILE_FOLDERPATH));
+						videoFile.setFileName(rs.getString(COL_FILE_FILENAME));
+						videoFile.setType(FileType.valueOf(rs.getString(COL_FILE_TYPE)));
+						videoFile.setSize(rs.getLong(COL_FILE_SIZEBYTE));
+						videoFile.setDateLastUpdatedDb(new Date(rs.getTimestamp(COL_FILE_DATELASTUPDATEDDB).getTime()));
+						videoFile.setDateInsertedDb(new Date(rs.getTimestamp(COL_FILE_DATEINSERTEDDB).getTime()));
+						videoFile.setDateModifiedOs(new Date(rs.getTimestamp(COL_FILE_DATEMODIFIEDOS).getTime()));
+						videoFile.setThumbnailPath(rs.getString(COL_FILE_THUMBNAILPATH));
+						videoFile.setPlayCount(rs.getInt(COL_FILE_PLAYCOUNT));
+						videoFile.setActive(rs.getBoolean(COL_FILE_ENABLED));
 						
-						videoFile.setOriginalName(rs.getString(pos++));
-						videoFile.setName(rs.getString(pos++));
-						videoFile.setSortName(rs.getString(pos++));
-						videoFile.setTmdbId(rs.getInt(pos++));
-						videoFile.setImdbId(rs.getString(pos++));
-						videoFile.setOverview(rs.getString(pos++));
-						videoFile.setBudget(rs.getInt(pos++));
-						videoFile.setRevenue(rs.getInt(pos++));
-						videoFile.setHomepageUrl(rs.getString(pos++));
-						videoFile.setTrailerUrl(rs.getString(pos++));
-						videoFile.setAgeRating(new DOCertification(rs.getString(pos++), rs.getString(pos++)));
-						videoFile.setRating(new DORating(rs.getInt(pos++), rs.getInt(pos++)));
-						videoFile.setDirector(rs.getString(pos++));
-						videoFile.setTagLine(rs.getString(pos++));
-						videoFile.setAspectRatio(rs.getString(pos++));
-						videoFile.setBitrate(rs.getInt(pos++));
-						videoFile.setBitsPerPixel(rs.getInt(pos++));
-						videoFile.setCodecV(rs.getString(pos++));
-						videoFile.setDurationSec(rs.getInt(pos++));	
-						videoFile.setContainer(rs.getString(pos++));
-						videoFile.setDvdtrack(rs.getInt(pos++));
-						videoFile.setFrameRate(rs.getString(pos++));
-						videoFile.setHeight(rs.getInt(pos++));
-						videoFile.setMimeType(rs.getString(pos++));
-						videoFile.setModel(rs.getString(pos++));
-						videoFile.setMuxable(rs.getBoolean(pos++));
+						videoFile.setOriginalName(rs.getString(COL_VIDEO_ORIGINALNAME));
+						videoFile.setName(rs.getString(COL_VIDEO_NAME));
+						videoFile.setSortName(rs.getString(COL_VIDEO_SORTNAME));
+						videoFile.setTmdbId(rs.getInt(COL_VIDEO_TMDBID));
+						videoFile.setImdbId(rs.getString(COL_VIDEO_IMDBID));
+						videoFile.setOverview(rs.getString(COL_VIDEO_OVERVIEW));
+						videoFile.setBudget(rs.getInt(COL_VIDEO_BUDGET));
+						videoFile.setRevenue(rs.getInt(COL_VIDEO_REVENUE));
+						videoFile.setHomepageUrl(rs.getString(COL_VIDEO_HOMEPAGEURL));
+						videoFile.setTrailerUrl(rs.getString(COL_VIDEO_TRAILERURL));
+						videoFile.setAgeRating(new DOCertification(rs.getString(COL_VIDEO_AGERATINGLEVEL), rs.getString(COL_VIDEO_AGERATINGREASON)));
+						videoFile.setRating(new DORating(rs.getInt(COL_VIDEO_RATINGPERCENT), rs.getInt(COL_VIDEO_RATINGVOTERS)));
+						videoFile.setDirector(rs.getString(COL_VIDEO_DIRECTOR));
+						videoFile.setTagLine(rs.getString(COL_VIDEO_TAGLINE));
+						videoFile.setAspectRatio(rs.getString(COL_VIDEO_ASPECTRATIO));
+						videoFile.setBitrate(rs.getInt(COL_VIDEO_BITRATE));
+						videoFile.setBitsPerPixel(rs.getInt(COL_VIDEO_BITSPERPIXEL));
+						videoFile.setCodecV(rs.getString(COL_VIDEO_CODECV));
+						videoFile.setDurationSec(rs.getInt(COL_VIDEO_DURATIONSEC));	
+						videoFile.setContainer(rs.getString(COL_VIDEO_CONTAINER));
+						videoFile.setDvdtrack(rs.getInt(COL_VIDEO_DVDTRACK));
+						videoFile.setFrameRate(rs.getString(COL_VIDEO_FRAMERATE));
+						videoFile.setHeight(rs.getInt(COL_VIDEO_HEIGHT));
+						videoFile.setMimeType(rs.getString(COL_VIDEO_MIMETYPE));
+						videoFile.setModel(rs.getString(COL_VIDEO_MODEL));
+						videoFile.setMuxable(rs.getBoolean(COL_VIDEO_MUXABLE));
 	
-						videoFile.setWidth(rs.getInt(pos++));
-						videoFile.setYear(rs.getInt(pos++));
-						videoFile.setMuxingMode(rs.getString(pos++));
-						videoFile.setFrameRateMode(rs.getString(pos++));
+						videoFile.setWidth(rs.getInt(COL_VIDEO_WIDTH));
+						videoFile.setYear(rs.getInt(COL_VIDEO_YEAR));
+						videoFile.setMuxingMode(rs.getString(COL_VIDEO_MUXINGMODE));
+						videoFile.setFrameRateMode(rs.getString(COL_VIDEO_FRAMERATEMODE));
 
 						videos.put(videoFile.getId(), videoFile);
 					}else{
-						//skip the already imported fields if the video with this id is already contained in the list
-						pos = 44;
-						
 						videoFile = videos.get(videoFile.getId());
 					}
 					
 					//play count history
-					Timestamp playTimestamp = rs.getTimestamp(pos++);
+					Timestamp playTimestamp = rs.getTimestamp(COL_FILEPLAYS_DATEPLAYEND);
 					if(playTimestamp != null) {
 						Date playDate = new Date(playTimestamp.getTime());
 						if(!videoFile.getPlayHistory().contains(playDate)) {
@@ -324,14 +379,14 @@ class DBVideoFileInfo extends DBFileInfo {
 
 					// Audio track
 					DLNAMediaAudio audioTrack = new DLNAMediaAudio();
-					audioTrack.setLang(rs.getString(pos++));
-					audioTrack.getAudioProperties().setNumberOfChannels(rs.getInt(pos++));
-					audioTrack.setSampleFrequency(rs.getString(pos++));
-					audioTrack.setCodecA(rs.getString(pos++));
-					audioTrack.setBitsperSample(rs.getInt(pos++));
-					audioTrack.getAudioProperties().setAudioDelay(rs.getInt(pos++));
-					audioTrack.setMuxingModeAudio(rs.getString(pos++));
-					audioTrack.setBitRate(rs.getInt(pos++));
+					audioTrack.setLang(rs.getString(COL_VIDEOAUDIO_LANG));
+					audioTrack.getAudioProperties().setNumberOfChannels(rs.getInt(COL_VIDEOAUDIO_NRAUDIOCHANNELS));
+					audioTrack.setSampleFrequency(rs.getString(COL_VIDEOAUDIO_SAMPLEFREQ));
+					audioTrack.setCodecA(rs.getString(COL_VIDEOAUDIO_CODECA));
+					audioTrack.setBitsperSample(rs.getInt(COL_VIDEOAUDIO_BITSPERSAMPLE));
+					audioTrack.getAudioProperties().setAudioDelay(rs.getInt(COL_VIDEOAUDIO_DELAYMS));
+					audioTrack.setMuxingModeAudio(rs.getString(COL_VIDEOAUDIO_MUXINGMODE));
+					audioTrack.setBitRate(rs.getInt(COL_VIDEOAUDIO_BITRATE));
 
 					boolean doInsertAudioTrack = true;
 					for (DLNAMediaAudio currTrack : videoFile.getAudioCodes()) {
@@ -346,13 +401,13 @@ class DBVideoFileInfo extends DBFileInfo {
 
 					// Subtitle track
 					DLNAMediaSubtitle subtitleTrack = new DLNAMediaSubtitle();
-					String subtitleFilePath = rs.getString(pos++);
+					String subtitleFilePath = rs.getString(COL_SUBTITLES_FILEPATH);
 					File subTitleFile;
 					if (subtitleFilePath != null && !subtitleFilePath.equals("") && (subTitleFile = new File(subtitleFilePath)).exists()) {
 						subtitleTrack.setExternalFile(subTitleFile);
 					}
-					subtitleTrack.setLang(rs.getString(pos++));
-					subtitleTrack.setType(SubtitleType.values()[rs.getInt(pos++)]);
+					subtitleTrack.setLang(rs.getString(COL_SUBTITLES_LANG));
+					subtitleTrack.setType(SubtitleType.values()[rs.getInt(COL_SUBTITLES_TYPE)]);
 
 					boolean doInsertSubtitleTrack = true;
 					for (DLNAMediaSubtitle currTrack : videoFile.getSubtitlesCodes()) {
@@ -366,8 +421,8 @@ class DBVideoFileInfo extends DBFileInfo {
 					}
 
 					// Genres and Tags
-					String tagKey = rs.getString(pos++);
-					String tagValue = rs.getString(pos++);
+					String tagKey = rs.getString(COL_FILETAGS_KEY);
+					String tagValue = rs.getString(COL_FILETAGS_VALUE);
 					if (tagKey == null) {
 						// do nothing
 					} else if (tagKey.equals(GENRE_KEY)) {
