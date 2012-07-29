@@ -5,6 +5,7 @@ import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.annotation.Nullable;
 import javax.swing.JLabel;
 
 import net.pms.api.PmsCore;
@@ -34,7 +35,8 @@ public class LinkLabel extends JLabel {
 	 * AssistedInject</a>.
 	 */
 	public interface Factory {
-		public LinkLabel create(@Assisted("text") String text, @Assisted("link") String link);
+		public LinkLabel create(@Assisted("text") String text,
+				@Assisted("link") @Nullable String link);
 	}
 
 	/**
@@ -43,7 +45,8 @@ public class LinkLabel extends JLabel {
 	 * @param link the link to open when clicked
 	 */
 	@AssistedInject
-	public LinkLabel(PmsCore core, @Assisted("text") String text, @Assisted("link") String link) {
+	public LinkLabel(PmsCore core, @Assisted("text") String text,
+			@Assisted("link") @Nullable String link) {
 		pmsCore = core;
 		setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		setForeground(Color.BLUE);
