@@ -21,11 +21,4 @@ public class LegacyModule extends AbstractModule {
 	protected void configure() {
 
 	}
-
-	@Provides
-	@Singleton
-	private IMediaLibraryStorage getMediaLibrary() {
-		return MediaLibraryStorage.getInstance();
-	}
-
 }
