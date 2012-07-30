@@ -438,6 +438,9 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 				log.error("Storage error (get)", e);
 			}
 				break;
+		default:
+			log.warn(String.format("Unhandled file type received (%s). This should never happen!", fileInfo.getType()));
+			break;
 		}
 		
 		// notify of the insert in the GUI
@@ -484,6 +487,9 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 			} catch (StorageException e) {
 				log.error("Storage error (update)", e);
 			}
+			break;
+		default:
+			log.warn(String.format("Unhandled file type received (%s). This should never happen!", fileInfo.getType()));
 			break;
 		}
 		
