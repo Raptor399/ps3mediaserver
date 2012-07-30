@@ -19,7 +19,6 @@
 
 package net.pms.configuration;
 
-import static net.pms.configuration.RendererConfiguration.RENDERER_ID_PLAYSTATION3;
 import static net.pms.configuration.RendererConfiguration.getRendererConfigurationByUA;
 import static net.pms.configuration.RendererConfiguration.getRendererConfigurationByUAAHH;
 import static net.pms.configuration.RendererConfiguration.loadRendererConfigurations;
@@ -208,28 +207,6 @@ public class RendererConfigurationTest {
 		testHeader("X-Unknown-Header: Unknown Content", "Unknown renderer");
 	}
 
-	@Test
-	public void testRendererUniqueID() {
-		PmsConfiguration pmsConf = null;
-
-		try {
-			pmsConf = new PmsConfigurationImpl(windowsRegistryProgramPathsFactory, false);
-		} catch (IOException e) {
-			// This should be impossible since no configuration file will be loaded.
-		} catch (ConfigurationException e) {
-			// This should be impossible since no configuration file will be loaded.
-		}
-
-		pmsConf.setRendererForceDefault(false);
-
-		// Initialize the RendererConfiguration
-		loadRendererConfigurations(pmsConf);
-
-		RendererConfiguration rc = getRendererConfigurationByUA("\"User-Agent: PLAYSTATION 3\", \"Playstation 3\"");
-		assertEquals("RendererUniqueID for PlayStation 3", RENDERER_ID_PLAYSTATION3, rc.getRendererUniqueID());
-		rc = getRendererConfigurationByUA("User-Agent: Windows2000/0.0 UPnP/1.0 PhilipsIntelSDK/1.4 DLNADOC/1.50");
-		assertEquals("RendererUniqueID for PhilipsPFL is not set and defaults to RendererName", "Philips TV", rc.getRendererUniqueID());
-	}
 
 	/**
 	 * Test one particular header line to see if it returns the correct

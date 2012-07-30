@@ -349,7 +349,9 @@ public interface PmsConfiguration {
 	/**
 	 * Returns the audio language priority for MEncoder as a comma separated
 	 * string. For example: <code>"eng,fre,jpn,ger,und"</code>, where "und"
-	 * stands for "undefined". Default value is "loc,eng,fre,jpn,ger,und".
+	 * stands for "undefined".
+	 * Can be a blank string.
+	 * Default value is "loc,eng,fre,jpn,ger,und".
 	 *
 	 * @return The audio language priority string.
 	 */
@@ -359,6 +361,7 @@ public interface PmsConfiguration {
 	 * Returns the subtitle language priority for MEncoder as a comma separated
 	 * string. For example: <code>"loc,eng,fre,jpn,ger,und"</code>, where "loc"
 	 * stands for the preferred local language and "und" stands for "undefined".
+	 * Can be a blank string.
 	 * Default value is "loc,eng,fre,jpn,ger,und".
 	 *
 	 * @return The subtitle language priority string.
@@ -367,7 +370,8 @@ public interface PmsConfiguration {
 
 	/**
 	 * Returns the ISO 639 language code for the subtitle language that should
-	 * be forced upon MEncoder. 
+	 * be forced upon MEncoder.
+	 * Can be a blank string.
 	 * @return The subtitle language code.
 	 */
 	public String getMencoderForcedSubLanguage();
@@ -386,6 +390,7 @@ public interface PmsConfiguration {
 	 * individual pairs should be semicolon separated. "*" can be used to
 	 * match any language, "loc" to match the local language. Subtitle
 	 * language can be defined as "off".
+	 * Can be a blank string.
 	 * Default value is <code>"loc,off;jpn,loc;*,loc;*,*"</code>.
 	 *
 	 * @return The audio and subtitle languages priority string.
@@ -402,7 +407,8 @@ public interface PmsConfiguration {
 
 	/**
 	 * Returns the character encoding (or code page) that MEncoder should use
-	 * for displaying subtitles. Default is "cp1252".
+	 * for displaying non-Unicode external subtitles. Default is empty string
+	 * (do not force encoding with -subcp key).
 	 * @return The character encoding.
 	 */
 	public String getMencoderSubCp();
@@ -484,7 +490,7 @@ public interface PmsConfiguration {
 
 	/**
 	 * Sets the character encoding (or code page) that MEncoder should use
-	 * for displaying subtitles. Default is "cp1252".
+	 * for displaying non-Unicode external subtitles. Default is empty (autodetect).
 	 * @param value The character encoding.
 	 */
 	public void setMencoderSubCp(String value);
@@ -985,7 +991,7 @@ public interface PmsConfiguration {
 	 * <li>3: Case-insensitive ASCIIbetical sort</li>
 	 * <li>4: Locale-sensitive natural sort</li>
 	 * </ul>
-	 * Default value is 0.
+	 * Default value is 4: locale-sensitive natural sort.
 	 * @return The sort method
 	 */
 	public int getSortMethod();
@@ -1177,6 +1183,8 @@ public interface PmsConfiguration {
 
 	public void removeConfigurationListener(ConfigurationListener l);
 
+	// FIXME this is undocumented and misnamed
+	@Deprecated
 	public boolean initBufferMax();
 
 	/**
@@ -1186,4 +1194,21 @@ public interface PmsConfiguration {
 	 * @return The flags
 	 */
 	public Set<String> getNeedReloadFlags();
+
+	/**
+	 * Retrieve the name of the folder used to select subtitles, audio channels,
+	 * chapters, engines &amp;c. Defaults to the localized version of
+	 * <code>#--TRANSCODE--#</code>
+	 * 
+	 * @return The folder name.
+	 */
+	public String getTranscodeFolderName();
+
+	/**
+	 * Set a custom name for the <code>#--TRANSCODE--#</code> folder.
+	 * 
+	 * @param name
+	 *            The folder name.
+	 */
+	public void setTranscodeFolderName(String name);
 }

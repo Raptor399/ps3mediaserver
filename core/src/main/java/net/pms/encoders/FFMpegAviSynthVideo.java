@@ -32,8 +32,8 @@ import javax.swing.JComponent;
 import net.pms.api.PmsConfiguration;
 import net.pms.api.io.PipeIPCProcessFactory;
 import net.pms.api.io.ProcessWrapperFactory;
-import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAMediaSubtitle;
+import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.formats.v2.SubtitleType;
 import net.pms.util.ProcessUtil;
@@ -150,27 +150,18 @@ public class FFMpegAviSynthVideo extends FFMpegVideo {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean isCompatible(DLNAMediaInfo mediaInfo) {
-		if (mediaInfo != null) {
-			// TODO: Determine compatibility based on mediaInfo
-			return false;
-		} else {
-			// No information available
+	public boolean isCompatible(DLNAResource resource) {
+		if (resource == null || resource.getFormat().getType() != Format.VIDEO) {
 			return false;
 		}
-	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isCompatible(Format format) {
+		Format format = resource.getFormat();
+
 		if (format != null) {
 			Format.Identifier id = format.getIdentifier();
 
 			if (id.equals(Format.Identifier.MKV)
-					|| id.equals(Format.Identifier.MPG)
-					) {
+					|| id.equals(Format.Identifier.MPG)) {
 				return true;
 			}
 		}

@@ -27,6 +27,7 @@ import net.pms.api.PmsConfiguration;
 import net.pms.api.PmsCore;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.dlna.DLNAMediaInfo;
+import net.pms.encoders.FFMpegWebVideo;
 import net.pms.encoders.MEncoderWebVideo;
 import net.pms.encoders.MPlayerWebAudio;
 import net.pms.encoders.MPlayerWebVideoDump;
@@ -82,7 +83,9 @@ public class WEB extends Format {
 			}
 		} else {
 			for (String engine : configuration.getEnginesAsList(pmsCore.getRegistry())) {
-				if (engine.equals(MEncoderWebVideo.ID)) {
+				if (engine.equals(FFMpegWebVideo.ID)) {
+					a.add(FFMpegWebVideo.class);
+				} else if (engine.equals(MEncoderWebVideo.ID)) {
 					a.add(MEncoderWebVideo.class);
 				} else if (engine.equals(VideoLanVideoStreaming.ID)) {
 					a.add(VideoLanVideoStreaming.class);
@@ -91,6 +94,7 @@ public class WEB extends Format {
 				}
 			}
 		}
+
 		return a;
 	}
 
@@ -98,8 +102,9 @@ public class WEB extends Format {
 	 * {@inheritDoc}
 	 */
 	@Override
+	// TODO remove screen - it's been tried numerous times (see forum) and it doesn't work
 	public String[] getId() {
-		return new String[] { "http", "mms", "rtsp", "rtp", "udp", "screen" };
+		return new String[] { "http", "mms", "mmsh", "mmst", "rtsp", "rtp", "udp", "screen" };
 	}
 
 	@Override

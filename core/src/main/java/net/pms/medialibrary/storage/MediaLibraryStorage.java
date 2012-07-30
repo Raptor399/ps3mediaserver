@@ -21,6 +21,7 @@ package net.pms.medialibrary.storage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import net.pms.Messages;
 import net.pms.api.PmsCore;
 import net.pms.di.InjectionHelper;
 import net.pms.medialibrary.commons.dataobjects.DOAudioFileInfo;
+import net.pms.medialibrary.commons.dataobjects.DOCondition;
 import net.pms.medialibrary.commons.dataobjects.DOFileEntryFolder;
 import net.pms.medialibrary.commons.dataobjects.DOFileImportTemplate;
 import net.pms.medialibrary.commons.dataobjects.DOFileInfo;
@@ -43,7 +45,9 @@ import net.pms.medialibrary.commons.dataobjects.DOQuickTagEntry;
 import net.pms.medialibrary.commons.dataobjects.DOTableColumnConfiguration;
 import net.pms.medialibrary.commons.dataobjects.DOTemplate;
 import net.pms.medialibrary.commons.dataobjects.DOVideoFileInfo;
+import net.pms.medialibrary.commons.enumarations.ConditionOperator;
 import net.pms.medialibrary.commons.enumarations.ConditionType;
+import net.pms.medialibrary.commons.enumarations.ConditionValueType;
 import net.pms.medialibrary.commons.enumarations.FileType;
 import net.pms.medialibrary.commons.enumarations.MediaLibraryConstants.MetaDataKeys;
 import net.pms.medialibrary.commons.enumarations.SortOption;
@@ -550,6 +554,50 @@ public class MediaLibraryStorage implements IMediaLibraryStorage {
 		} catch (StorageException e) {
 			log.error("Storage error (get)", e);
 		}
+		return res;
+	}
+
+	@Override
+	public DOFileInfo getFileInfoByFilePath(String filePath) {
+		//retrieve the stored file info for this path if it exists
+		final File realFile = new File(filePath);
+		final String folderPath = realFile.getParent() + File.separator;
+		final String fileName = realFile.getName();
+
+		final DOFilter filter = new DOFilter("c1 AND c2", Arrays.asList(
+				new DOCondition(ConditionType.FILE_FOLDERPATH, ConditionOperator.IS, folderPath, "c1", ConditionValueType.STRING, null, null), 
+				new DOCondition(ConditionType.FILE_FILENAME, ConditionOperator.IS, fileName, "c2", ConditionValueType.STRING, null, null)));
+		
+		FileType fileType;
+		try {
+			fileType = dbFileInfo.getFileTypeForFilePath(filePath);
+		} catch (StorageException e1) {
+			log.error(String.format("Failed to determine file type for file path '%s'", filePath));
+			return null;
+		}
+
+		DOFileInfo res = null;
+		switch (fileType) {
+		case AUDIO:			
+			break;
+		case PICTURES:
+			break;
+		case VIDEO:
+			try {
+				List<DOVideoFileInfo> storedFileInfos = dbVideoFileInfo.getVideoFileInfo(filter, true, ConditionType.FILE_DATELASTUPDATEDDB, 
+						SortOption.FileProperty, Integer.MAX_VALUE, false);
+				if(storedFileInfos != null && storedFileInfos.size() > 0) {
+					res = storedFileInfos.get(0);
+				}
+			} catch (StorageException e) {
+				log.error(String.format("Failed to get video for file path '%s'", filePath));
+			}
+			break;
+		default:
+			break;
+		}
+		
+		
 		return res;
 	}
 	

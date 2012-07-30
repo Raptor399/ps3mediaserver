@@ -133,7 +133,13 @@ public class MPlayerWebVideoDump extends MPlayerAudio {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean isCompatible(Format format) {
+	public boolean isCompatible(DLNAResource resource) {
+		if (resource == null || resource.getFormat().getType() != Format.VIDEO) {
+			return false;
+		}
+
+		Format format = resource.getFormat();
+
 		if (format != null) {
 			Format.Identifier id = format.getIdentifier();
 

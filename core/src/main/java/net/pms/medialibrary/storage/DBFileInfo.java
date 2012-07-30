@@ -542,7 +542,6 @@ class DBFileInfo extends DBBase {
 		String fileName = filePath.substring(filePath.lastIndexOf(File.separatorChar) + 1);
 		String folderPath = filePath.substring(0, filePath.lastIndexOf(File.separatorChar) + 1);
 		
-		//increment the play count for the file
 		try {
 			conn = cp.getConnection();
 			stmt = conn.prepareStatement("SELECT ID FROM FILE FILE WHERE FILENAME = ? AND FOLDERPATH = ?");
@@ -560,6 +559,34 @@ class DBFileInfo extends DBBase {
 		
 		return retVal;
     }
+
+	public FileType getFileTypeForFilePath(String filePath) throws StorageException {
+		FileType retVal = FileType.UNKNOWN;
+
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		String fileName = filePath.substring(filePath.lastIndexOf(File.separatorChar) + 1);
+		String folderPath = filePath.substring(0, filePath.lastIndexOf(File.separatorChar) + 1);
+		
+		try {
+			conn = cp.getConnection();
+			stmt = conn.prepareStatement("SELECT TYPE FROM FILE WHERE FILENAME = ? AND FOLDERPATH = ?");
+			stmt.setString(1, fileName);
+			stmt.setString(2, folderPath);
+			rs = stmt.executeQuery();
+			if(rs.next()){
+				retVal = FileType.valueOf(FileType.class, rs.getString(1));
+			}
+		} catch (SQLException ex) {
+			throw new StorageException("Failed to get FileType for for file path=" + filePath, ex);
+		} finally {
+			close(conn, stmt, rs);
+		}
+		
+		return retVal;
+	}
 	
 	/*********************************************
 	 * 

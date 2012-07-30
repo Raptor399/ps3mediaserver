@@ -35,6 +35,7 @@ import net.pms.Messages;
 import net.pms.api.PmsConfiguration;
 import net.pms.configuration.WindowsRegistryProgramPaths.Factory;
 import net.pms.io.SystemUtils;
+import net.pms.Messages;
 import net.pms.util.PropertiesUtil;
 
 import org.apache.commons.configuration.Configuration;
@@ -44,6 +45,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.event.ConfigurationListener;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,6 +173,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	private static final String KEY_THUMBNAIL_GENERATION_ENABLED = "thumbnails"; // TODO (breaking change): should be renamed to e.g. generate_thumbnails
 	private static final String KEY_THUMBNAIL_SEEK_POS = "thumbnail_seek_pos";
 	private static final String KEY_TRANSCODE_BLOCKS_MULTIPLE_CONNECTIONS = "transcode_block_multiple_connections";
+	private static final String KEY_TRANSCODE_FOLDER_NAME = "transcode_folder_name";
 	private static final String KEY_TRANSCODE_KEEP_FIRST_CONNECTION = "transcode_keep_first_connection";
 	private static final String KEY_TSMUXER_FORCEFPS = "tsmuxer_forcefps";
 	private static final String KEY_TSMUXER_PREREMIX_AC3 = "tsmuxer_preremix_ac3";
@@ -182,6 +185,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	private static final String KEY_UUID = "uuid";
 	private static final String KEY_VIDEOTRANSCODE_START_DELAY = "key_videotranscode_start_delay";
 	private static final String KEY_VIRTUAL_FOLDERS = "vfolders";
+	// FIXME what is this? if it should be kept, it needs to be a) documented and b) renamed (breaking change)
 	private static final String KEY_BUFFER_MAX = "buffer_max";
 
 	// the name of the subdirectory under which PMS config files are stored for this build (default: PMS).
@@ -193,7 +197,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 
 	private static String DEFAULT_AVI_SYNTH_SCRIPT;
 	private static final String BUFFER_TYPE_FILE = "file";
-	private static final int MAX_MAX_MEMORY_DEFAULT_SIZE = 400;
+	private static final int MAX_MAX_MEMORY_DEFAULT_SIZE = 600;
 	private static final int BUFFER_MEMORY_FACTOR = 368;
 	private static int MAX_MAX_MEMORY_BUFFER_SIZE = MAX_MAX_MEMORY_DEFAULT_SIZE;
 	private static final char LIST_SEPARATOR = ',';
@@ -258,7 +262,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 			PMS_PROFILE=. ./PMS.sh
 
 		3) if a relative or absolute *file path* is supplied (the file doesn't have to exist),
-		it is taken to be the profile, and its parent dir is taken to be the profile (i.e. config file) dir: 
+		it is taken to be the profile, and its parent dir is taken to be the profile (i.e. config file) dir:
 
 			PMS_PROFILE = PMS.conf            # profile dir = .
 			PMS_PROFILE = folder/dev.conf     # profile dir = folder
@@ -388,7 +392,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 		Locale.setDefault(new Locale(getLanguage()));
 
 		// Set DEFAULT_AVI_SYNTH_SCRIPT according to language
-		DEFAULT_AVI_SYNTH_SCRIPT = 
+		DEFAULT_AVI_SYNTH_SCRIPT =
 			Messages.getString("MEncoderAviSynth.4") +
 			Messages.getString("MEncoderAviSynth.5") +
 			Messages.getString("MEncoderAviSynth.6") +
@@ -532,7 +536,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public boolean isTsmuxerForceFps() {
-		return configuration.getBoolean(KEY_TSMUXER_FORCEFPS, true);
+		return getBoolean(KEY_TSMUXER_FORCEFPS, true);
 	}
 
 	/**
@@ -618,11 +622,12 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	@Override
 	public String getLanguage() {
 		String def = Locale.getDefault().getLanguage();
+
 		if (def == null) {
 			def = "en";
 		}
-		String value = getString(KEY_LANGUAGE, def);
-		return StringUtils.isNotBlank(value) ? value.trim() : def;
+
+		return getString(KEY_LANGUAGE, def);
 	}
 
 	/**
@@ -660,20 +665,16 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	}
 
 	/**
-	 * Return the <code>String</code> value for a given configuration key. First, the
-	 * key is looked up in the current configuration settings. If it exists and contains
-	 * a valid value, that value is returned. If the key contains an invalid value or
-	 * cannot be found, the specified default value is returned.
+	 * Return the <code>String</code> value for a given configuration key if the
+	 * value is non-blank (i.e. not null, not an empty string, not all whitespace).
+	 * Otherwise return the supplied default value.
+	 * The value is returned with leading and trailing whitespace removed in both cases.
 	 * @param key The key to look up.
 	 * @param def The default value to return when no valid key value can be found.
 	 * @return The value configured for the key.
 	 */
 	private String getString(String key, String def) {
-		String value = configuration.getString(key, def);
-		if (value != null) {
-			value = value.trim();
-		}
-		return value;
+		return ConfigurationUtil.getNonBlankConfigurationString(configuration, key, def);
 	}
 	
 	/**
@@ -750,7 +751,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public boolean isMencoderAc3Fixed() {
-		return configuration.getBoolean(KEY_MENCODER_AC3_FIXED, false);
+		return getBoolean(KEY_MENCODER_AC3_FIXED, false);
 	}
 
 	/**
@@ -959,7 +960,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public String getMencoderAudioLanguages() {
-		return getString(KEY_MENCODER_AUDIO_LANGS, Messages.getString("MEncoderVideo.126"));
+		return ConfigurationUtil.getBlankConfigurationString(configuration, KEY_MENCODER_AUDIO_LANGS, Messages.getString("MEncoderVideo.126"));
 	}
 
 	/**
@@ -967,15 +968,19 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public String getMencoderSubLanguages() {
-		return getString(KEY_MENCODER_SUB_LANGS, Messages.getString("MEncoderVideo.127"));
+		return ConfigurationUtil.getBlankConfigurationString(configuration, KEY_MENCODER_SUB_LANGS, Messages.getString("MEncoderVideo.127"));
 	}
 
 	/**
 	 * {@inheritDoc}
+	 * Returns the ISO 639 language code for the subtitle language that should
+	 * be forced upon MEncoder.
+	 * Can be a blank string.
+	 * @return The subtitle language code.
 	 */
 	@Override
 	public String getMencoderForcedSubLanguage() {
-		return getString(KEY_MENCODER_FORCED_SUB_LANG, getLanguage());
+		return ConfigurationUtil.getBlankConfigurationString(configuration, KEY_MENCODER_FORCED_SUB_LANG, getLanguage());
 	}
 
 	/**
@@ -991,7 +996,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public String getMencoderAudioSubLanguages() {
-		return getString(KEY_MENCODER_AUDIO_SUB_LANGS, Messages.getString("MEncoderVideo.128"));
+		return ConfigurationUtil.getBlankConfigurationString(configuration, KEY_MENCODER_AUDIO_SUB_LANGS, Messages.getString("MEncoderVideo.128"));
 	}
 
 	/**
@@ -1007,7 +1012,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public String getMencoderSubCp() {
-		return getString(KEY_MENCODER_SUB_CP, "cp1252");
+		return getString(KEY_MENCODER_SUB_CP, StringUtils.EMPTY);
 	}
 
 	/**
@@ -1563,7 +1568,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public boolean getTrancodeBlocksMultipleConnections() {
-		return configuration.getBoolean(KEY_TRANSCODE_BLOCKS_MULTIPLE_CONNECTIONS, false);
+		return getBoolean(KEY_TRANSCODE_BLOCKS_MULTIPLE_CONNECTIONS, false);
 	}
 
 	/**
@@ -1579,7 +1584,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public boolean getTrancodeKeepFirstConnections() {
-		return configuration.getBoolean(KEY_TRANSCODE_KEEP_FIRST_CONNECTION, true);
+		return getBoolean(KEY_TRANSCODE_KEEP_FIRST_CONNECTION, true);
 	}
 
 	/**
@@ -1745,7 +1750,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public List<String> getEnginesAsList(SystemUtils registry) {
-		List<String> engines = stringToList(getString(KEY_ENGINES, "mencoder,avsmencoder,tsmuxer,ffmpegvideo,ffmpegaudio,mplayeraudio,tsmuxeraudio,vlcvideo,mencoderwebvideo,mplayervideodump,mplayerwebaudio,vlcaudio,ffmpegdvrmsremux,rawthumbs"));
+		List<String> engines = stringToList(getString(KEY_ENGINES, "mencoder,avsmencoder,tsmuxer,ffmpegvideo,ffmpegaudio,mplayeraudio,tsmuxeraudio,ffmpegwebvideo,vlcvideo,mencoderwebvideo,mplayervideodump,mplayerwebaudio,vlcaudio,ffmpegdvrmsremux,rawthumbs"));
 		engines = hackAvs(registry, engines);
 		return engines;
 	}
@@ -2003,7 +2008,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public int getSortMethod() {
-		return getInt(KEY_SORT_METHOD, 0);
+		return getInt(KEY_SORT_METHOD, 4);
 	}
 
 	/**
@@ -2501,7 +2506,7 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	 */
 	@Override
 	public boolean isAutoUpdate() {
-		return Build.isUpdatable() && configuration.getBoolean(KEY_AUTO_UPDATE, false);
+		return Build.isUpdatable() && getBoolean(KEY_AUTO_UPDATE, false);
 	}
 
 	/**
@@ -2571,7 +2576,24 @@ public class PmsConfigurationImpl implements PmsConfiguration {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public Set<String> getNeedReloadFlags() {
 		return NEED_RELOAD_FLAGS;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String getTranscodeFolderName() {
+		return getString(KEY_TRANSCODE_FOLDER_NAME, Messages.getString("TranscodeVirtualFolder.0"));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void setTranscodeFolderName(String name) {
+		configuration.setProperty(KEY_TRANSCODE_FOLDER_NAME, name);
 	}
 }
