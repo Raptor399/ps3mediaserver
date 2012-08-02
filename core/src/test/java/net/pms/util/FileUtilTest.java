@@ -184,22 +184,22 @@ public class FileUtilTest {
 	public void testConvertFileFromUtf16ToUtf8_inputFileIsUTF16LE() throws Exception {
 		File file_utf8le = FileUtils.toFile(CLASS.getResource("russian-utf16-le.srt"));
 		File outputFile = new File(file_utf8le.getParentFile(), "output-utf8-from-utf16-le.srt");
-		outputFile.delete();
+		//outputFile.delete();
 		FileUtil.convertFileFromUtf16ToUtf8(file_utf8le, outputFile);
 		File file_utf8 = FileUtils.toFile(CLASS.getResource("russian-utf8-without-bom.srt"));
 		assertThat(FileUtils.contentEquals(outputFile, file_utf8)).isTrue();
-		outputFile.delete();
+		//outputFile.delete();
 	}
 
 	@Test
 	public void testConvertFileFromUtf16ToUtf8_inputFileIsUTF16BE() throws Exception {
 		File file_utf8be = FileUtils.toFile(CLASS.getResource("russian-utf16-be.srt"));
 		File outputFile = new File(file_utf8be.getParentFile(), "output-utf8-from-utf16-be.srt");
-		outputFile.delete();
+		//outputFile.delete();
 		FileUtil.convertFileFromUtf16ToUtf8(file_utf8be, outputFile);
 		File file_utf8 = FileUtils.toFile(CLASS.getResource("russian-utf8-with-bom.srt"));
 		assertThat(FileUtils.contentEquals(outputFile, file_utf8)).isTrue();
-		outputFile.delete();
+		//outputFile.delete();
 	}
 
 	@Test(expected = IllegalArgumentException.class)

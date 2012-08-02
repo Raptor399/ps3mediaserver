@@ -33,12 +33,11 @@ import net.pms.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.junrar.Archive;
+import com.github.junrar.rarfile.FileHeader;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-
-import de.innosystec.unrar.Archive;
-import de.innosystec.unrar.rarfile.FileHeader;
 
 public class RarredEntry extends DLNAResource implements IPushOutput {
 	private static final Logger logger = LoggerFactory.getLogger(RarredEntry.class);

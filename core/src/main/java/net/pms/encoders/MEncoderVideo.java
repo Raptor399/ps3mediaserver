@@ -78,6 +78,7 @@ import net.pms.dlna.FileTranscodeVirtualFolder;
 import net.pms.dlna.InputFile;
 import net.pms.formats.Format;
 import net.pms.formats.v2.SubtitleType;
+import net.pms.formats.v2.SubtitleUtils;
 import net.pms.io.OutputParams;
 import net.pms.io.PipeIPCProcess;
 import net.pms.io.PipeProcess;
@@ -1122,7 +1123,7 @@ public class MEncoderVideo extends Player {
 		defaultArgsList.add((ac3Remux || dtsRemux) ? "copy" : (pcm ? "pcm" : "lavc"));
 
 		defaultArgsList.add("-of");
-		defaultArgsList.add((wmv || mpegts) ? "lavf" : ((pcm && avisynth()) ? "avi" : ((pcm || dtsRemux || ac3Remux) ? "rawvideo" : "mpeg")));
+		defaultArgsList.add((wmv || mpegts) ? "lavf" : ((pcm && avisynth()) ? "avi" : ((pcm || dtsRemux) ? "rawvideo" : "mpeg")));
 
 		if (wmv) {
 			defaultArgsList.add("-lavfopts");
@@ -1137,7 +1138,7 @@ public class MEncoderVideo extends Player {
 
 
 		defaultArgsList.add("-ovc");
-		defaultArgsList.add((ac3Remux && ovccopy) ? "copy" : "lavc");
+		defaultArgsList.add(ovccopy ? "copy" : "lavc");
 
 		String[] defaultArgsArray = new String[defaultArgsList.size()];
 		defaultArgsList.toArray(defaultArgsArray);
@@ -1758,11 +1759,19 @@ public class MEncoderVideo extends Player {
 			// external subtitles file
 			if (params.sid.isExternal()) {
 				if (!params.sid.isExternalFileUtf()) {
+					String subcp = null;
 					// append -subcp option for non UTF external subtitles
 					if (isNotBlank(configuration.getMencoderSubCp())) {
-						sb.append("-subcp ").append(configuration.getMencoderSubCp()).append(" ");
+						// manual setting
+						subcp = configuration.getMencoderSubCp();
+					} else if (isNotBlank(SubtitleUtils.getSubCpOptionForMencoder(params.sid))) {
+						// autodetect charset (blank mencoder_subcp config option)
+						subcp = SubtitleUtils.getSubCpOptionForMencoder(params.sid);
+					}
+					if (isNotBlank(subcp)) {
+						sb.append("-subcp ").append(subcp).append(" ");
 						if (configuration.isMencoderSubFribidi()) {
-							sb.append("-fribidi-charset ").append(configuration.getMencoderSubCp()).append(" ");
+							sb.append("-fribidi-charset ").append(subcp).append(" ");
 						}
 					}
 				}
@@ -1832,7 +1841,7 @@ public class MEncoderVideo extends Player {
 			}
 		}
 
-		if (!dtsRemux && !pcm && !ac3Remux && !avisynth() && params.aid != null && media.getAudioTracksList().size() > 1) {
+		if (!dtsRemux && !pcm && !avisynth() && params.aid != null && media.getAudioTracksList().size() > 1) {
 			cmdList.add("-aid");
 			boolean lavf = false; // TODO Need to add support for LAVF demuxing
 			cmdList.add("" + (lavf ? params.aid.getId() + 1 : params.aid.getId()));
@@ -2148,13 +2157,13 @@ public class MEncoderVideo extends Player {
 					} else if (expertOptions[i].equals("-nomux")) {
 						expertOptions[i] = REMOVE_OPTION;
 					} else if (expertOptions[i].equals("-mt")) {
-						// not an MEncoder option so remove it from cmdList.
+						// not an MEncoder option so remove it from exportOptions.
 						// multi-threaded MEncoder is used by default, so this is obsolete (TODO: Remove it from the description)
 						expertOptions[i] = REMOVE_OPTION;
 					} else if (expertOptions[i].equals("-ofps")) {
 						// replace the cmdList version with the expertOptions version i.e. remove the former
 						removeCmdListOption.put("-ofps", true);
-						// skip (i.e. leave unchanged) the value
+						// skip (i.e. leave unchanged) the exportOptions value
 						++i;
 					} else if (expertOptions[i].equals("-fps")) {
 						removeCmdListOption.put("-fps", true);
@@ -2220,12 +2229,13 @@ public class MEncoderVideo extends Player {
 
 				// pass 2: process cmdList
 				List<String> transformedCmdList = new ArrayList<String>();
+
 				for (int i = 0; i < cmdList.size(); ++i) {
 					String option = cmdList.get(i);
 
 					// we remove an option by *not* adding it to transformedCmdList
 					if (removeCmdListOption.containsKey(option)) {
-						if (isTrue(removeCmdListOption.get(option))) { // true: remove corresponding value
+						if (isTrue(removeCmdListOption.get(option))) { // true: remove (i.e. don't add) the corresponding value
 							++i;
 						}
 					} else {
@@ -2299,7 +2309,8 @@ public class MEncoderVideo extends Player {
 
 		ProcessWrapper pw = null;
 
-		if (pcm || dtsRemux || ac3Remux) {
+		if (pcm || dtsRemux) {
+			// transcode video, demux audio, remux with tsmuxer
 			boolean channels_filter_present = false;
 
 			for (String s : cmdList) {
@@ -2542,7 +2553,7 @@ public class MEncoderVideo extends Player {
 				cmdList.add("statusline=2");
 				params.input_pipes = new PipeProcess[2];
 			} else {
-				pipe = pipeProcessFactory.create("mencoder" + System.currentTimeMillis(), (pcm || dtsRemux || ac3Remux) ? null : params);
+				pipe = pipeProcessFactory.create("mencoder" + System.currentTimeMillis(), (pcm || dtsRemux) ? null : params);
 				params.input_pipes[0] = pipe;
 				cmdList.add("-o");
 				cmdList.add(pipe.getInputPipe());

@@ -20,6 +20,7 @@ package net.pms.newgui;
 
 import java.awt.Color;
 import java.awt.ComponentOrientation;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -37,6 +38,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
@@ -90,9 +92,23 @@ public class TracesTab {
 		}
 	}
 	private JTextArea jList;
+	protected JScrollPane jListPane;
 
 	public JTextArea getList() {
 		return jList;
+	}
+	
+	public void append(String msg) {
+		getList().append(msg);
+		final JScrollBar vbar = jListPane.getVerticalScrollBar();
+		// if scroll bar already was at the bottom we schedule
+		// a new scroll event to again scroll to the bottom
+		if (vbar.getMaximum() == vbar.getValue() + vbar.getVisibleAmount())
+			EventQueue.invokeLater (new Runnable() {
+				public void run () {
+					vbar.setValue (vbar.getMaximum ());
+				}
+			});
 	}
 
 	public JComponent build() {
@@ -130,8 +146,8 @@ public class TracesTab {
 			popup,
 			jList));
 
-		JScrollPane pane = new JScrollPane(jList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		builder.add(pane, cc.xyw(1, 1, 2));
+		jListPane = new JScrollPane(jList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		builder.add(jListPane, cc.xyw(1, 1, 2));
 
 		// Add buttons opening log files
 		JPanel pLogFileButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
