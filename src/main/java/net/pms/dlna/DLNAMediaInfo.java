@@ -623,54 +623,54 @@ public class DLNAMediaInfo implements Cloneable {
 					// ffmpeg_parsing = true;
 					LOGGER.info("Error parsing image ({}) with Sanselan, switching to FFmpeg", inputFile.getFile().getAbsolutePath(), e);
 				}
-			}
 
-			if (PMS.getConfiguration().getImageThumbnailsEnabled()) {
-				try {
-					File thumbDir = new File(PMS.getConfiguration().getTempFolder(), THUMBNAIL_DIRECTORY_NAME);
-
-					LOGGER.trace("Generating thumbnail for: {}", inputFile.getFile().getAbsolutePath());
-
-					if (!thumbDir.exists() && !thumbDir.mkdirs()) {
-						LOGGER.warn("Could not create thumbnail directory: {}", thumbDir.getAbsolutePath());
-					} else {
-						File thumbFile = new File(thumbDir, inputFile.getFile().getName() + ".jpg");
-						String thumbFilename = thumbFile.getAbsolutePath();
-
-						LOGGER.trace("Creating (temporary) thumbnail: {}", thumbFilename);
-
-						// Create the thumbnail image using the Thumbnailator library
-						final Builder<File> thumbnail = Thumbnails.of(inputFile.getFile());
-						thumbnail.size(320, 180);
-						thumbnail.outputFormat("jpg");
-						thumbnail.outputQuality(1.0f);
-						thumbnail.toFile(thumbFilename);
-
-						File jpg = new File(thumbFilename);
-
-						if (jpg.exists()) {
-							InputStream is = new FileInputStream(jpg);
-							int sz = is.available();
-
-							if (sz > 0) {
-								// Read the entire input stream contents into a byte array
-								byte[] bytes = IOUtils.toByteArray(is);
-
-								// Set thumbnail image
-								setThumb(bytes);
-							}
-
-							is.close();
-
-							if (!jpg.delete()) {
-								jpg.deleteOnExit();
+				if (PMS.getConfiguration().getImageThumbnailsEnabled()) {
+					try {
+						File thumbDir = new File(PMS.getConfiguration().getTempFolder(), THUMBNAIL_DIRECTORY_NAME);
+	
+						LOGGER.trace("Generating thumbnail for: {}", inputFile.getFile().getAbsolutePath());
+	
+						if (!thumbDir.exists() && !thumbDir.mkdirs()) {
+							LOGGER.warn("Could not create thumbnail directory: {}", thumbDir.getAbsolutePath());
+						} else {
+							File thumbFile = new File(thumbDir, inputFile.getFile().getName() + ".jpg");
+							String thumbFilename = thumbFile.getAbsolutePath();
+	
+							LOGGER.trace("Creating (temporary) thumbnail: {}", thumbFilename);
+	
+							// Create the thumbnail image using the Thumbnailator library
+							final Builder<File> thumbnail = Thumbnails.of(inputFile.getFile());
+							thumbnail.size(320, 180);
+							thumbnail.outputFormat("jpg");
+							thumbnail.outputQuality(1.0f);
+							thumbnail.toFile(thumbFilename);
+	
+							File jpg = new File(thumbFilename);
+	
+							if (jpg.exists()) {
+								InputStream is = new FileInputStream(jpg);
+								int sz = is.available();
+	
+								if (sz > 0) {
+									// Read the entire input stream contents into a byte array
+									byte[] bytes = IOUtils.toByteArray(is);
+	
+									// Set thumbnail image
+									setThumb(bytes);
+								}
+	
+								is.close();
+	
+								if (!jpg.delete()) {
+									jpg.deleteOnExit();
+								}
 							}
 						}
+					} catch (UnsupportedFormatException ufe) {
+						LOGGER.warn("Can't create thumbnail for {}: {}", inputFile.getFile().getAbsolutePath(), ufe.getMessage());
+					} catch (Exception e) {
+						LOGGER.warn("Error generating thumbnail for: {}", inputFile.getFile().getAbsolutePath(), e);
 					}
-				} catch (UnsupportedFormatException ufe) {
-					LOGGER.warn("Can't create thumbnail for {}: {}", inputFile.getFile().getAbsolutePath(), ufe.getMessage());
-				} catch (Exception e) {
-					LOGGER.warn("Error generating thumbnail for: {}", inputFile.getFile().getAbsolutePath(), e);
 				}
 			}
 
