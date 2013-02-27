@@ -18,13 +18,13 @@
  */
 package net.pms.io;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -47,35 +47,90 @@ import java.io.PipedOutputStream;
  * {@link WindowsNamedPipe}.
  */
 public class UnbufferedOutputFile implements BufferedOutputFile {
+	/** Logger for writing messages to the log file */
+	private static final Logger LOGGER = LoggerFactory.getLogger(UnbufferedOutputFile.class);
 
-	private static final Logger logger = LoggerFactory.getLogger(UnbufferedOutputFile.class);
-	
+	/** Stream to capture the output of a process that needs to be piped */
 	private PipedOutputStream pipedOutputStream;
-	private PipedInputStream pipedInputStream;
-	
+
+	/** Stream to send the piped contents to */
+	private PipedInputStreamWrapper pipedInputStream;
+
+	/**
+	 * Wrap PipeInputStream to be able to ignore those pesky untimely
+	 * close() calls from other methods. 
+	 */
+	private class PipedInputStreamWrapper extends PipedInputStream {
+		PipedInputStreamWrapper(PipedOutputStream pipedOutputStream) throws IOException {
+			super(pipedOutputStream);
+		}
+
+		/**
+		 * Do not use this method, use {@link #closeForReal()} instead.
+		 */
+		@Override
+		public void close() throws IOException {
+			LOGGER.trace("", new IOException("pipedInputStream.close() called illegally."));
+		}
+
+		public void closeForReal() throws IOException {
+			super.close();
+		}
+	}
+
 	public UnbufferedOutputFile(OutputParams params) {
 		pipedOutputStream = new PipedOutputStream();
 		
 		try {
-			pipedInputStream = new PipedInputStream(pipedOutputStream);
+			pipedInputStream = new PipedInputStreamWrapper(pipedOutputStream);
 		} catch (IOException e) {
-			logger.debug("Error creating piped input stream: " + e);
+			LOGGER.debug("Error creating piped input stream: ", e);
 		}
 	}
 	
 	/**
-	 * Closes the piped streams and releases any system resources associated with
-	 * them. This object may no longer be used for writing bytes.
+	 * Do not use this method to close the streams of this object.
+	 * Instead, call {@link #closeInputStream()} or {@link #closeOutputStream()}
+	 * when a stream can be closed.
 	 */
 	@Override
 	public void close() throws IOException {
-		pipedInputStream.close();
+		// RequestV2, line 862 calls "inputStream.close()" after every handled request
+		// of max 8k bytes. We have much more bytes in the pipe, so don't close the
+		// streams just yet when requested to do so.
+	}
+
+	/**
+	 * Close the output stream of the buffered output. This signifies that no
+	 * more data will be written to the buffered output.
+	 *
+	 * @throws IOException When closing the output stream fails.
+	 */
+	@Override
+	public void closeOutputStream() throws IOException {
 		pipedOutputStream.close();
+	}
+
+	/**
+	 * Close the input stream of the buffered output. This signifies
+	 * that no more data will be read from the buffered output.
+	 *
+	 * @throws IOException When closing the input stream fails.
+	 */
+	@Override
+	public void closeInputStream() throws IOException {
+		pipedInputStream.closeForReal();
 	}
 
 	/**
 	 * Returns the {@link java.io.PipedInputStream PipedInputStream} connected to the
 	 * transcoding output stream as is, ignoring the newReadposition parameter.
+	 * <p>
+	 * Note that is it very well possible that the input stream has no available
+	 * bytes. E.g. this can happen when the output process is still starting up
+	 * and has not produced any output yet. An input stream with no available
+	 * bytes does not mean there is nothing left to output!
+	 *
 	 * @param newReadPosition This parameter is ignored.
 	 * @return The piped input stream
 	 */
@@ -182,4 +237,5 @@ public class UnbufferedOutputFile implements BufferedOutputFile {
 	@Deprecated
 	public void detachInputStream() {
 	}
+
 }

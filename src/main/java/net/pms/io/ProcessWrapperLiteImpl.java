@@ -63,4 +63,9 @@ public class ProcessWrapperLiteImpl implements ProcessWrapper {
 	public void stopProcess() {
 		ProcessUtil.destroy(p);
 	}
+
+	@Override
+	public void closeInputStream() throws IOException {
+		// Nothing to close
+	}
 }
