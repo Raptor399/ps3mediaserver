@@ -66,7 +66,7 @@ public class MediaInfoWrapper {
 	 * library. This information is supposed to be immutable after it has been
 	 * initialized.
 	 */
-	private Map<StreamType, List<Map<String, String>>> fileInfoMap;
+	private Map<StreamType, List<Map<String, String>>> fileInfoMap = null;
 
 	/**
 	 * Media files contain one or more streams, each with its own information.
@@ -149,8 +149,6 @@ public class MediaInfoWrapper {
 		if (mediaInfo != null) {
 			// Analyze the file
 			initialize(filename);
-		} else {
-			fileInfoMap = null;
 		}
 	}
 
@@ -163,9 +161,10 @@ public class MediaInfoWrapper {
 	 *            The path and file name of the file to be examined.
 	 */
 	private synchronized void initialize(String filename) {
-		mediaInfo.Open(filename);
-		fileInfoMap = initStreamInfoMap();
-		mediaInfo.Close();
+		if (mediaInfo.Open(filename) > 0) {
+			fileInfoMap = initStreamInfoMap();
+			mediaInfo.Close();
+		}
 	}
 
 	/**
