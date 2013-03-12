@@ -20,11 +20,7 @@ package net.pms.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.OutputStream;
 
 
 /**
@@ -47,45 +43,25 @@ import org.slf4j.LoggerFactory;
  * {@link WindowsNamedPipe}.
  */
 public class UnbufferedOutputFile implements BufferedOutputFile {
-	/** Logger for writing messages to the log file */
-	private static final Logger LOGGER = LoggerFactory.getLogger(UnbufferedOutputFile.class);
+	/**
+	 * Size of the circular byte buffer. The circular buffer will be filled
+	 * from the pipe buffer, so its size should be greater than that of the
+	 * pipe buffer, and preferably a multiple of that size. This way the
+	 * output stream can be written by one thread while the input stream is
+	 * being read in a different tempo by another.  
+	 */
+	private final int BUFFER_SIZE = OutputBufferConsumer.PIPE_BUFFER_SIZE * 4;
 
 	/** Stream to capture the output of a process that needs to be piped */
-	private PipedOutputStream pipedOutputStream;
+	private OutputStream outputStream;
 
 	/** Stream to send the piped contents to */
-	private PipedInputStreamWrapper pipedInputStream;
-
-	/**
-	 * Wrap PipeInputStream to be able to ignore those pesky untimely
-	 * close() calls from other methods. 
-	 */
-	private class PipedInputStreamWrapper extends PipedInputStream {
-		PipedInputStreamWrapper(PipedOutputStream pipedOutputStream) throws IOException {
-			super(pipedOutputStream);
-		}
-
-		/**
-		 * Do not use this method, use {@link #closeForReal()} instead.
-		 */
-		@Override
-		public void close() throws IOException {
-			LOGGER.trace("", new IOException("pipedInputStream.close() called illegally."));
-		}
-
-		public void closeForReal() throws IOException {
-			super.close();
-		}
-	}
+	private InputStream inputStream;
 
 	public UnbufferedOutputFile(OutputParams params) {
-		pipedOutputStream = new PipedOutputStream();
-		
-		try {
-			pipedInputStream = new PipedInputStreamWrapper(pipedOutputStream);
-		} catch (IOException e) {
-			LOGGER.debug("Error creating piped input stream: ", e);
-		}
+		CircularByteBuffer buffer = new CircularByteBuffer(BUFFER_SIZE);
+		outputStream = buffer.getOutputStream();
+		inputStream = buffer.getInputStream();
 	}
 	
 	/**
@@ -108,7 +84,7 @@ public class UnbufferedOutputFile implements BufferedOutputFile {
 	 */
 	@Override
 	public void closeOutputStream() throws IOException {
-		pipedOutputStream.close();
+		outputStream.close();
 	}
 
 	/**
@@ -119,7 +95,7 @@ public class UnbufferedOutputFile implements BufferedOutputFile {
 	 */
 	@Override
 	public void closeInputStream() throws IOException {
-		pipedInputStream.closeForReal();
+		inputStream.close();
 	}
 
 	/**
@@ -136,7 +112,7 @@ public class UnbufferedOutputFile implements BufferedOutputFile {
 	 */
 	@Override
 	public InputStream getInputStream(long newReadPosition) {
-		return pipedInputStream;
+		return inputStream;
 	}
 
 	/**
@@ -149,7 +125,7 @@ public class UnbufferedOutputFile implements BufferedOutputFile {
 	 */
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
-		pipedOutputStream.write(b, off, len);
+		outputStream.write(b, off, len);
 	}
 	
 	/**
@@ -159,7 +135,7 @@ public class UnbufferedOutputFile implements BufferedOutputFile {
 	 */
 	@Override
 	public void write(int b) throws IOException {
-		pipedOutputStream.write(b);
+		outputStream.write(b);
 	}
 
 	/**
@@ -170,7 +146,7 @@ public class UnbufferedOutputFile implements BufferedOutputFile {
 	 */
 	@Override
 	public void write(byte[] byteArray) throws IOException {
-		pipedOutputStream.write(byteArray);
+		outputStream.write(byteArray);
 	}
 	
 	/**

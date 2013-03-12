@@ -25,6 +25,7 @@ import net.pms.dlna.DLNAMediaSubtitle;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.Range;
 import net.pms.external.StartStopListenerDelegate;
+import net.pms.io.OutputBufferConsumer;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -772,7 +773,8 @@ public class Request extends HTTPResource {
 
 	// VISTA tip ?: netsh interface tcp set global autotuninglevel=disabled
 	private int sendBytes(InputStream fis) throws IOException {
-		byte[] buffer = new byte[32 * 1024];
+		// Use the same buffer size as the OutputBufferConsumer.
+		byte[] buffer = new byte[OutputBufferConsumer.PIPE_BUFFER_SIZE];
 		int bytes = 0;
 		int sendBytes = 0;
 

@@ -40,7 +40,7 @@ public class OutputBufferConsumer extends OutputConsumer {
 	 * being copied, with 8192 being most commonly used, probably because that is the default
 	 * size for {@link org.jboss.netty.channel.Channel Channel} packets.
 	 */
-	private static final int PIPE_BUFFER_SIZE = 500000;
+	public static final int PIPE_BUFFER_SIZE = 65536;
 
 	public OutputBufferConsumer(InputStream inputStream, OutputParams params) {
 		super(inputStream);
@@ -57,11 +57,12 @@ public class OutputBufferConsumer extends OutputConsumer {
 				LOGGER.trace("Fetched " + n + " from pipe");
 				outputBuffer.write(buf, 0, n);
 			}
-			// LOGGER.debug("Finished to read");
 		} catch (IOException ioe) {
-			LOGGER.debug("Error consuming stream of spawned process", ioe);
+			// This typically happens when someone stops watching a video,
+			// which closes the InputStream of the outputBuffer. Bytes can
+			// no longer be written and an IOException is thrown.
+			LOGGER.debug("Error consuming stream of spawned process: " + ioe.getMessage());
 		} finally {
-			// LOGGER.trace("Closing read from pipe");
 			if (inputStream != null) {
 				try {
 					inputStream.close();

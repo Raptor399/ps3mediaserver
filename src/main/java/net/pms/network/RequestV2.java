@@ -40,6 +40,7 @@ import net.pms.dlna.DLNAMediaSubtitle;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.Range;
 import net.pms.external.StartStopListenerDelegate;
+import net.pms.io.OutputBufferConsumer;
 
 import org.apache.commons.io.IOUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -47,9 +48,12 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.MessageEvent;
+import org.jboss.netty.handler.codec.http.DefaultHttpChunk;
+import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.stream.ChunkedStream;
+import org.jboss.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -441,7 +445,7 @@ public class RequestV2 extends HTTPResource {
 								// Content-Length refers to the total remaining size of the stream here.
 								CLoverride = remaining;
 							}
-	
+
 							// Calculate the corresponding highRange (this is usually redundant).
 							highRange = lowRange + CLoverride - (CLoverride > 0 ? 1 : 0);
 	
@@ -881,9 +885,9 @@ public class RequestV2 extends HTTPResource {
 
 				if (lowRange != DLNAMediaInfo.ENDFILE_POS && !method.equals("HEAD")) {
 					// Send the response body to the client in chunks.
-					// FIXME: ChunkedStream and the input stream from UnbufferedOutputFile
-					// do not work well together. Figure out why.
-					ChannelFuture chunkWriteFuture = e.getChannel().write(new ChunkedStream(inputStream, BUFFER_SIZE));
+					// Use the same buffer size as the OutputBufferConsumer.
+					ChannelFuture chunkWriteFuture = e.getChannel().write(
+							new ChunkedStream(inputStream, OutputBufferConsumer.PIPE_BUFFER_SIZE));
 
 					LOGGER.trace("Sent response body");
 
