@@ -22,6 +22,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class FeedItem extends DLNAResource {
+	private String title;
+	private String itemURL;
+	private String thumbURL;
+	private long length;
+	private InputStream inputStream;
+
 	@Override
 	protected String getThumbnailURL() {
 		if (thumbURL == null) {
@@ -43,10 +49,6 @@ public class FeedItem extends DLNAResource {
 	public InputStream getThumbnailInputStream() throws IOException {
 		return downloadAndSend(thumbURL, true);
 	}
-	private String title;
-	private String itemURL;
-	private String thumbURL;
-	private long length;
 
 	public FeedItem(String title, String itemURL, String thumbURL, DLNAMediaInfo media, int type) {
 		super(type);
@@ -56,12 +58,25 @@ public class FeedItem extends DLNAResource {
 		this.setMedia(media);
 	}
 
-	public InputStream getInputStream() throws IOException {
-		InputStream i = downloadAndSend(itemURL, true);
-		if (i != null) {
-			length = i.available();
+	@Override
+	public void closeInputStream() {
+		if (inputStream != null) {
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+			}
+			
+			inputStream = null;
 		}
-		return i;
+	}
+
+	public InputStream getInputStream() throws IOException {
+		inputStream = downloadAndSend(itemURL, true);
+
+		if (inputStream != null) {
+			length = inputStream.available();
+		}
+		return inputStream;
 	}
 
 	public String getName() {

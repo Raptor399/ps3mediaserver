@@ -55,6 +55,10 @@ public class RarredEntry extends DLNAResource implements IPushOutput {
 		this.length = length;
 	}
 
+	@Override
+	public void closeInputStream() {
+	}
+
 	public InputStream getInputStream() throws IOException {
 		return null;
 	}

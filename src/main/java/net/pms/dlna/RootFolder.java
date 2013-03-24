@@ -57,6 +57,10 @@ public class RootFolder extends DLNAResource {
 	}
 
 	@Override
+	public void closeInputStream() {
+	}
+
+	@Override
 	public InputStream getInputStream() {
 		return null;
 	}

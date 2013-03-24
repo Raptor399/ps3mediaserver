@@ -88,6 +88,10 @@ public class WebStream extends DLNAResource {
 		}
 	}
 
+	@Override
+	public void closeInputStream() {
+	}
+
 	public InputStream getInputStream() {
 		return null;
 	}

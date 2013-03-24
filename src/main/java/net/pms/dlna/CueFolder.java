@@ -31,6 +31,10 @@ public class CueFolder extends DLNAResource {
 	}
 
 	@Override
+	public void closeInputStream() {
+	}
+
+	@Override
 	public InputStream getInputStream() throws IOException {
 		return null;
 	}

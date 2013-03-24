@@ -33,7 +33,8 @@ public class ZippedFile extends DLNAResource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ZippedFile.class);
 	private File file;
 	private ZipFile zip;
-
+	private ZipInputStream zipInputStream;
+	
 	public ZippedFile(File file) {
 		this.file = file;
 		setLastModified(file.lastModified());
@@ -65,9 +66,23 @@ public class ZippedFile extends DLNAResource {
 		return super.getThumbnailURL();
 	}
 
+	@Override
+	public void closeInputStream() {
+		if (zipInputStream != null) {
+			try {
+				zipInputStream.close();
+			} catch (IOException e) {
+				LOGGER.error("Error closing zip file", e);
+			}
+
+			zipInputStream = null;
+		}
+	}
+
 	public InputStream getInputStream() {
 		try {
-			return new ZipInputStream(new FileInputStream(file));
+			zipInputStream = new ZipInputStream(new FileInputStream(file));
+			return zipInputStream;
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		}

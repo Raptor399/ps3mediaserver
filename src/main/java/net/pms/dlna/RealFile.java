@@ -19,6 +19,7 @@
 package net.pms.dlna;
 
 import net.pms.PMS;
+import net.pms.configuration.RendererConfiguration;
 import net.pms.formats.Format;
 import net.pms.formats.FormatFactory;
 import net.pms.util.FileUtil;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 
 public class RealFile extends MapFile {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RealFile.class);
+	private FileInputStream fileInputStream;
 
 	public RealFile(File file) {
 		getConf().getFiles().add(file);
@@ -87,9 +89,28 @@ public class RealFile extends MapFile {
 	}
 
 	@Override
+	public void closeInputStream() {
+		if (fileInputStream != null) {
+			try {
+				fileInputStream.close();
+			} catch (IOException e) {
+				LOGGER.debug("Error closing file input stream");
+			}
+
+			fileInputStream = null;
+		} else {
+			// Input stream may have been opened using DLNAResource#getInputStream(Range, RendererConfiguration)
+			super.closeInputStream();
+		}
+		
+	}
+
+	@Override
 	public InputStream getInputStream() {
 		try {
-			return new FileInputStream(getFile());
+			fileInputStream = new FileInputStream(getFile());
+
+			return fileInputStream;
 		} catch (FileNotFoundException e) {
 			LOGGER.debug("File not found: {}", getFile().getAbsolutePath());
 		}

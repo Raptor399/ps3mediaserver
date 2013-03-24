@@ -245,6 +245,9 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	@Deprecated
 	protected long lastRefreshTime;
 
+	/** Keeps track of an opened input stream, so it can be closed later. */
+	private InputStream inputStream;
+
 	/**
 	 * Returns parent object, usually a folder type of resource. In the DLDI
 	 * queries, the UPNP server needs to give out the parent container where
@@ -352,6 +355,25 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	// Ditlew
 	public long length(RendererConfiguration mediaRenderer) {
 		return length();
+	}
+
+	/**
+	 * Closes a created input stream properly.
+	 */
+	public void closeInputStream() {
+		if (externalProcess != null && !externalProcess.isDestroyed()) {
+			externalProcess.stopProcess();
+			externalProcess = null;
+		}
+
+		if (inputStream != null) {
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				LOGGER.debug("Error closing input stream", e);
+			}
+			inputStream = null;
+		}
 	}
 
 	public abstract InputStream getInputStream() throws IOException;
@@ -1639,7 +1661,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				Runnable r = new Runnable() {
 					@Override
 					public void run() {
-						LOGGER.info("renderer: {}, file: {}", rendererId, getSystemName());
+						LOGGER.info("renderer: {}, file: {}", rendererId, getSystemName(), new IOException(""));
 
 						for (final ExternalListener listener : ExternalFactory.getExternalListeners()) {
 							if (listener instanceof StartStopListener) {
@@ -1778,6 +1800,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					fis = wrap(fis, high, low);
 				}
 
+				inputStream = fis;
 				return fis;
 			}
 
@@ -1805,6 +1828,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				}
 			}
 
+			inputStream = fis;
 			return fis;
 		} else {
 			OutputParams params = new OutputParams(PMS.getConfiguration());
@@ -1908,6 +1932,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 				new Thread(r, "Hanging External Process Stopper").start();
 			}
 
+			inputStream = is;
 			return is;
 		}
 	}

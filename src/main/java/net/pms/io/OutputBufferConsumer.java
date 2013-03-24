@@ -18,6 +18,8 @@
  */
 package net.pms.io;
 
+import net.pms.PMS;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,43 +42,48 @@ public class OutputBufferConsumer extends OutputConsumer {
 	 * being copied, with 8192 being most commonly used, probably because that is the default
 	 * size for {@link org.jboss.netty.channel.Channel Channel} packets.
 	 */
-	public static final int PIPE_BUFFER_SIZE = 65536;
+	public static final int PIPE_BUFFER_SIZE = 32768;
 
 	public OutputBufferConsumer(InputStream inputStream, OutputParams params) {
 		super(inputStream);
-		//outputBuffer = new BufferedOutputFileImpl(params);
-		outputBuffer = new UnbufferedOutputFile(params);
+
+		if (PMS.getConfiguration().isHTTPEngineV2()) {
+			outputBuffer = new BufferedOutputFileImpl(params);
+			//outputBuffer = new UnbufferedOutputFile(params);
+		} else {
+			outputBuffer = new UnbufferedOutputFile(inputStream);
+		}
 	}
 
 	public void run() {
-		try {
-			LOGGER.trace("Starting read from pipe");
-			byte buf[] = new byte[PIPE_BUFFER_SIZE];
-			int n = 0;
-			while ((n = inputStream.read(buf)) > 0) {
-				LOGGER.trace("Fetched " + n + " from pipe");
-				outputBuffer.write(buf, 0, n);
-			}
-		} catch (IOException ioe) {
-			// This typically happens when someone stops watching a video,
-			// which closes the InputStream of the outputBuffer. Bytes can
-			// no longer be written and an IOException is thrown.
-			LOGGER.debug("Error consuming stream of spawned process: " + ioe.getMessage());
-		} finally {
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException e) {
-					LOGGER.debug("Caught exception", e);
-				}
-			}
-
-			try {
-				outputBuffer.closeOutputStream();
-			} catch (IOException e) {
-				LOGGER.debug("Caught exception", e);
-			}
-		}
+//		try {
+//			LOGGER.trace("Starting read from pipe");
+//			byte buf[] = new byte[PIPE_BUFFER_SIZE];
+//			int n = 0;
+//			while ((n = inputStream.read(buf)) > 0) {
+//				LOGGER.trace("Fetched " + n + " from pipe");
+//				outputBuffer.write(buf, 0, n);
+//			}
+//		} catch (IOException ioe) {
+//			// This typically happens when someone stops watching a video,
+//			// which closes the InputStream of the outputBuffer. Bytes can
+//			// no longer be written and an IOException is thrown.
+//			LOGGER.debug("Error consuming stream of spawned process: " + ioe.getMessage());
+//		} finally {
+//			if (inputStream != null) {
+//				try {
+//					inputStream.close();
+//				} catch (IOException e) {
+//					LOGGER.debug("Caught exception", e);
+//				}
+//			}
+//
+//			try {
+//				outputBuffer.closeOutputStream();
+//			} catch (IOException e) {
+//				LOGGER.debug("Caught exception", e);
+//			}
+//		}
 	}
 
 	public BufferedOutputFile getBuffer() {

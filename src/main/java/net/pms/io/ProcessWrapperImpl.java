@@ -314,7 +314,9 @@ public class ProcessWrapperImpl extends Thread implements ProcessWrapper {
 		if (bo != null) {
 			bo.closeInputStream();
 		} else {
-			stdoutConsumer.getBuffer().closeInputStream();
+			if (stdoutConsumer != null && stdoutConsumer.getBuffer() != null) {
+				stdoutConsumer.getBuffer().closeInputStream();
+			}
 		}
 	}
 	
@@ -341,6 +343,7 @@ public class ProcessWrapperImpl extends Thread implements ProcessWrapper {
 	public synchronized void stopProcess() {
 		if (!destroyed) {
 			destroyed = true;
+
 			if (process != null) {
 				Integer pid = ProcessUtil.getProcessID(process);
 
@@ -359,6 +362,11 @@ public class ProcessWrapperImpl extends Thread implements ProcessWrapper {
 						pw.stopProcess();
 					}
 				}
+			}
+
+			try {
+				closeInputStream();
+			} catch (IOException e) {
 			}
 
 			if (stdoutConsumer != null && stdoutConsumer.getBuffer() != null) {

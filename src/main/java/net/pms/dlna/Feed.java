@@ -169,6 +169,10 @@ public class Feed extends DLNAResource {
 		}
 	}
 
+	@Override
+	public void closeInputStream() {
+	}
+
 	public InputStream getInputStream() throws IOException {
 		return null;
 	}

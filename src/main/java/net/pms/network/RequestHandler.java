@@ -247,7 +247,7 @@ public class RequestHandler implements Runnable {
 			}
 
 			if (request != null && request.getInputStream() != null) {
-				request.getInputStream().close();
+				request.closeInputStream();
 			}
 
 		} catch (IOException e) {
@@ -255,7 +255,7 @@ public class RequestHandler implements Runnable {
 			if (request != null && request.getInputStream() != null) {
 				try {
 					LOGGER.trace("Closing input stream: " + request.getInputStream());
-					request.getInputStream().close();
+					request.closeInputStream();
 				} catch (IOException e1) {
 					LOGGER.error("Error closing input stream", e);
 				}

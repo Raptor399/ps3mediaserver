@@ -44,6 +44,7 @@ public abstract class VirtualVideoAction extends DLNAResource {
 	private String videoOk;
 	private String videoKo;
 	private long timer1;
+	private InputStream resourceInputStream;
 
 	/**Constructor for this class. Recommended instantation includes overriding the {@link #enable()} function (example shown in the link).
 	 * @param name Name that is shown via the UPNP ContentBrowser service. This field cannot be changed after the instantiation.
@@ -84,6 +85,18 @@ public abstract class VirtualVideoAction extends DLNAResource {
 		return false;
 	}
 
+	@Override
+	public void closeInputStream() {
+		if (resourceInputStream != null) {
+			try {
+				resourceInputStream.close();
+			} catch (IOException e) {
+			}
+			
+			resourceInputStream = null;
+		}
+	}
+
 	/**This function is called as an action from the UPNP client when
 	 * the user tries to play this item. This function calls instead the enable()
 	 * function in order to execute an action.
@@ -99,10 +112,14 @@ public abstract class VirtualVideoAction extends DLNAResource {
 		} else if (System.currentTimeMillis() - timer1 < 2000) {
 			timer1 = -1;
 		}
+
 		if (timer1 != -1) {
 			enabled = enable();
 		}
-		return getResourceInputStream(enabled ? videoOk : videoKo);
+
+		resourceInputStream = getResourceInputStream(enabled ? videoOk : videoKo);
+
+		return resourceInputStream;
 	}
 
 	/**Prototype. This function is called by {@link #getInputStream()} and is the core of this class.

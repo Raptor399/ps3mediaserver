@@ -34,6 +34,7 @@ public class RarredFile extends DLNAResource {
 	private static final Logger logger = LoggerFactory.getLogger(RarredFile.class);
 	private File f;
 	private Archive rarFile;
+	private FileInputStream fileInputStream;
 
 	public RarredFile(File f) {
 		this.f = f;
@@ -56,8 +57,22 @@ public class RarredFile extends DLNAResource {
 		}
 	}
 
+	@Override
+	public void closeInputStream() {
+		if (fileInputStream != null) {
+			try {
+				fileInputStream.close();
+			} catch (IOException e) {
+				logger.debug("Error closing rar file", e);
+			}
+			
+			fileInputStream = null;
+		}
+	}
+
 	public InputStream getInputStream() throws IOException {
-		return new FileInputStream(f);
+		fileInputStream = new FileInputStream(f);
+		return fileInputStream;
 	}
 
 	public String getName() {

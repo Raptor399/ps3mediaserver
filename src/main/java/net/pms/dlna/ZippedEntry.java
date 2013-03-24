@@ -53,6 +53,11 @@ public class ZippedEntry extends DLNAResource implements IPushOutput {
 		this.length = length;
 	}
 
+
+	@Override
+	public void closeInputStream() {
+	}
+
 	public InputStream getInputStream() {
 		return null;
 	}

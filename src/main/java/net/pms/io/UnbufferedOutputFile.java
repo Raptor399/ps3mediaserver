@@ -43,27 +43,20 @@ import java.io.OutputStream;
  * {@link WindowsNamedPipe}.
  */
 public class UnbufferedOutputFile implements BufferedOutputFile {
-	/**
-	 * Size of the circular byte buffer. The circular buffer will be filled
-	 * from the pipe buffer, so its size should be greater than that of the
-	 * pipe buffer, and preferably a multiple of that size. This way the
-	 * output stream can be written by one thread while the input stream is
-	 * being read in a different tempo by another.  
-	 */
-	private final int BUFFER_SIZE = OutputBufferConsumer.PIPE_BUFFER_SIZE * 4;
-
-	/** Stream to capture the output of a process that needs to be piped */
-	private OutputStream outputStream;
 
 	/** Stream to send the piped contents to */
 	private InputStream inputStream;
 
-	public UnbufferedOutputFile(OutputParams params) {
-		CircularByteBuffer buffer = new CircularByteBuffer(BUFFER_SIZE);
-		outputStream = buffer.getOutputStream();
-		inputStream = buffer.getInputStream();
+	/**
+	 * With this constructor, the UnbufferedOutputFile class merely holds the
+	 * inputStream reference so {@link #getInputStream(long)} can return it.
+	 *
+	 * @param inputStream
+	 */
+	public UnbufferedOutputFile(InputStream inputStream) {
+		this.inputStream = inputStream;
 	}
-	
+
 	/**
 	 * Do not use this method to close the streams of this object.
 	 * Instead, call {@link #closeInputStream()} or {@link #closeOutputStream()}
@@ -77,14 +70,11 @@ public class UnbufferedOutputFile implements BufferedOutputFile {
 	}
 
 	/**
-	 * Close the output stream of the buffered output. This signifies that no
-	 * more data will be written to the buffered output.
-	 *
-	 * @throws IOException When closing the output stream fails.
+	 * @deprecated Unused method from interface.
+	 * @return null
 	 */
-	@Override
+	@Deprecated
 	public void closeOutputStream() throws IOException {
-		outputStream.close();
 	}
 
 	/**
@@ -116,37 +106,27 @@ public class UnbufferedOutputFile implements BufferedOutputFile {
 	}
 
 	/**
-	 * Writes len bytes from the specified byte array starting at offset off to
-	 * the piped output stream.
-	 *  
-	 * @param b The data
-	 * @param off The start offset in the data
-	 * @param len The number of bytes to write
+	 * @deprecated Unused method from interface.
+	 * @return null
 	 */
-	@Override
+	@Deprecated
 	public void write(byte[] b, int off, int len) throws IOException {
-		outputStream.write(b, off, len);
 	}
 	
 	/**
-	 * Writes the specified byte to the piped output stream.
-	 * 
-	 * @param b The byte to write
+	 * @deprecated Unused method from interface.
+	 * @return null
 	 */
-	@Override
+	@Deprecated
 	public void write(int b) throws IOException {
-		outputStream.write(b);
 	}
 
 	/**
-	 * Writes b.length bytes from the specified byte array to this output stream. The
-	 * general contract for <code>write(b)</code> is that it should have exactly the
-	 * same effect as the call <code>write(b, 0, b.length)</code>.
-	 * @param byteArray
+	 * @deprecated Unused method from interface.
+	 * @return null
 	 */
-	@Override
+	@Deprecated
 	public void write(byte[] byteArray) throws IOException {
-		outputStream.write(byteArray);
 	}
 	
 	/**

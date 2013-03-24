@@ -49,6 +49,10 @@ public class VirtualFolder extends DLNAResource {
 		}
 	}
 
+	@Override
+	public void closeInputStream() {
+	}
+
 	/**Because a container cannot be streamed, this function always returns null.
 	 * @return null 
 	 * @see net.pms.dlna.DLNAResource#getInputStream()
