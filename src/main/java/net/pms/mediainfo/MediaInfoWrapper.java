@@ -59,7 +59,7 @@ public class MediaInfoWrapper {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MediaInfoWrapper.class);
 
 	/** Singleton instance of the JNA wrapper for the MediaInfo DLL. */
-	private static MediaInfo mediaInfo;
+	private static MediaInfo myMediaInfo;
 
 	/**
 	 * Holds the file information after it has been examined by the MediaInfo
@@ -118,23 +118,32 @@ public class MediaInfoWrapper {
 	}
 
 	/**
-	 * Default constructor. Reads the file information and stores it for later
-	 * examination.
+	 * Read the file information and stores it for later examination.
 	 * 
 	 * @param filename
 	 *            The path and filename of the file to be examined.
 	 */
 	public MediaInfoWrapper(String filename) {
+		this(null, filename);
+	}
+
+	/**
+	 * Default constructor. Reads the file information using the provided
+	 * {@link MediaInfo} library and stores it for later examination.
+	 * 
+	 * @param mediaInfo
+	 *            The MediaInfo library. If <code>null</code>, a new singleton
+	 *            instance will be initialized.
+	 * @param filename
+	 *            The path and filename of the file to be examined.
+	 */
+	MediaInfoWrapper(MediaInfo mediaInfo, String filename) {
 		if (mediaInfo == null) {
+			LOGGER.info("Loading MediaInfo library");
+
 			// Initialize the singleton instance
 			try {
-				LOGGER.info("Loading MediaInfo library");
 				mediaInfo = new MediaInfo();
-				LOGGER.info("Loaded " + MediaInfo.Option_Static("Info_Version"));
-
-				// Set library options
-				mediaInfo.Option("Complete", "1");
-				mediaInfo.Option("Language", "raw");
 			} catch (Throwable t) {
 				LOGGER.error("Error loading MediaInfo library", t);
 
@@ -146,10 +155,19 @@ public class MediaInfoWrapper {
 			}
 		}
 
+		myMediaInfo = mediaInfo;
+
 		if (mediaInfo != null) {
+			LOGGER.info("Loaded " + mediaInfo.Option("Info_Version"));
+
+			// Set library options
+			mediaInfo.Option("Complete", "1");
+			mediaInfo.Option("Language", "raw");
+
 			// Analyze the file
 			initialize(filename);
 		}
+
 	}
 
 	/**
@@ -161,9 +179,9 @@ public class MediaInfoWrapper {
 	 *            The path and file name of the file to be examined.
 	 */
 	private synchronized void initialize(String filename) {
-		if (mediaInfo.Open(filename) > 0) {
+		if (myMediaInfo.Open(filename) > 0) {
 			fileInfoMap = initStreamInfoMap();
-			mediaInfo.Close();
+			myMediaInfo.Close();
 		}
 	}
 
@@ -204,12 +222,13 @@ public class MediaInfoWrapper {
 	 */
 	private Map<String, String> initStreamInfo(StreamType streamType, int streamNumber) {
 		Map<String, String> streamInfo = new LinkedHashMap<String, String>();
+		int infoCount = myMediaInfo.Count_Get(streamType.getStreamKind(), streamNumber);
 
-		for (int i = 0, count = mediaInfo.Count_Get(streamType.getStreamKind(),	streamNumber); i < count; i++) {
-			String value = mediaInfo.Get(streamType.getStreamKind(), streamNumber, i, InfoKind.Text);
+		for (int i = 0; i < infoCount; i++) {
+			String value = myMediaInfo.Get(streamType.getStreamKind(), streamNumber, i, InfoKind.Text);
 
 			if (value.length() > 0) {
-				streamInfo.put(mediaInfo.Get(streamType.getStreamKind(), streamNumber, i, InfoKind.Name), value);
+				streamInfo.put(myMediaInfo.Get(streamType.getStreamKind(), streamNumber, i, InfoKind.Name), value);
 			}
 		}
 
@@ -226,7 +245,7 @@ public class MediaInfoWrapper {
 	 */
 	private int getStreamCountFromMediaInfo(StreamType streamType) {
 		try {
-			return Integer.parseInt(mediaInfo.Get(streamType.getStreamKind(), 0, "StreamCount"));
+			return Integer.parseInt(myMediaInfo.Get(streamType.getStreamKind(), 0, "StreamCount"));
 		} catch (NumberFormatException e) {
 			return 0;
 		}
@@ -252,20 +271,20 @@ public class MediaInfoWrapper {
 	 * 
 	 * @param streamType
 	 *            The {@link StreamType} of the stream.
-	 * @param index
+	 * @param streamNumber
 	 *            A file can contain multiple streams of the same type. This
 	 *            indicates which of the streams of the indicated type should be
 	 *            used.
 	 * @return A set of all key strings, or <code>null</code> if the information
 	 *         is not available.
 	 */
-	public Set<String> getStreamKeys(StreamType streamType, int index) {
+	public Set<String> getStreamKeys(StreamType streamType, int streamNumber) {
 		if (fileInfoMap != null && fileInfoMap.containsKey(streamType)) {
 			// Single out the information lists for the indicated stream type
 			List<Map<String, String>> streamInfoList = fileInfoMap.get(streamType);
 
-			if (streamInfoList != null && index >= 0 && index < streamInfoList.size()) {
-				return streamInfoList.get(index).keySet();
+			if (streamInfoList != null && streamNumber >= 0 && streamNumber < streamInfoList.size()) {
+				return streamInfoList.get(streamNumber).keySet();
 			}
 		}
 
@@ -278,7 +297,7 @@ public class MediaInfoWrapper {
 	 * 
 	 * @param streamType
 	 *            The {@link StreamType} of the stream.
-	 * @param index
+	 * @param streamNumber
 	 *            A file can contain multiple streams of the same type. This
 	 *            indicates which of the streams of the indicated type should be
 	 *            used.
@@ -286,14 +305,14 @@ public class MediaInfoWrapper {
 	 *            The name of the key that holds the value.
 	 * @return True if the key exists, false otherwise.
 	 */
-	public boolean keyExists(StreamType streamType, int index, String key) {
+	public boolean keyExists(StreamType streamType, int streamNumber, String key) {
 		if (fileInfoMap != null && fileInfoMap.containsKey(streamType)) {
 			// Single out the information lists for the indicated stream type
 			List<Map<String, String>> streamInfoList = fileInfoMap.get(streamType);
 
-			if (streamInfoList != null && index >= 0 && index < streamInfoList.size()) {
+			if (streamInfoList != null && streamNumber >= 0 && streamNumber < streamInfoList.size()) {
 				// Single out the information for the indicated list
-				Map<String, String> streamInfo = streamInfoList.get(index);
+				Map<String, String> streamInfo = streamInfoList.get(streamNumber);
 
 				return streamInfo.containsKey(key);
 			}
@@ -303,12 +322,12 @@ public class MediaInfoWrapper {
 	}
 
 	/**
-	 * Returns the string value of a key, based on the type of stream and an
-	 * index number indicating the number of the stream.
+	 * Returns the string value of a key, based on the type of stream the
+	 * number of the stream.
 	 * 
 	 * @param streamType
 	 *            The {@link StreamType} of the stream.
-	 * @param index
+	 * @param streamNumber
 	 *            A file can contain multiple streams of the same type. This
 	 *            indicates which of the streams of the indicated type should be
 	 *            used.
@@ -317,14 +336,14 @@ public class MediaInfoWrapper {
 	 * @return The string value for the key if it exists. Otherwise
 	 *         <code>null</code> is returned.
 	 */
-	public String getStringValue(StreamType streamType, int index, String key) {
+	public String getStringValue(StreamType streamType, int streamNumber, String key) {
 		if (fileInfoMap != null && fileInfoMap.containsKey(streamType)) {
 			// Single out the information lists for the indicated stream type
 			List<Map<String, String>> streamInfoList = fileInfoMap.get(streamType);
 
-			if (streamInfoList != null && index >= 0 && index < streamInfoList.size()) {
+			if (streamInfoList != null && streamNumber >= 0 && streamNumber < streamInfoList.size()) {
 				// Single out the information for the indicated list
-				Map<String, String> streamInfo = streamInfoList.get(index);
+				Map<String, String> streamInfo = streamInfoList.get(streamNumber);
 
 				if (key != null) {
 					return streamInfo.get(key);
@@ -336,12 +355,12 @@ public class MediaInfoWrapper {
 	}
 
 	/**
-	 * Returns the int value of a key, based on the type of stream and an
-	 * index number indicating the number of the stream.
+	 * Returns the int value of a key, based on the type of stream and the
+	 * number of the stream.
 	 * 
 	 * @param streamType
 	 *            The {@link StreamType} of the stream.
-	 * @param index
+	 * @param streamNumber
 	 *            A file can contain multiple streams of the same type. This
 	 *            indicates which of the streams of the indicated type should be
 	 *            used.
@@ -350,8 +369,8 @@ public class MediaInfoWrapper {
 	 * @return The int value for the key if it exists and can be parsed.
 	 *         Otherwise 0 is returned.
 	 */
-	public int getIntValue(StreamType streamType, int index, String key) {
-		String stringValue = getStringValue(streamType, index, key);
+	public int getIntValue(StreamType streamType, int streamNumber, String key) {
+		String stringValue = getStringValue(streamType, streamNumber, key);
 
 		if (stringValue != null) {
 			try {
