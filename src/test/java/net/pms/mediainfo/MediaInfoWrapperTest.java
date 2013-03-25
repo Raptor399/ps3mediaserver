@@ -24,22 +24,34 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeNoException;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.util.Set;
 
 import net.pms.mediainfo.MediaInfo.InfoKind;
 import net.pms.mediainfo.MediaInfoWrapper.StreamType;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.LoggerFactory;
 
-@RunWith(MockitoJUnitRunner.class)
+import ch.qos.logback.classic.LoggerContext;
+
 public class MediaInfoWrapperTest {
+	/**
+	 * Set up testing conditions before running the tests.
+	 */
+	@Before
+	public final void setUp() {
+		// Silence all log messages from the PMS code that is being tested
+		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+		context.reset();
+	}
 
 	/**
 	 * Only testing the constructor with a mock MediaInfo library, as testing
@@ -218,6 +230,46 @@ public class MediaInfoWrapperTest {
 		assertFalse(info.keyExists(StreamType.GENERAL, 0, "unknown_key"));
 		assertFalse(info.keyExists(StreamType.GENERAL, 1, "key"));
 		assertFalse(info.keyExists(StreamType.AUDIO, 0, "key"));
+	}
+
+	/**
+	 * The MediaInfo library is an external library that is regularly updated
+	 * and that might change its behavior over different versions. To be aware
+	 * of relevant changes, test interesting properties of known files.
+	 */
+	@Test
+	public void testKnownVideoFile() {
+		MediaInfoWrapper info = null;
+		String filename = "src/main/resources/videos/action_success-512.mpg";
+
+		// Make sure the file exists
+		File file = new File(filename);
+		assertEquals(true, file.exists());
+
+		try {
+			info = new MediaInfoWrapper(filename);
+		} catch (NoClassDefFoundError e) {
+			// Halt and ignore this test if the MediaInfo library cannot be loaded. 
+			assumeNoException(e);
+		}
+
+		// To see the properties, outcomment the following. 
+		//System.out.println(info.toString());
+
+		assertEquals(0, info.getStreamCount(StreamType.AUDIO));
+		assertEquals(1, info.getStreamCount(StreamType.GENERAL));
+		assertEquals(0, info.getStreamCount(StreamType.IMAGE));
+		assertEquals(0, info.getStreamCount(StreamType.MENU));
+		assertEquals(0, info.getStreamCount(StreamType.OTHER));
+		assertEquals(0, info.getStreamCount(StreamType.TEXT));
+		assertEquals(1, info.getStreamCount(StreamType.VIDEO));
+		assertEquals("VBR", info.getStringValue(StreamType.GENERAL, 0, "OverallBitRate_Mode"));
+		assertEquals(507904, info.getIntValue(StreamType.GENERAL, 0, "OverallBitRate"));
+		assertEquals("MPEG Video", info.getStringValue(StreamType.VIDEO, 0, "Format"));
+		assertEquals(1000, info.getIntValue(StreamType.VIDEO, 0, "Duration"));
+		assertEquals(512, info.getIntValue(StreamType.VIDEO, 0, "Width"));
+		assertEquals(512, info.getIntValue(StreamType.VIDEO, 0, "Height"));
+		assertEquals("24.000", info.getStringValue(StreamType.VIDEO, 0, "FrameRate"));
 	}
 
 	/**

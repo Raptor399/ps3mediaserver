@@ -383,4 +383,13 @@ public class MediaInfoWrapper {
 
 		return 0;
 	}
+
+	@Override
+	public String toString() {
+		if (fileInfoMap == null) {
+			return "{}";
+		}
+
+		return fileInfoMap.toString();
+	}
 }
