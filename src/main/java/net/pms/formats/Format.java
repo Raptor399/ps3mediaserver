@@ -59,12 +59,12 @@ public abstract class Format implements Cloneable {
 		return type;
 	}
 
-	public static final int ISO = 32;
+	public static final int AUDIO    =  1;
+	public static final int IMAGE    =  2;
+	public static final int VIDEO    =  4;
+	public static final int UNKNOWN  =  8;
 	public static final int PLAYLIST = 16;
-	public static final int UNKNOWN = 8;
-	public static final int VIDEO = 4;
-	public static final int AUDIO = 1;
-	public static final int IMAGE = 2;
+	public static final int ISO      = 32;
 
 	/**
 	 * The identifier (filename extension or protocol) that was matched for a
@@ -168,7 +168,8 @@ public abstract class Format implements Cloneable {
 		filename = filename.toLowerCase();
 		for (String singleid : getId()) {
 			String id = singleid.toLowerCase();
-			match = filename.endsWith("." + id) || filename.startsWith(id + "://");
+			// XXX match the protocol before the extension
+			match = filename.startsWith(id + "://") || filename.endsWith("." + id);
 			if (match) {
 				matchedId = singleid;
 				return true;

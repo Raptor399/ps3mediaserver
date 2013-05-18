@@ -39,7 +39,7 @@ import net.pms.util.FileUtil;
 import net.pms.util.ImagesUtil;
 import net.pms.util.Iso639;
 import net.pms.util.MpegUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -558,13 +558,13 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 
 						boolean hasSubsToTranscode = false;
 
-						if (!PMS.getConfiguration().isMencoderDisableSubs()) {
+						if (!PMS.getConfiguration().isDisableSubtitles()) {
 							hasSubsToTranscode = (PMS.getConfiguration().isAutoloadSubtitles() && child.isSrtFile()) || hasEmbeddedSubs;
 						}
 
 						boolean isIncompatible = false;
 
-						if (!child.getFormat().isCompatible(child.getMedia(),getDefaultRenderer())) {
+						if (!child.getFormat().isCompatible(child.getMedia(), getDefaultRenderer())) {
 							isIncompatible = true;
 						}
 
@@ -605,7 +605,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 								}
 							}
 						}
-					} else if (!child.getFormat().isCompatible(child.getMedia(),getDefaultRenderer()) && !child.isFolder()) {
+					} else if (!child.getFormat().isCompatible(child.getMedia(), getDefaultRenderer()) && !child.isFolder()) {
 						getChildren().remove(child);
 					}
 				}
@@ -677,7 +677,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	/**
 	 * Adds the supplied DNLA resource to the internal list of child nodes,
 	 * and sets the parent to the current node. Avoids the side-effects
-	 * associated with the {@link addChild(DLNAResource)} method.
+	 * associated with the {@link #addChild(DLNAResource)} method.
 	 *
 	 * @param child the DLNA resource to add to this node's list of children
 	 */
@@ -1355,55 +1355,67 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			for (int c = 0; c < indexCount; c++) {
 				openTag(sb, "res");
 
-				// DLNA.ORG_OP flags
-				//
-				// Two booleans (binary digits) which determine what transport operations the renderer is allowed to
-				// perform (in the form of HTTP headers): the first digit allows the renderer to send
-				// TimeSeekRange.DLNA.ORG (seek-by-time) headers; the second allows it to send RANGE (seek-by-byte)
-				// headers.
-				//
-				// 00 - no seeking (or even pausing) allowed
-				// 01 - seek by byte
-				// 10 - seek by time
-				// 11 - seek by both
-				//
-				// See here for an example of how these options can be mapped to keys on the renderer's controller:
-				// http://www.ps3mediaserver.org/forum/viewtopic.php?f=2&t=2908&p=12550#p12550
-				//
-				// Note that seek-by-time is the preferred option (seek-by-byte is a fallback) but it requires a) support
-				// by the renderer (via the SeekByTime renderer conf option) and either a) a file that's not being transcoded
-				// or if it is, b) support by its transcode engine for seek-by-time.
+				/*
+					DLNA.ORG_OP flags
 
-				dlnaOrgOpFlags = "01";
+					Two booleans (binary digits) which determine what transport operations the renderer is allowed to
+					perform (in the form of HTTP request headers): the first digit allows the renderer to send
+					TimeSeekRange.DLNA.ORG (seek by time) headers; the second allows it to send RANGE (seek by byte)
+					headers.
 
-				if (mediaRenderer.isSeekByTime()) {
-					if (getPlayer() != null) { // transcoded
-						if (getPlayer().isTimeSeekable()) {
-							// Some renderers - e.g. the PS3 and Panasonic TVs - behave erratically when
-							// transcoding if we keep the default seek-by-byte permission on when permitting
-							// seek-by-time: http://www.ps3mediaserver.org/forum/viewtopic.php?f=6&t=15841
-							//
-							// It's not clear if this is a bug in the DLNA libraries of these renderers or a bug
-							// in PMS, but setting an option in the renderer conf that disables seek-by-byte when
-							// we permit seek-by-time - e.g.:
-							//
-							//     SeekByTime = exclusive
-							//
-							// - works around it.
-							if (mediaRenderer.isSeekByTimeExclusive()) {
-								dlnaOrgOpFlags = "10";
-							} else {
-								dlnaOrgOpFlags = "11";
-							}
-						}
-					} else { // streamed
-						// chocolateboy 2012-11-25: seek-by-time used to be disabled here for the PS3
-						// (the flag was left at the default seek-by-byte value) and only set to
-						// seek-by-both for non-PS3 renderers. I can't reproduce with PS3 firmware 4.31
-						// whatever (undocumented) issue led to the creation of this exception, so
-						// it has been removed unless/until someone can reproduce it (e.g. with old
-						// firmware)
-						dlnaOrgOpFlags = "11";
+						00 - no seeking (or even pausing) allowed
+						01 - seek by byte
+						10 - seek by time
+						11 - seek by both
+
+					See here for an example of how these options can be mapped to keys on the renderer's controller:
+					http://www.ps3mediaserver.org/forum/viewtopic.php?f=2&t=2908&p=12550#p12550
+
+					Note that seek-by-byte is the preferred option for streamed files [1] and seek-by-time is the
+					preferred option for transcoded files.
+
+					[1] see http://www.ps3mediaserver.org/forum/viewtopic.php?f=6&t=15841&p=76201#p76201
+
+					seek-by-time requires a) support by the renderer (via the SeekByTime renderer conf option)
+					and b) support by the transcode engine.
+
+					The seek-by-byte fallback doesn't work well with transcoded files [2], but it's better than
+					disabling seeking (and pausing) altogether.
+
+					[2] http://www.ps3mediaserver.org/forum/viewtopic.php?f=6&t=3507&p=16567#p16567 (bottom post)
+				*/
+
+				dlnaOrgOpFlags = "01"; // seek by byte (exclusive)
+
+				if (mediaRenderer.isSeekByTime() && getPlayer() != null && getPlayer().isTimeSeekable()) {
+					/*
+						Some renderers - e.g. the PS3 and Panasonic TVs - behave erratically when
+						transcoding if we keep the default seek-by-byte permission on when permitting
+						seek-by-time: http://www.ps3mediaserver.org/forum/viewtopic.php?f=6&t=15841
+
+						It's not clear if this is a bug in the DLNA libraries of these renderers or a bug
+						in PMS, but setting an option in the renderer conf that disables seek-by-byte when
+						we permit seek-by-time - e.g.:
+
+							SeekByTime = exclusive
+
+						- works around it.
+					*/
+
+					/*
+						TODO (e.g. in a beta release): set seek-by-time (exclusive) here for *all* renderers:
+						seek-by-byte isn't needed here (both the renderer and the engine support seek-by-time)
+						and may be buggy on other renderers than the ones we currently handle.
+
+						In the unlikely event that a renderer *requires* seek-by-both here, it can
+						opt in with (e.g.):
+
+							SeekByTime = both
+					*/
+					if (mediaRenderer.isSeekByTimeExclusive()) {
+						dlnaOrgOpFlags = "10"; // seek by time (exclusive)
+					} else {
+						dlnaOrgOpFlags = "11"; // seek by both
 					}
 				}
 
@@ -1985,7 +1997,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	 * Called from Request/RequestV2 in response to thumbnail requests e.g. HEAD /get/0$1$0$42$3/thumbnail0000%5BExample.mkv
 	 * Calls DLNAMediaInfo.generateThumbnail, which in turn calls DLNAMediaInfo.parse.
 	 *
-	 * @param input InputFile to check or generate the thumbnail from.
+	 * @param inputFile File to check or generate the thumbnail for.
 	 */
 	protected void checkThumbnail(InputFile inputFile) {
 		if (getMedia() != null && !getMedia().isThumbready() && PMS.getConfiguration().isThumbnailGenerationEnabled()) {
@@ -2188,7 +2200,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	}
 
 	/**
-	 * @deprecated Use {@link #setLastModified()} instead.
+	 * @deprecated Use {@link #setLastModified(long)} instead.
 	 *
 	 * Sets the timestamp at which this resource was last modified.
 	 *

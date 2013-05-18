@@ -35,6 +35,7 @@ import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.configuration.PmsConfiguration;
 import net.pms.configuration.RendererConfiguration;
+import net.pms.dlna.DLNAMediaAudio;
 import net.pms.dlna.DLNAMediaInfo;
 import net.pms.dlna.DLNAMediaSubtitle;
 import net.pms.dlna.DLNAResource;
@@ -44,9 +45,10 @@ import net.pms.io.ProcessWrapper;
 import net.pms.io.ProcessWrapperImpl;
 import net.pms.network.HTTPResource;
 import net.pms.util.FileUtil;
+import net.pms.util.PlayerUtil;
 import net.pms.util.ProcessUtil;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +67,15 @@ import com.jgoodies.forms.layout.FormLayout;
  * subtitles and FFmpeg otherwise needs to compose and call methods on both players.
  *
  * To avoid API churn, and to provide wiggle room for future functionality, all of these methods
- * take RendererConfiguration (renderer) and DLNAMediaInfo (media) parameters, even if one or
- * both of these parameters are unused.
+ * take the same arguments as launchTranscode (and the same first four arguments as
+ * finalizeTranscoderArgs) even if one or more of the parameters are unused e.g.:
+ *
+ *     public List<String> getAudioBitrateOptions(
+ *         String filename,
+ *         DLNAResource dlna,
+ *         DLNAMediaInfo media,
+ *         OutputParams params
+ *     )
  */
 public class FFMpegVideo extends Player {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FFMpegVideo.class);
@@ -101,11 +110,20 @@ public class FFMpegVideo extends Player {
 	 * If the renderer has no size limits, or there's no media metadata, or the video is within the renderer's
 	 * size limits, an empty list is returned.
 	 *
-	 * @param renderer the DLNA renderer the video is being streamed to
-	 * @param media metadata for the DLNA resource which is being transcoded
+	 * @param filename The name of the file being transcoded.
+	 * @param dlna The DLNA resource representing the file being transcoded.
+	 * @param media the media metadata for the file being transcoded. May contain null fields (e.g. for web videos).
+	 * @param params The {@link OutputParams} context object used to store miscellaneous parameters for this request.
 	 * @return a {@link List} of <code>String</code>s representing the rescale options for this video,
 	 * or an empty list if the video doesn't need to be resized.
+	 * @since 1.81.0
 	 */
+	public List<String> getVideoRescaleOptions(String filename, DLNAResource dlna, DLNAMediaInfo media, OutputParams params) {
+		return getRescaleOptions(params.mediaRenderer, media);
+	}
+
+	// TODO (breaking change) merge this into the method above
+	@Deprecated
 	public List<String> getRescaleOptions(RendererConfiguration renderer, DLNAMediaInfo media) {
 		List<String> rescaleOptions = new ArrayList<String>();
 
@@ -133,15 +151,24 @@ public class FFMpegVideo extends Player {
 	}
 
 	/**
-	 * Takes a renderer and returns a list of <code>String</code>s representing ffmpeg output options
+	 * Returns a list of <code>String</code>s representing ffmpeg output options
 	 * (i.e. options that define the output file's video codec, audio codec and container)
 	 * compatible with the renderer's <code>TranscodeVideo</code> profile.
 	 *
-	 * @param renderer The {@link RendererConfiguration} instance whose <code>TranscodeVideo</code> profile is to be processed.
-	 * @param media the media metadata for the video being streamed. May contain unset/null values (e.g. for web videos).
+	 * @param filename The name of the file being transcoded.
+	 * @param dlna The DLNA resource representing the file being transcoded.
+	 * @param media the media metadata for the file being transcoded. May contain null fields (e.g. for web videos).
+	 * @param params The {@link OutputParams} context object used to store miscellaneous parameters for this request.
 	 * @return a {@link List} of <code>String</code>s representing the ffmpeg output parameters for the renderer according
 	 * to its <code>TranscodeVideo</code> profile.
+	 * @since 1.81.0
 	 */
+	public List<String> getVideoTranscodeOptions(String filename, DLNAResource dlna, DLNAMediaInfo media, OutputParams params) {
+		return getTranscodeVideoOptions(params.mediaRenderer, media);
+	}
+
+	// TODO (breaking change) merge this into the method above
+	@Deprecated
 	public List<String> getTranscodeVideoOptions(RendererConfiguration renderer, DLNAMediaInfo media) {
 		List<String> transcodeOptions = new ArrayList<String>();
 
@@ -150,7 +177,7 @@ public class FFMpegVideo extends Player {
 			transcodeOptions.add("wmv2");
 
 			transcodeOptions.add("-c:a");
-			transcodeOptions.add("wma2");
+			transcodeOptions.add("wmav2");
 
 			transcodeOptions.add("-f");
 			transcodeOptions.add("asf");
@@ -174,13 +201,22 @@ public class FFMpegVideo extends Player {
 	}
 
 	/**
-	 * Takes a renderer and metadata for the current video and returns the video bitrate spec for the current transcode according to
+	 * Returns the video bitrate spec for the current transcode according to
 	 * the limits/requirements of the renderer.
 	 *
-	 * @param renderer a {@link RendererConfiguration} instance representing the renderer being streamed to
-	 * @param media the media metadata for the video being streamed. May contain unset/null values (e.g. for web videos).
+	 * @param filename The name of the file being transcoded.
+	 * @param dlna The DLNA resource representing the file being transcoded.
+	 * @param media the media metadata for the file being transcoded. May contain null fields (e.g. for web videos).
+	 * @param params The {@link OutputParams} context object used to store miscellaneous parameters for this request.
 	 * @return a {@link List} of <code>String</code>s representing the video bitrate options for this transcode
+	 * @since 1.81.0
 	 */
+	public List<String> getVideoBitrateOptions(String filename, DLNAResource dlna, DLNAMediaInfo media, OutputParams params) {
+		return getVideoBitrateOptions(params.mediaRenderer, media);
+	}
+
+	// TODO (breaking change) merge this into the method above
+	@Deprecated
 	public List<String> getVideoBitrateOptions(RendererConfiguration renderer, DLNAMediaInfo media) { // media is currently unused
 		List<String> videoBitrateOptions = new ArrayList<String>();
 		String sMaxVideoBitrate = renderer.getMaxVideoBitrate(); // currently Mbit/s
@@ -209,13 +245,22 @@ public class FFMpegVideo extends Player {
 	}
 
 	/**
-	 * Takes a renderer and metadata for the current video and returns the audio bitrate spec for the current transcode according to
+	 * Returns the audio bitrate spec for the current transcode according to
 	 * the limits/requirements of the renderer.
 	 *
-	 * @param renderer a {@link RendererConfiguration} instance representing the renderer being streamed to
-	 * @param media the media metadata for the video being streamed. May contain unset/null values (e.g. for web videos).
+	 * @param filename The name of the file being transcoded.
+	 * @param dlna The DLNA resource representing the file being transcoded.
+	 * @param media the media metadata for the file being transcoded. May contain null fields (e.g. for web videos).
+	 * @param params The {@link OutputParams} context object used to store miscellaneous parameters for this request.
 	 * @return a {@link List} of <code>String</code>s representing the audio bitrate options for this transcode
+	 * @since 1.81.0
 	 */
+	public List<String> getAudioBitrateOptions(String filename, DLNAResource dlna, DLNAMediaInfo media, OutputParams params) {
+		return getAudioBitrateOptions(params.mediaRenderer, media);
+	}
+
+	// TODO (breaking change) merge this into the method above
+	@Deprecated
 	public List<String> getAudioBitrateOptions(RendererConfiguration renderer, DLNAMediaInfo media) {
 		List<String> audioBitrateOptions = new ArrayList<String>();
 
@@ -223,6 +268,101 @@ public class FFMpegVideo extends Player {
 		audioBitrateOptions.add(DEFAULT_QSCALE);
 
 		return audioBitrateOptions;
+	}
+
+	/**
+	 * Returns options for burning in subtitles, if enabled and available.
+	 *
+	 * @param filename The name of the file being transcoded.
+	 * @param dlna The DLNA resource representing the file being transcoded.
+	 * @param media the media metadata for the file being transcoded. May contain null fields (e.g. for web videos).
+	 * @param params The {@link OutputParams} context object used to store miscellaneous parameters for this request.
+	 * @return The list of subtitle options.
+	 * @since 1.81.0
+	 */
+	public List<String> getVideoSubtitleOptions(String filename, DLNAResource dlna, DLNAMediaInfo media, OutputParams params) {
+		RendererConfiguration renderer = params.mediaRenderer;
+		List<String> subtitleOptions = new ArrayList<String>();
+		String externalSubtitlesFileName = null;
+
+		if (params.sid != null) {
+			if (params.sid.isExternal()) {
+				// External subtitle file
+				if (params.sid.isExternalFileUtf16()) {
+					try {
+						// Convert UTF-16 -> UTF-8
+						File convertedSubtitles = new File(configuration.getTempFolder(), "utf8_" + params.sid.getExternalFile().getName());
+						FileUtil.convertFileFromUtf16ToUtf8(params.sid.getExternalFile(), convertedSubtitles);
+						externalSubtitlesFileName = ProcessUtil.getShortFileNameIfWideChars(convertedSubtitles.getAbsolutePath());
+					} catch (IOException e) {
+						LOGGER.debug("Error converting file from UTF-16 to UTF-8", e);
+						externalSubtitlesFileName = ProcessUtil.getShortFileNameIfWideChars(params.sid.getExternalFile().getAbsolutePath());
+					}
+				} else {
+					externalSubtitlesFileName = ProcessUtil.getShortFileNameIfWideChars(params.sid.getExternalFile().getAbsolutePath());
+				}
+
+				// Burn in subtitles with the subtitles filter (available since ffmpeg 1.1)
+				subtitleOptions.add("-vf");
+				subtitleOptions.add("subtitles=" + externalSubtitlesFileName);
+			}
+			// TODO: Handle embedded subtitles
+		}
+
+		return subtitleOptions;
+	}
+
+	/**
+	 * Returns the audio channel (-ac) options.
+	 *
+	 * @param filename The name of the file being transcoded.
+	 * @param dlna The DLNA resource representing the file being transcoded.
+	 * @param media the media metadata for the file being transcoded. May contain null fields (e.g. for web videos).
+	 * @param params The {@link OutputParams} context object used to store miscellaneous parameters for this request.
+	 * @return The list of audio channel options.
+	 * @since 1.81.0
+	 */
+
+	public List<String> getAudioChannelOptions(String filename, DLNAResource dlna, DLNAMediaInfo media, OutputParams params) {
+		List<String> audioChannelOptions = new ArrayList<String>();
+		int ac = -1; // -1: don't change the number of audio channels
+		int nChannels = params.aid == null ? -1 : params.aid.getAudioProperties().getNumberOfChannels();
+
+		if (nChannels == -1) { // unknown (e.g. web video)
+			ac = 2; // works fine if the video has < 2 channels
+		} else if (nChannels > 2) {
+			int maxOutputChannels = configuration.getAudioChannelCount();
+
+			if (maxOutputChannels <= 2) {
+				ac = maxOutputChannels;
+			} else if (params.mediaRenderer.isTranscodeToWMV()) {
+				// http://www.ps3mediaserver.org/forum/viewtopic.php?f=6&t=16590
+				// XXX WMA Pro (wmapro) supports > 2 channels, but ffmpeg doesn't have an encoder for it
+				ac = 2;
+			}
+		}
+
+		if (ac != -1) {
+			audioChannelOptions.add("-ac");
+			audioChannelOptions.add("" + ac);
+		}
+
+		// select audio stream
+		if (media != null) { // XXX may be null (e.g. for web video)
+			List<DLNAMediaAudio> audioTracks = media.getAudioTracksList();
+
+			if (audioTracks.size() > 1) {
+				// set the video stream
+				audioChannelOptions.add("-map");
+				audioChannelOptions.add("0:v");
+
+				// select the correct audio stream
+				audioChannelOptions.add("-map");
+				audioChannelOptions.add("0:a:" + audioTracks.indexOf(params.aid));
+			}
+		}
+
+		return audioChannelOptions;
 	}
 
 	@Override
@@ -249,7 +389,7 @@ public class FFMpegVideo extends Player {
 
 	@Override
 	public String name() {
-		return "FFmpeg";
+		return "FFmpeg Video";
 	}
 
 	@Override
@@ -288,47 +428,6 @@ public class FFMpegVideo extends Player {
 		return customOptions;
 	}
 
-	/**
-	 * Returns subtitle options based on the provided media and output parameters.
-	 *
-	 * @param renderer The renderer configuration settings
-	 * @param media The media information
-	 * @param params The output parameter settings
-	 * @return The list of subtitle options
-	 */
-	private List<String> getSubtitleOptions(RendererConfiguration renderer,
-			DLNAMediaInfo media, OutputParams params) {
-
-		List<String> subtitleOptions = new ArrayList<String>();
-		String externalSubtitlesFileName = null;
-
-		if (params.sid != null) {
-			if (params.sid.isExternal()) {
-				// External subtitle file
-				if (params.sid.isExternalFileUtf16()) {
-					try {
-						// Convert UTF-16 -> UTF-8
-						File convertedSubtitles = new File(configuration.getTempFolder(), "utf8_" + params.sid.getExternalFile().getName());
-						FileUtil.convertFileFromUtf16ToUtf8(params.sid.getExternalFile(), convertedSubtitles);
-						externalSubtitlesFileName = ProcessUtil.getShortFileNameIfWideChars(convertedSubtitles.getAbsolutePath());
-					} catch (IOException e) {
-						LOGGER.debug("Error converting file from UTF-16 to UTF-8", e);
-						externalSubtitlesFileName = ProcessUtil.getShortFileNameIfWideChars(params.sid.getExternalFile().getAbsolutePath());
-					}
-				} else {
-					externalSubtitlesFileName = ProcessUtil.getShortFileNameIfWideChars(params.sid.getExternalFile().getAbsolutePath());
-				}
-
-				// Burn in subtitles with the subtitles filter (available since ffmpeg 1.1)
-				subtitleOptions.add("-vf");
-				subtitleOptions.add("subtitles=" + externalSubtitlesFileName);
-			}
-			// TODO: Handle embedded subtitles
-		}
-
-		return subtitleOptions;
-	}
-
 	// XXX hardwired to false and not referenced anywhere else in the codebase
 	@Deprecated
 	public boolean mplayer() {
@@ -347,7 +446,7 @@ public class FFMpegVideo extends Player {
 
 	@Override
 	public ProcessWrapper launchTranscode(
-		String fileName,
+		String filename,
 		DLNAResource dlna,
 		DLNAMediaInfo media,
 		OutputParams params
@@ -356,14 +455,12 @@ public class FFMpegVideo extends Player {
 		List<String> cmdList = new ArrayList<String>();
 
 		// Populate params with audio track and subtitles metadata
-		setAudioAndSubs(fileName, media, params, configuration);
-
-		RendererConfiguration renderer = params.mediaRenderer;
+		setAudioAndSubs(filename, media, params, configuration);
 
 		cmdList.add(executable());
 
 		cmdList.add("-loglevel");
-		cmdList.add("warning");
+		cmdList.add("warning"); // XXX this should probably be configurable, for debugging
 
 		if (params.timeseek > 0) {
 			cmdList.add("-ss");
@@ -375,7 +472,7 @@ public class FFMpegVideo extends Player {
 		cmdList.add("" + nThreads);
 
 		cmdList.add("-i");
-		cmdList.add(fileName);
+		cmdList.add(filename);
 
 		// encoder threads
 		cmdList.add("-threads");
@@ -386,23 +483,26 @@ public class FFMpegVideo extends Player {
 			cmdList.add("" + params.timeend);
 		}
 
-		// add video bitrate options
-		cmdList.addAll(getVideoBitrateOptions(renderer, media));
+		// add video bitrate options (-b:a)
+		cmdList.addAll(getVideoBitrateOptions(filename, dlna, media, params));
 
-		// add audio bitrate options
-		cmdList.addAll(getAudioBitrateOptions(renderer, media));
+		// add audio bitrate options (-b:v)
+		cmdList.addAll(getAudioBitrateOptions(filename, dlna, media, params));
 
-		// if the source is too large for the renderer, resize it
-		cmdList.addAll(getRescaleOptions(renderer, media));
+		// if the source is too large for the renderer, resize it (-vf scale=...)
+		cmdList.addAll(getVideoRescaleOptions(filename, dlna, media, params));
 
-		// Add subtitle options
-		cmdList.addAll(getSubtitleOptions(renderer, media, params));
+		// add subtitles (-vf subtitles=...)
+		cmdList.addAll(getVideoSubtitleOptions(filename, dlna, media, params));
+
+		// add audio channels (-ac)
+		cmdList.addAll(getAudioChannelOptions(filename, dlna, media, params));
 		
 		// add custom args
 		cmdList.addAll(getCustomArgs());
 
 		// add the output options (-f, -acodec, -vcodec)
-		cmdList.addAll(getTranscodeVideoOptions(renderer, media));
+		cmdList.addAll(getVideoTranscodeOptions(filename, dlna, media, params));
 
 		cmdList.add("pipe:");
 
@@ -410,7 +510,7 @@ public class FFMpegVideo extends Player {
 		cmdList.toArray(cmdArray);
 
 		cmdArray = finalizeTranscoderArgs(
-			fileName,
+			filename,
 			dlna,
 			media,
 			params,
@@ -427,13 +527,13 @@ public class FFMpegVideo extends Player {
 	// TODO remove this method and move its body into launchTranscode
 	@Deprecated
 	protected ProcessWrapperImpl getFFMpegTranscode(
-		String fileName,
+		String filename,
 		DLNAResource dlna,
 		DLNAMediaInfo media,
 		OutputParams params,
 		String args[]
 	) throws IOException {
-		return (ProcessWrapperImpl) launchTranscode(fileName, dlna, media, params);
+		return (ProcessWrapperImpl) launchTranscode(filename, dlna, media, params);
 	}
 
 	@Override
@@ -474,45 +574,22 @@ public class FFMpegVideo extends Player {
 	 */
 	@Override
 	public boolean isCompatible(DLNAResource resource) {
-		if (resource == null || resource.getFormat().getType() != Format.VIDEO) {
+		if (!(
+			PlayerUtil.isVideo(resource, Format.Identifier.MKV) ||
+			PlayerUtil.isVideo(resource, Format.Identifier.MPG)
+		)) {
 			return false;
 		}
 
-		DLNAMediaSubtitle subtitle = resource.getMediaSubtitle();
-
-		// Check whether the subtitle actually has a language defined,
-		// uninitialized DLNAMediaSubtitle objects have a null language.
-		if (subtitle != null && subtitle.getLang() != null) {
-			// The resource needs a subtitle, but PMS support for FFmpeg subtitles has not yet been implemented.
-			return false;
-		}
-
-		try {
-			String audioTrackName = resource.getMediaAudio().toString();
-			String defaultAudioTrackName = resource.getMedia().getAudioTracksList().get(0).toString();
-
-			if (!audioTrackName.equals(defaultAudioTrackName)) {
-				// PMS only supports playback of the default audio track for FFmpeg
+		// subtitle support is not yet implemented
+		DLNAMediaInfo media = resource.getMedia();
+		if (media != null) {
+			List<DLNAMediaSubtitle> subtitles = media.getSubtitleTracksList();
+			if (subtitles.size() > 0) {
 				return false;
 			}
-		} catch (NullPointerException e) {
-			LOGGER.trace("FFmpeg cannot determine compatibility based on audio track for "
-					+ resource.getSystemName());
-		} catch (IndexOutOfBoundsException e) {
-			LOGGER.trace("FFmpeg cannot determine compatibility based on default audio track for "
-					+ resource.getSystemName());
 		}
 
-		Format format = resource.getFormat();
-
-		if (format != null) {
-			Format.Identifier id = format.getIdentifier();
-
-			if (id.equals(Format.Identifier.MKV) || id.equals(Format.Identifier.MPG)) {
-				return true;
-			}
-		}
-
-		return false;
+		return true;
 	}
 }

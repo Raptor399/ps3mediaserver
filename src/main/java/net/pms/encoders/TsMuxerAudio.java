@@ -24,6 +24,7 @@ import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.io.OutputParams;
 import net.pms.io.ProcessWrapper;
+import net.pms.util.PlayerUtil;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -81,20 +82,6 @@ public class TsMuxerAudio extends TSMuxerVideo {
 	 */
 	@Override
 	public boolean isCompatible(DLNAResource resource) {
-		if (resource == null || resource.getFormat().getType() != Format.AUDIO) {
-			return false;
-		}
-
-		Format format = resource.getFormat();
-
-		if (format != null) {
-			Format.Identifier id = format.getIdentifier();
-
-			if (id.equals(Format.Identifier.AUDIO_AS_VIDEO)) {
-				return true;
-			}
-		}
-
-		return false;
+		return PlayerUtil.isVideo(resource, Format.Identifier.AUDIO_AS_VIDEO);
 	}
 }

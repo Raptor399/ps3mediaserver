@@ -23,7 +23,6 @@ import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.configuration.FormatConfiguration;
 import net.pms.formats.v2.SubtitleType;
-
 import org.h2.engine.Constants;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.jdbcx.JdbcDataSource;
@@ -34,16 +33,13 @@ import org.h2.tools.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import static org.apache.commons.lang.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.*;
 
 /**
  * This class provides methods for creating and maintaining the database where
@@ -331,7 +327,7 @@ public class DLNAMediaDatabase implements Runnable {
 			while (rs.next()) {
 				DLNAMediaInfo media = new DLNAMediaInfo();
 				int id = rs.getInt("ID");
-				media.setDuration(toDouble(rs,"DURATION"));
+				media.setDuration(toDouble(rs, "DURATION"));
 				media.setBitrate(rs.getInt("BITRATE"));
 				media.setWidth(rs.getInt("WIDTH"));
 				media.setHeight(rs.getInt("HEIGHT"));

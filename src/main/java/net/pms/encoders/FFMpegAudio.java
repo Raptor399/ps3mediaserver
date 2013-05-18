@@ -33,6 +33,7 @@ import net.pms.io.ProcessWrapperImpl;
 import net.pms.Messages;
 import net.pms.network.HTTPResource;
 import net.pms.PMS;
+import net.pms.util.PlayerUtil;
 
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -129,7 +130,7 @@ public class FFMpegAudio extends FFMpegVideo {
 
 	@Override
 	public ProcessWrapper launchTranscode(
-		String fileName,
+		String filename,
 		DLNAResource dlna,
 		DLNAMediaInfo media,
 		OutputParams params
@@ -144,7 +145,7 @@ public class FFMpegAudio extends FFMpegVideo {
 		cmdList.add(executable());
 
 		cmdList.add("-loglevel");
-		cmdList.add("warning");
+		cmdList.add("warning"); // XXX this should probably be configurable, for debugging
 
 		if (params.timeseek > 0) {
 			cmdList.add("-ss");
@@ -156,7 +157,7 @@ public class FFMpegAudio extends FFMpegVideo {
 		cmdList.add("" + nThreads);
 
 		cmdList.add("-i");
-		cmdList.add(fileName);
+		cmdList.add(filename);
 
 		// encoder threads
 		cmdList.add("-threads");
@@ -196,7 +197,7 @@ public class FFMpegAudio extends FFMpegVideo {
 		cmdList.toArray(cmdArray);
 
 		cmdArray = finalizeTranscoderArgs(
-			fileName,
+			filename,
 			dlna,
 			media,
 			params,
@@ -214,23 +215,9 @@ public class FFMpegAudio extends FFMpegVideo {
 	 */
 	@Override
 	public boolean isCompatible(DLNAResource resource) {
-		if (resource == null || resource.getFormat().getType() != Format.AUDIO) {
-			return false;
-		}
-
-		Format format = resource.getFormat();
-
-		if (format != null) {
-			Format.Identifier id = format.getIdentifier();
-
-			if (id.equals(Format.Identifier.FLAC)
-					|| id.equals(Format.Identifier.M4A)
-					|| id.equals(Format.Identifier.OGG)
-					|| id.equals(Format.Identifier.WAV)) {
-				return true;
-			}
-		}
-
-		return false;
+		return PlayerUtil.isAudio(resource, Format.Identifier.FLAC)
+			|| PlayerUtil.isAudio(resource, Format.Identifier.M4A)
+			|| PlayerUtil.isAudio(resource, Format.Identifier.OGG)
+			|| PlayerUtil.isAudio(resource, Format.Identifier.WAV);
 	}
 }

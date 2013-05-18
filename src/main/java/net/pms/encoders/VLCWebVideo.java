@@ -23,17 +23,17 @@ import net.pms.dlna.DLNAResource;
 import net.pms.formats.Format;
 import net.pms.util.PlayerUtil;
 
-/* XXX this is the old/obsolete VLC web audio streaming engine */
-public class VideoLanAudioStreaming extends VideoLanVideoStreaming {
-	public static final String ID = "vlcaudio";
+public class VLCWebVideo extends VLCVideo {
+	@Deprecated
+	public static final String ID = "vlcwebvideo";
 
-	public VideoLanAudioStreaming(PmsConfiguration configuration) {
+	public VLCWebVideo(PmsConfiguration configuration) {
 		super(configuration);
 	}
 
 	@Override
 	public int purpose() {
-		return AUDIO_WEBSTREAM_PLAYER;
+		return VIDEO_WEBSTREAM_PLAYER;
 	}
 
 	@Override
@@ -42,28 +42,13 @@ public class VideoLanAudioStreaming extends VideoLanVideoStreaming {
 	}
 
 	@Override
+	public boolean isTimeSeekable() {
+		return false;
+	}
+
+	@Override
 	public String name() {
-		return "VLC Web Audio (Legacy)";
-	}
-
-	@Override
-	public int type() {
-		return Format.AUDIO;
-	}
-
-	@Override
-	public String mimeType() {
-		return "audio/wav";
-	}
-
-	@Override
-	protected String getEncodingArgs() {
-		return "acodec=s16l,channels=2";
-	}
-
-	@Override
-	protected String getMux() {
-		return "wav";
+		return "VLC Web Video";
 	}
 
 	/**
@@ -71,6 +56,6 @@ public class VideoLanAudioStreaming extends VideoLanVideoStreaming {
 	 */
 	@Override
 	public boolean isCompatible(DLNAResource resource) {
-		return PlayerUtil.isWebAudio(resource);
+		return PlayerUtil.isWebVideo(resource);
 	}
 }
