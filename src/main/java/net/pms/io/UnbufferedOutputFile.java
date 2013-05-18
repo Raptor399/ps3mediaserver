@@ -54,7 +54,7 @@ public class UnbufferedOutputFile implements BufferedOutputFile {
 	 * @param inputStream
 	 */
 	public UnbufferedOutputFile(InputStream inputStream) {
-		this.inputStream = inputStream;
+		this.inputStream = new LoggingInputStream(inputStream);
 	}
 
 	/**
