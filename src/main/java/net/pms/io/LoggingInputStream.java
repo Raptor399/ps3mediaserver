@@ -32,6 +32,9 @@ public class LoggingInputStream extends InputStream {
 	/** Logger to write messages to the log file */
 	private static final Logger LOGGER = LoggerFactory.getLogger(LoggingInputStream.class);
 
+	/** Whether or not TRACE messages should be logged. */
+	private static final boolean IS_TRACE_ENABLED = LOGGER.isTraceEnabled();
+
 	/** The input stream to wrap */
 	private InputStream inputStream;
 
@@ -42,41 +45,64 @@ public class LoggingInputStream extends InputStream {
 	@Override
 	public int available() throws IOException {
 		int result = inputStream.available();
-		LOGGER.trace("inputstream.available() = " + result + "");
+
+		if (IS_TRACE_ENABLED) {
+			LOGGER.trace("inputstream.available() = " + result + "");
+		}
+
 		return result;
 	}
 
 	@Override
 	public void close() throws IOException {
-		LOGGER.trace("Input stream being closed", new IOException(""));
+		if (IS_TRACE_ENABLED) {
+			LOGGER.trace("Input stream being closed", new IOException(""));
+		}
+
 		inputStream.close();
 	}
 	
 	@Override
 	public int read() throws IOException {
 		int result = inputStream.read();
-		LOGGER.trace("inputstream.read() = " + result + "");
+
+		if (IS_TRACE_ENABLED) {
+			LOGGER.trace("inputstream.read() = " + result + "");
+		}
+
 		return inputStream.read();
 	}
 
 	@Override
 	public int read(byte[] b) throws IOException {
 		int result = inputStream.read(b); 
-		LOGGER.trace("inputstream.read(b[" + b.length + "]) = " + result + "");
+
+		if (IS_TRACE_ENABLED) {
+			LOGGER.trace("inputstream.read(b[" + b.length + "]) = " + result + "");
+		}
+
 		return result;
 	}
 
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 		int result = inputStream.read(b, off, len); 
-		LOGGER.trace("inputstream.read(b[" + b.length + "], " + off + ", " + len + ") = " + result + "");
+
+		if (IS_TRACE_ENABLED) {
+			LOGGER.trace("inputstream.read(b[" + b.length + "], " + off + ", " + len + ") = " + result + "");
+		}
+
 		return result;
 	}
 
 	@Override
 	public long skip(long n) throws IOException {
 		long result = inputStream.skip(n);
-		LOGGER.trace("inputstream.skip(" + n + ") = " + result + "");
+
+		if (IS_TRACE_ENABLED) {
+			LOGGER.trace("inputstream.skip(" + n + ") = " + result + "");
+		}
+
 		return result;
 	}
 }
